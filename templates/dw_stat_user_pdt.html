@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="darkworld.css") }}'>
+
+<body>
+    <div class="topOnglets">
+        <a class="onglet" href="/utilisateurs" onclick="attente()">Utilisateurs</a>
+        <a class="onglet" href="/corbeille" onclick="attente()">Corbeille</a>
+		<a class="onglet" href="/export_de_donnees" onclick="attente()">Export de Données</a>
+        <a class="ongletActif" href="/stat" onclick="attente()">Statistiques</a>
+        <a class="onglet" href="/clients" onclick="attente()">Clients</a>
+        <a class="onglet" href="/logout" onclick="attente()">
+            <button class="invisible" type="button" onclick="attente()" data-hover="Se Déconnecter"
+                data-active="Se Déconnecter">
+                <span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+            </button>
+        </a>
+    </div>
+    <br>
+    <div align="center" class="topnav">
+        <a href="/stat" onclick="attente()">Général</a>
+        <a href="/statCE" onclick="attente()">Stat CE</a>
+        <a href="/statRef" onclick="attente()">Référentes</a>
+        <a href="/statUser" onclick="attente()">Commandes / Utilisateur</a>
+        <a class="active" href="/statUserPdt" onclick="attente()">Produits / Utilisateur</a>
+    </div>
+    <form action="/statUserPdt" method="POST">
+        <div class="txt">Du : <input class="fourchette" type="date" name="dateMin" value="{{dateMin}}"
+                onchange="this.form.submit()"> Au : <input class="fourchette" type="date" name="dateMax"
+                value="{{dateMax}}" onchange="this.form.submit()"></div>
+
+        <table align="center" class="statGenTab">
+
+
+
+        </table>
+        <div class="statRef">
+            {%for i in range (Lref|length) %}
+            <table>
+                <th class="txt ">{{Lref[i]['prenom']}}</th>
+
+                <tr>
+                    <td>
+                        <table align="center" class="sousStat">
+                            <th class="thsousStat">Produits extraits</th>
+                            <tr>
+                                <td>
+                                    <div id="curve_chart-1-{{i}}" style="width: 100%; height: 300px"></div>
+                            </tr>
+                    </td>
+            </table>
+            </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <table align="center" class="sousStat1">
+                        <th class="thsousStat1">Produits ajoutés manuellement</th>
+                        <tr>
+                            <td>
+                                <div id="curve_chart-2-{{i}}" style="width: 100%; height: 300px"></div>
+                        </tr>
+                </td>
+                </table>
+                </td>
+            </tr>
+            <tr>
+
+                <td>
+                    <table align="center" class="sousStat2">
+                        <th class="thsousStat2">Produits préparés</th>
+                        <tr>
+                            <td>
+                                <div id="curve_chart-3-{{i}}" style="width: 100%; height: 300px"></div>
+                        </tr>
+                </td>
+                </table>
+                </td>
+
+            </tr>
+            <tr>
+                <td>
+                    <table align="center" class="sousStat3">
+                        <th class="thsousStat3">Produits facturés</th>
+                        <tr>
+                            <td>
+                                <div id="curve_chart-4-{{i}}" style="width: 100%; height: 300px"></div>
+                        </tr>
+                </td>
+                </table>
+                </td>
+            </tr>
+            </table>
+            {%endfor%}
+        </div>
+    </form>
+
+    <br>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'], 'language': 'fr' });
+        google.charts.setOnLoadCallback(chartLoadCallback);
+
+        LLdate1 = [];
+        LLdate2 = [];
+        LLdate3 = [];
+        LLdate4 = [];
+        LtotRef = {{ LtotRef | tojson | safe }};
+        nbrRef = LtotRef.length;
+        nbrGraph = LtotRef[0].length;
+        for (j = 0; j < nbrRef; j++) {
+            tdata1 = JSON.parse(LtotRef[j][0]);
+            Ldate1 = tdata1.Ldate;
+            LLdate1.push(Ldate1);
+            tdata2 = JSON.parse(LtotRef[j][1]);
+            Ldate2 = tdata2.Ldate;
+            LLdate2.push(Ldate2);
+            tdata3 = JSON.parse(LtotRef[j][2]);
+            Ldate3 = tdata3.Ldate;
+            LLdate3.push(Ldate3);
+            tdata4 = JSON.parse(LtotRef[j][3]);
+            Ldate4 = tdata4.Ldate;
+            LLdate4.push(Ldate4);
+        }
+        /**
+         * Hook to be called by google chart when it has finished loading.
+         */
+        function chartLoadCallback() {
+            drawChart();
+            window.onresize = function (event) { drawChart(); };
+        }
+
+        function drawChart() {
+            var formatter = new google.visualization.DateFormat({ pattern: 'd MMMM' });
+            var options = {
+                colors: ['#EF851C'],
+                pointSize: 1,
+                pointShape: { type: 'string' },
+                "vAxis": {
+                    "viewWindowMode": "explicit",
+                    "viewWindow": {
+                        "min": 0
+                    }
+                },
+                "title": 'Produits',
+                "curveType": 'function',
+                "legend": { "position": 'bottom' },
+                'chartArea': { 'width': '80%', 'height': '80%' },
+                "selectionMode": 'multiple',
+                "tooltip": { "trigger": 'both' },
+                "aggregationTarget": 'none',
+                "focusTarget": "category",
+                "explorer": {
+                    "axis": 'horizontal',
+                    "actions": ['dragToZoom', 'rightClickToReset']
+                },
+                "crosshair": {
+                    "trigger": "both",
+                    "orientation": 'vertical'
+                },
+                "hAxis": {
+                    "format": 'd MMMM Y'
+                }
+            };
+            var LchartData1 = [];
+            var LchartData2 = [];
+            var LchartData3 = [];
+            var LchartData4 = [];
+            for (j = 0; j < nbrRef; j++) {
+                LchartData1.push([["temps", "Nombre de Produits"]]);
+                LchartData2.push([["temps", "Nombre de Produits"]]);
+                LchartData3.push([["temps", "Nombre de Produits"]]);
+                LchartData4.push([["temps", "Nombre de Produits"]]);
+                for (i = 0; i < LLdate1[j].length; i++) {
+                    LchartData1[j].push([new Date(LLdate1[j][i][0]), LLdate1[j][i][1]]);
+                }
+                var dataTable1 = google.visualization.arrayToDataTable(LchartData1[j]);
+                formatter.format(dataTable1, 0);
+                console.log(LchartData1[j]);
+                var chart1 = new google.visualization.AreaChart(document.getElementById('curve_chart-1-' + j.toString()));
+                chart1.draw(dataTable1, options);
+
+                for (i = 0; i < LLdate2[j].length; i++) {
+                    LchartData2[j].push([new Date(LLdate2[j][i][0]), LLdate2[j][i][1]]);
+                }
+                var dataTable2 = google.visualization.arrayToDataTable(LchartData2[j]);
+                formatter.format(dataTable2, 0);
+                var chart2 = new google.visualization.AreaChart(document.getElementById('curve_chart-2-' + j.toString()));
+                chart2.draw(dataTable2, options);
+                for (i = 0; i < LLdate3[j].length; i++) {
+                    LchartData3[j].push([new Date(LLdate3[j][i][0]), LLdate3[j][i][1]]);
+                }
+                var dataTable3 = google.visualization.arrayToDataTable(LchartData3[j]);
+                formatter.format(dataTable3, 0);
+                var chart3 = new google.visualization.AreaChart(document.getElementById('curve_chart-3-' + j.toString()));
+                chart3.draw(dataTable3, options);
+                for (i = 0; i < LLdate4[j].length; i++) {
+                    LchartData4[j].push([new Date(LLdate4[j][i][0]), LLdate4[j][i][1]]);
+                }
+                var dataTable4 = google.visualization.arrayToDataTable(LchartData4[j]);
+                formatter.format(dataTable4, 0);
+                var chart4 = new google.visualization.AreaChart(document.getElementById('curve_chart-4-' + j.toString()));
+                chart4.draw(dataTable4, options);
+            }
+        }
+        function attente() {
+            var element = document.getElementById("html");
+            element.className = "attente";
+        }
+    </script>
+</body>
+
+</html>

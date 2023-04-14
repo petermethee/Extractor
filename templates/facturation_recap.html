@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements des données</a>
+		<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="ongletActif" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+	<div align="center" class="topnav">
+		<a href="/choixLot/{{user}}" onclick="attente()">Sélectionner un lot</a>
+		<a href="/facturation/{{user}}" onclick="attente()">Fiche synthèse pour facturation</a>
+		<a class="active" href="/recap/{{user}}" onclick="attente()">Récap des états</a>
+		<a href="/clientRupt/{{user}}" onclick="attente()">Client à contacter</a>
+	</div>
+
+	<table class="tabInfo">
+		<tr class="trInfo">
+			<td class="tdInfo">N° CE</td>
+			<td class="tdInfo">Nom du CE</td>
+			<td class="tdInfo">N° de Lot</td>
+		</tr>
+
+		<tr class="trInfo">
+			<td class="tdInfo">{{idCE}}</td>
+			<td class="tdInfo">{{nomCE}}</td>
+			<td class="tdInfo">{{lot}}</td>
+		</tr>
+	</table>
+
+	<table align="center" class="tab1">
+		<th class="thRecap thPetit">Code</th>
+		<th class="thRecap thPetit">EAN</th>
+		<th class="thRecap">Libellé WINPARF</th>
+		<th class="thRecap thNbr">Qte</th>
+		<th class="thRecap thNbr">Etat</th>
+		<th class="thRecap thTrans">Demande Transfert</th>
+		{% for i in range(nProd) %}
+		<tr class="trRec">
+			<td>{{code[i]}}</td>
+			<td>{{ean[i]}}</td>
+			<td>{{lib[i]}}</td>
+			<td>{{quantite[i]}}</td>
+			<td>
+				<table class="soustab">
+
+					{%for etat in Letat[i]%}
+					<tr>
+						<td>
+							{%if etat=='1' %}
+							Reliquat
+							{% elif etat=='2' %}
+							Facturé
+							{%elif etat=='3' %}
+							Rupture
+							{%elif etat=='5' %}
+							Livré
+							{%else%}
+							Préparation
+							{%endif%}
+						</td>
+					</tr>
+					{%endfor%}
+				</table>
+			</td>
+			<td>
+				{%if Lreliquats[i]|length>0%}
+				<table align="center" class="tabTransfert">
+					<th>Lieu</th>
+					<th>Quantite</th>
+
+					{%for reliquat in Lreliquats[i]%}
+					<tr class="trTrans">
+						<td>{{reliquat['mag']}}</td>
+						<td>{{reliquat['qte']}}</td>
+					</tr>
+					{%endfor%}
+				</table>
+				{%endif%}
+			</td>
+		</tr>
+		{%endfor%}
+	</table>
+	<br>
+</body>
+
+</html>
+<script>
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>

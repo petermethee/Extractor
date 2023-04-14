@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+    <div class="topOnglets">
+        <a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+        <a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+        <a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+        <a class="onglet" href="/reliquats/{{user}}" onclick="attente()"> 2. Reliquats</a>
+        <a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+        <a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+        <a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+        <a class="ongletActif" href="/CE/{{user}}" onclick="attente()">CE</a>
+        <a class="onglet" href="/logout" onclick="attente()" >
+            <button class="invisible" type="button" data-hover="Se Déconnecter" data-active="Se Déconnecter">
+                <span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+            </button>
+        </a>
+    </div>
+    <div align="center" class="topnav">
+        <a class="active" href="/ajoutCE/{{user}}" onclick="attente()">Ajout CE</a>
+        <a  href="/rechercheCE/{{user}}" onclick="attente()">Recherche CE</a>
+        <a href="/CE/{{user}}" onclick="attente()">Listing CE</a>
+        <a href="/infoCE/{{user}}" onclick="attente()">Informations facturations CE</a>
+        <a href="/adresseCE/{{user}}" onclick="attente()">Adresses CE</a>
+    </div>
+
+<div id="ide" value="{{CE['id']}}"></div>
+</br>
+        <!-- TABLEAU 1-->
+        <table align="center" class="tabCE">
+            <th class="thHistCE thMoy1">Numéro de CE</th>
+            <th class="thHistCE thGG">Nom du CE</th>
+            <th class="thHistCE thMoy2">Référente</th>
+            <th class="thHistCE thGG">Intermédiaire</th>
+            <th class="thHistCE thGG">Mail</th>
+            <th class="thHistCE thMoy2">Tel</th>
+            <th class="thHistCE thP">Mail Auto Client</th>
+            <th class="thHistCE thMoy2">
+                <table align="center" class="sousTab">
+                    <tr>
+                        <td colspan="5">Mail Auto CE</td>
+                    </tr>   
+                    <tr >
+                        <td style="writing-mode: vertical-rl;background-color:rgb(90, 90, 90);border-radius: 5px;font-size: 12px;font-weight: normal;">Préparation</td>
+                        <td style="writing-mode: vertical-rl;background-color:green;border-radius: 5px;font-size: 12px;font-weight: normal;">Facturée</td>
+                        <td style="writing-mode: vertical-rl;background-color:rgb(181, 118, 0);border-radius: 5px;font-size: 12px;font-weight: normal;">Fact + Reliquat</td>
+                        <td style="writing-mode: vertical-rl;background-color:purple;border-radius: 5px;font-size: 12px;font-weight: normal;">Reliquat</td>
+                        <td style="writing-mode: vertical-rl;background-color:red;border-radius: 5px;font-size: 12px;font-weight: normal;">Rupture</td>
+                        </tr>
+                </table>
+            </th>
+            <tr id="{{CE['id']}}" class="trCE">
+                <td><input id="idCE" class="inputCE thMoy1" type="number" value="{{CE['idCE']}}"
+                        style="cursor: pointer;" required></td>
+                <td><input id="entreprise" class="inputCE thGG" type="text" value="{{CE['entreprise']}}"
+                        style="cursor: pointer;"></td>
+                <td><select id="referente" class="inputCE thMoy2" type="text" value="CE['referente']"
+                        style="cursor: pointer;">
+                        {% for x in listeRef %}
+                        <option value="{{x['id']}}" {% if CE['prenom']==x['prenom'] %} selected {%endif%}>
+                            {{x['prenom']}}</option>
+                        {% endfor %}
+                        {% for x in listeAll %}
+                        <option value="{{x['id']}}" {% if CE['prenom']==x['prenom'] %} selected {%endif%}>
+                            {{x['prenom']}}</option>
+                        {% endfor %}
+                    </select></td>
+                <td><input id="intermediaire" class="inputCE thGG" type="text" value="{{CE['intermediaire']}}"
+                        style="cursor: pointer;"></td>
+                </td>
+                <td><input id="mail" class="inputCE thGG" type="text" value="{{CE['mail']}}"
+                        style="cursor: pointer;"></td>
+                <td><input id="tel" class="inputCE thMoy2" type="text" value="{{CE['tel']}}"
+                        style="cursor: pointer;"></td>
+                <td>
+                    <table align="center" class="sousTab">
+                        <tr>
+                            <td>{%if CE['mailCl']==1%}
+                                <input id="mailCl" class="inputCE" type="checkbox" style="cursor: pointer;background-color: brown;"
+                                    checked>
+                                {%else%}
+                                <input id="mailCl" class="inputCE" type="checkbox" style="cursor: pointer;">
+                                {%endif%}
+                            </td>
+                        </tr>
+                    </table>
+                <td>
+                    <table align="center" class="sousTab">
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <tr>
+                            <td>
+                                {%if CE['mailInterPrep']==1%}
+                                <input id="mailInterPrep" class="inputCE" type="checkbox"
+                                    style="cursor: pointer; accent-color: rgb(90, 90, 90);" checked>
+                                {%else%}
+                                <input id="mailInterPrep" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: rgb(90, 90, 90)">
+                                {%endif%}
+                            </td>
+                        
+                            <td>
+                                {%if CE['mailInterFact']==1%}
+                                <input id="mailInterFact" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: green;" checked>
+                                {%else%}
+                                <input id="mailInterFact" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: green;">
+                                {%endif%}
+                            </td>
+                            <td>
+                                {%if CE['mailInterRelFact']==1%}
+                                <input id="mailInterRelFact" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: rgb(181, 118, 0);" checked>
+                                {%else%}
+                                <input id="mailInterRelFact" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: rgb(181, 118, 0);">
+                                {%endif%}
+                            </td>
+                            <td>
+                                {%if CE['mailInterRel']==1%}
+                                <input id="mailInterRel" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: purple;" checked>
+                                {%else%}
+                                <input id="mailInterRel" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: purple;">
+                                {%endif%}
+                            </td>
+                            <td>
+                                {%if CE['mailInterRupt']==1%}
+                                <input id="mailInterRupt" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: red;" checked>
+                                {%else%}
+                                <input id="mailInterRupt" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: red;">
+                                {%endif%}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <!-- TABLEAU 2 -->
+        <table align="center" class="tabCE">
+        <th class="thHistCE thP2">Factures</th>
+        <th class="thHistCE thP2">Sacs</th>
+        <th class="thHistCE thP">Retrait Mag</th>
+        <th class="thHistCE thMoy1">Colis Indiv.</th>
+        <th class="thHistCE thP2">Colis Collectif</th>
+        <th class="thHistCE thMoy1">Expé.</th>
+        <th class="thHistCE thP">Cat.</th>
+        <th class="thHistCE thP">Promo.</th>
+            <tr id="{{CE['id']}}" class="trCE">
+                <td><select id="qteFact" class="inputCE thP2" value="{{CE['qteFact']}}"
+                        style="cursor: pointer;">
+                        <option value="1" {% if CE['qteFact']==1 %} selected {%endif%}>1</option>
+                        <option value="2" {% if CE['qteFact']==2 %} selected {%endif%}>2</option>
+                        <option value="3" {% if CE['qteFact']==3 %} selected {%endif%}>3</option>
+                        <option value="4" {% if CE['qteFact']==4 %} selected {%endif%}>4</option>
+                    </select></td>
+                <td><select id="sac" class="inputCE thP2" value="{{CE['sac']}}" style="cursor: pointer;">
+                        <option value="Papier" {% if CE['sac']=="Papier" %} selected {%endif%}>Papier</option>
+                        <option value="Plastique" {% if CE['sac']=="Plastique" %} selected {%endif%}>Plastique</option>
+                        <option value="Aucun" {% if CE['sac']=="Aucun" %} selected {%endif%}>Aucun</option>
+                    </select></td>
+                <td><select id="retraitMag" class="inputCE thP" style="cursor: pointer;">
+                        <option value="NON" {% if retraitMag=="NON" %} selected {%endif%}>NON</option>
+                        <option value="1" {% if CE['retraitMag']=="1" %} selected {%endif%}>1</option>
+                        <option value="2" {% if CE['retraitMag']=="2" %} selected {%endif%}>2</option>
+                        <option value="3" {% if CE['retraitMag']=="3" %} selected {%endif%}>3</option>
+                        <option value="4" {% if CE['retraitMag']=="4" %} selected {%endif%}>4</option>
+                        <option value="5" {% if CE['retraitMag']=="5" %} selected {%endif%}>5</option>
+                        <option value="6" {% if CE['retraitMag']=="6" %} selected {%endif%}>6</option>
+                    </select></td>
+                <td><select id="colisIndiv" class="inputCE thMoy1" style="cursor: pointer;">
+                        <option value="NON" {% if CE['colisIndiv']=="NON" %} selected {%endif%}>NON</option>
+                        <option value="Entreprise" {%if CE['colisIndiv']=="Entreprise" %} selected {%endif%}>Entreprise
+                        </option>
+                        <option value="Domicile" {%if CE['colisIndiv']=="Domicile" %} selected {%endif%}>Domicile</option>
+                    </select></td>
+                <td><select id="colisCol" class="inputCE thP2" style="cursor: pointer;">
+                        <option value="NON" {%if CE['colisCol']=="NON" %} selected {%endif%}>NON</option>
+                        <option value="OUI" {%if CE['colisCol']=="OUI" %} selected {%endif%}>OUI</option>
+                    </select></td>
+                <td><select id="colisExpe" class="inputCE thMoy1" style="cursor: pointer;">
+                        <option value="Aucun" {%if CE['colisExpe']=="Aucun" %} selected {%endif%}>Aucun</option>
+                        <option value="Colissimo" {%if CE['colisExpe']=="Colissimo" %} selected {%endif%}>Colissimo</option>
+                        <option value="Dililog" {%if CE['colisExpe']=="Dililog" %} selected {%endif%}>Dililog</option>
+                    </select></td>
+                    <td><input id="catalogue" class="inputCE thP" type="number" value="{{CE['catalogue']}}"
+                        style="cursor: pointer;"></td>
+                    <td><input id="promotion" class="inputCE thP" type="number" value="{{CE['promotion']}}"
+                        style="cursor: pointer;"></td>
+            </tr>
+        </table>
+        <!-- TABLEAU 3 -->
+        <table align="center" class="tabCE">
+            <th class="thHistCE">Commentaires</th>
+                <tr id="{{CE['id']}}" class="trCE">
+                    <td><input id="commentaires" class="inputCE thGall" type="text" value="{{CE['commentaires']}}"
+                        style="cursor: pointer;"></td>
+                </tr>
+        </table>
+        <!-- TABLEAU 4 -->
+        <table align="center" class="tabCE">
+            <th class="thHistCE">Adresse</th>
+            <tr id="{{CE['id']}}" class="trCE">
+                <td><input id="adresse" class="inputCE" style="width: 95%;cursor: pointer;" type="text"
+                        value="{{CE['adresse']}}"></td>
+            </tr>
+	    </table>
+
+        <button id="{{CE['idCE']}}" class="validBt" name="action" value="ajouter" onclick="ajouter(this)" align="center">AJOUTER</button></td>
+        <br>
+</body>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+
+    function ajouter(t) {
+        var idCE = document.getElementById(`idCE`).value;
+        if (idCE==="" || idCE<900000){
+            alert("Le numéro du CE est incorrect !");
+        }
+        if (idCE<t.id){
+            existant=confirm("Etes-vous sûr(e) que ce numéro de CE n'existe pas ?")
+            if (existant===true){
+                var entreprise = document.getElementById('entreprise').value;
+                var referente = document.getElementById('referente').value;
+                var mail = document.getElementById(`mail`).value;
+                var intermediaire = document.getElementById(`intermediaire`).value;
+                var tel = document.getElementById(`tel`).value;
+                var mailCl = document.getElementById(`mailCl`).checked;
+                var mailInterPrep = document.getElementById(`mailInterPrep`).checked;
+                var mailInterFact = document.getElementById(`mailInterFact`).checked;
+                var mailInterRelFact = document.getElementById(`mailInterRelFact`).checked;
+                var mailInterRel = document.getElementById(`mailInterRel`).checked;
+                var mailInterRupt = document.getElementById(`mailInterRupt`).checked;
+                var qteFact = document.getElementById(`qteFact`).value;
+                var sac = document.getElementById(`sac`).value;
+                var retraitMag = document.getElementById(`retraitMag`).value;
+                var colisIndiv = document.getElementById(`colisIndiv`).value;
+                var colisCol = document.getElementById(`colisCol`).value;
+                var colisExpe = document.getElementById(`colisExpe`).value;
+                var catalogue = document.getElementById(`catalogue`).value;
+                var promotion = document.getElementById(`promotion`).value;
+                var commentaires = document.getElementById(`commentaires`).value;
+                var adresse = document.getElementById(`adresse`).value;
+                if (entreprise==="" || referente==="" ||mail==="" ||intermediaire===""){
+                    alert("Remplissez les champs obligatoires : Nom du CE, Mail, Intermédiaire.");
+                }
+                req = jQuery.ajax({
+                    url: '/addCE',
+                    type: 'POST',
+                    data: { idCE: idCE, entreprise: entreprise, mail: mail, referente: referente, intermediaire: intermediaire, tel: tel, mailCl: mailCl, mailInterPrep: mailInterPrep,mailInterFact:mailInterFact,mailInterRelFact:mailInterRelFact,mailInterRel:mailInterRel,mailInterRupt:mailInterRupt,qteFact: qteFact, sac: sac, retraitMag: retraitMag, colisIndiv: colisIndiv, colisCol: colisCol, colisExpe: colisExpe,catalogue:catalogue,promotion:promotion, commentaires: commentaires,adresse:adresse}
+                });
+                alert("Changement(s) pris en compte");
+            }
+            else{
+                alert("Vérifiez que ce CE n'existe pas :-)");
+            }
+        }
+        else{
+            var entreprise = document.getElementById('entreprise').value;
+            var referente = document.getElementById('referente').value;
+            var mail = document.getElementById(`mail`).value;
+            var intermediaire = document.getElementById(`intermediaire`).value;
+            var tel = document.getElementById(`tel`).value;
+            var mailCl = document.getElementById(`mailCl`).checked;
+            var mailInterPrep = document.getElementById(`mailInterPrep`).checked;
+            var mailInterFact = document.getElementById(`mailInterFact`).checked;
+            var mailInterRelFact = document.getElementById(`mailInterRelFact`).checked;
+            var mailInterRel = document.getElementById(`mailInterRel`).checked;
+            var mailInterRupt = document.getElementById(`mailInterRupt`).checked;
+            var qteFact = document.getElementById(`qteFact`).value;
+            var sac = document.getElementById(`sac`).value;
+            var retraitMag = document.getElementById(`retraitMag`).value;
+            var colisIndiv = document.getElementById(`colisIndiv`).value;
+            var colisCol = document.getElementById(`colisCol`).value;
+            var colisExpe = document.getElementById(`colisExpe`).value;
+            var catalogue = document.getElementById(`catalogue`).value;
+            var promotion = document.getElementById(`promotion`).value;
+            var commentaires = document.getElementById(`commentaires`).value;
+            var adresse = document.getElementById(`adresse`).value;
+            if (entreprise==="" || referente==="" ||mail==="" ||intermediaire===""){
+                alert("Remplissez les champs obligatoires : Nom du CE, Mail, Intermédiaire.");
+            }
+            req = jQuery.ajax({
+                url: '/addCE',
+                type: 'POST',
+                data: { idCE: idCE, entreprise: entreprise, mail: mail, referente: referente, intermediaire: intermediaire, tel: tel, mailCl: mailCl, mailInterPrep: mailInterPrep,mailInterFact:mailInterFact,mailInterRelFact:mailInterRelFact,mailInterRel:mailInterRel,mailInterRupt:mailInterRupt,qteFact: qteFact, sac: sac, retraitMag: retraitMag, colisIndiv: colisIndiv, colisCol: colisCol, colisExpe: colisExpe,catalogue:catalogue,promotion:promotion, commentaires: commentaires,adresse:adresse}
+            });
+            alert("Changement(s) pris en compte");
+            }
+        }          
+
+    function attente() {
+        var element = document.getElementById("html");
+        element.className = "attente";
+    }
+</script>
+
+</html>

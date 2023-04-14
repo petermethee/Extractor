@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <div id="html" class=""></div>
+
+  <head>
+    <title>Parfumerie Mireille</title>
+  </head>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"
+  />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href='{{ url_for("static", filename="darkworld.css") }}'
+  />
+
+  <body>
+    <div class="topOnglets">
+      <a class="onglet" href="/utilisateurs" onclick="attente()"
+        >Utilisateurs</a
+      >
+      <a class="onglet" href="/corbeille" onclick="attente()">Corbeille</a>
+      <a class="onglet" href="/export_de_donnees" onclick="attente()"
+        >Export de Données</a
+      >
+
+      <a class="onglet" href="/stat" onclick="attente()">Statistiques</a>
+      <a class="ongletActif" href="/clients" onclick="attente()">Clients</a>
+      <a class="onglet" href="/logout">
+        <button
+          class="invisible"
+          onclick="attente()"
+          type="button"
+          data-hover="Se Déconnecter"
+          data-active="Se Déconnecter"
+        >
+          <span
+            ><i class="fas fa-user span" style="padding-right: 10px"></i
+            >{{session['user']['username']}}</span
+          >
+        </button>
+      </a>
+    </div>
+    <br />
+    <div>
+      <form action="/actionClient" method="POST">
+        <button class="BtSuppr" name="action" value="0" onclick="attente()">
+          Supprimer les doublons
+        </button>
+        <button class="BtRest" name="action" value="1" onclick="clic()">
+          Exporter les mails
+        </button>
+        <button class="BtRest" name="action" value="2" onclick="clic()">
+          Exporter infos CE
+        </button>
+      </form>
+    </div>
+
+    <table align="center" class="sousStat">
+      <th class="thsousStat">CE</th>
+      <th class="thsousStat">Societe</th>
+      <th class="thsousStat">NOM PRENOM</th>
+      <th class="thsousStat">Mail</th>
+      <th class="thsousStat">Téléphone</th>
+      <th class="thsousStat">Adresse</th>
+      {%for client in Lclients%}
+      <tr class="trsousStat">
+        <td class="tdsousTab">{{client["idCEclient"]}}</td>
+        <td class="tdsousTab">{{client["societe"]}}</td>
+        <td class="tdsousTab">{{client["client"]}}</td>
+        <td class="tdsousTab">{{client["mail"]}}</td>
+        <td class="tdsousTab">{{client["tel"]}}</td>
+        <td class="tdsousTab">{{client["adresse"]}}</td>
+      </tr>
+      {%endfor%}
+    </table>
+    <br />
+  </body>
+  <script>
+    function clic() {
+      alert("Exportation terminé");
+    }
+    function attente() {
+      var element = document.getElementById("html");
+      element.className = "attente";
+    }
+  </script>
+</html>

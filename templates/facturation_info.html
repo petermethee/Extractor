@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{url_for("static", filename="mycss8.css")}}'>
+<link rel='stylesheet' type='text/css' href='G:/CEPROG/bdd/static/mycss8.css'>
+
+<body>
+    <div class="bodyFactInfo">
+        <div class="titreInfoFact">Informations de facturation du CE {{idCE}}</div>
+        <br>
+        <table class="tabInfoReli" style="margin: 15px;">
+            <tr class="trInfo">
+                <td class="tdInfo">N° CE</td>
+                <td class="tdInfo">Nom du CE</td>
+                <td class="tdInfo">Référente</td>
+            </tr>
+            <tr class="trInfo">
+                <td class="tdInfo">{{idCE}}</td>
+                <td class="tdInfo">{{nomCE}}</td>
+                <td class="tdInfo">{{referente}}</td>
+            </tr>
+        </table>
+
+        <form action="/facturationInfo/{{user}}" method="post">
+            <button id="enregistrer" onclick="attente()" name="action" class="selectBtInfo"
+                value="0">ENREGISTRER</button>
+            <button id="retour" onclick="attente()" name="action" class="retourBtInfo" value="1">RETOUR</button>
+            <br><br><br><br>
+            <div style="display:inline-block; vertical-align:top; ">
+                <table class="tabInfoFact">
+                    <tr>
+                        <td class="tdInfoFact tdInfoSouligne">Adresse entreprise</td>
+                        <td class="tdInfoFact" style="width: 85%;"><input style="cursor: pointer;width: 95%;"
+                                name="adresse" id="adresse" type="text" maxlength="9999"
+                                placeholder="Voici un exemple ..." value="{{adresse}}" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="display:inline-block; vertical-align:top; ">
+
+                <table class="tabInfoFact">
+                    <tr>
+                        <td class="tdInfoFact tdInfoSouligne">Factures à imprimer</td>
+                        <td class="tdInfoFact"><select name="qteFact" id="qteFact" style="cursor: pointer;"
+                                placeholder="Factures">
+                                <option value="1" {% if qteFact==1 %} selected {%endif%}>1</option>
+                                <option value="2" {% if qteFact==2 %} selected {%endif%}>2</option>
+                                <option value="3" {% if qteFact==3 %} selected {%endif%}>3</option>
+                                <option value="3" {% if qteFact==4 %} selected {%endif%}>4</option>
+                            </select></td>
+                            
+                    </tr>
+                    <tr>
+                        <td class="tdInfoFact tdInfoSouligne">Type de sacs</td>
+                        <td class="tdInfoFact"><select name="sac" id="sac" style="cursor: pointer;" placeholder="Sac">
+                                <option value="Papier" {% if sac=="Papier" %} selected {%endif%}>Papier</option>
+                                <option value="Plastique" {% if sac=="Plastique" %} selected {%endif%}>Plastique
+                                </option>
+                                <option value="Aucun" {% if sac=="Aucun" %} selected {%endif%}>Aucun</option>
+                            </select></td>
+                    </tr>
+                    <tr>
+                        <td class="tdInfoFact tdInfoSouligne">Catalogue</td>
+                        <td class="tdInfoFact"><input style="cursor: pointer;" name="catalogue" id="catalogue" type="number" value={{catalogue}}></input>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="display:inline-block; vertical-align:top; ">
+                <table class="tabInfoFact">
+                    
+                    <tr>
+                        <td class="tdInfoFact tdInfoSouligne">Commentaires</td>
+                        <td class="tdInfoFact"><textarea style="cursor: pointer;" name="commentaires" id="commentaires"
+                                rows="3" cols="40" placeholder="Voici un exemple ...">{{commentaires}}</textarea>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div style="display:inline-block; vertical-align:top; ">
+                <table class="tabInfoFact">
+                    <tr>
+                        <td class="tdInfoFact tdInfoSouligne">Expédition</td>
+                        <td class="tdInfoFact">Retrait au Magasin n° :</td>
+                        <td class="tdInfoFact"><select name="retraitMag" id="retraitMag" style="cursor: pointer;">
+                                <option value="NON" {% if retraitMag=="NON" %} selected {%endif%}>NON</option>
+                                <option value="1" {% if retraitMag=="1" %} selected {%endif%}>1</option>
+                                <option value="2" {% if retraitMag=="2" %} selected {%endif%}>2</option>
+                                <option value="3" {% if retraitMag=="3" %} selected {%endif%}>3</option>
+                                <option value="4" {% if retraitMag=="4" %} selected {%endif%}>4</option>
+                                <option value="5" {% if retraitMag=="5" %} selected {%endif%}>5</option>
+                                <option value="6" {% if retraitMag=="6" %} selected {%endif%}>6</option>
+                            </select></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="tdInfoFact">Colis Individuel :</td>
+                        <td class="tdInfoFact"><select name="colisIndiv" id="colisIndiv" style="cursor: pointer;">
+                                <option value="NON" {% if colisIndiv=="NON" %} selected {%endif%}>NON</option>
+                                <option value="Entreprise" {%if colisIndiv=="Entreprise" %} selected {%endif%}>
+                                    Entreprise</option>
+                                <option value="Domicile" {%if colisIndiv=="Domicile" %} selected {%endif%}>Domicile
+                                </option>
+                            </select></td>
+                    </tr>
+                    <tr>
+                        <td class="tdInfoFact"></td>
+                        <td class="tdInfoFact">Colis Collectif :</td>
+                        <td class="tdInfoFact"><select name="colisCol" id="colisCol" style="cursor: pointer;">
+                                <option value="NON" {%if colisCol=="NON" %} selected {%endif%}>NON</option>
+                                <option value="OUI" {%if colisCol=="OUI" %} selected {%endif%}>OUI</option>
+                            </select></td>
+                    </tr>
+                    <tr>
+                        <td class="tdInfoFact tdInfoSouligne">Colis envoyé par :</td>
+                        <td class="tdInfoFact"><select name="colisExpe" id="colisExpe" style="cursor: pointer;">
+                                <option value="Aucun" {%if colisExpe=="Aucun" %} selected {%endif%}>Aucun</option>
+                                <option value="Colissimo" {%if colisExpe=="Colissimo" %} selected {%endif%}>Colissimo
+                                </option>
+                                <option value="Dililog" {%if colisExpe=="Dililog" %} selected {%endif%}>Dililog</option>
+                            </select></td>
+                    </tr>
+                    
+                </table>
+            </div>
+            <div style="display:inline-block; vertical-align:top;">
+                <table class="tabInfoFact">
+                    <th class="tdInfoSouligne">Cadeaux :</th>
+                    <tr>
+                        <td class="tdInfoFact">1 pour 200€ d'achat</td>
+                        <td class="tdInfoFact">4 pour 800€ d'achat</td>
+
+                    </tr>
+                    <tr>
+                        <td class="tdInfoFact">2 pour 400€ d'achat</td>
+                        <td class="tdInfoFact">5 pour 1 000€ d'achat</td>
+                    <tr>
+                        <td class="tdInfoFact">3 pour 600€ d'achat</td>
+                        <td class="tdInfoFact">6 pour 1 200€ d'achat</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div style="display:inline-block; vertical-align:top; ">
+                <table class="tabInfoFact">
+                    <th colspan="7">Mails automatiques</th>
+                    <tr></tr>
+                    <tr>
+                        <td></td>
+                    <td style="background-color:rgb(90, 90, 90);border-radius: 5px;font-size: 12px;font-weight: normal;color:white;padding:5px">Préparation</td>
+                    <td style="background-color:green;border-radius: 5px;font-size: 12px;font-weight: normal;color:white;padding:5px">Facturé</td>
+                    <td style="background-color:rgb(181, 118, 0);border-radius: 5px;font-size: 12px;font-weight: normal;color:white;padding:5px">Facturé + Reliquat</td>
+                    <td style="background-color:purple;border-radius: 5px;font-size: 12px;font-weight: normal;color:white;padding:5px">Reliquat</td>
+                    <td style="background-color:red;border-radius: 5px;font-size: 12px;font-weight: normal;color:white;padding:5px">Rupture</td>
+                    <td style="background-color:#0075ff;border-radius: 5px;font-size: 12px;font-weight: normal;color:white;padding:5px">Tous</td>
+                    </tr>
+                    <tr>
+                        <td class="tdInfoFact">Clients</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                                {%if mailClient==1%}
+                                <input name="mailClient" class="inputCE" type="checkbox"
+                                    style="cursor: pointer" checked>
+                                {%else%}
+                                <input name="mailClient" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;">
+                                {%endif%}
+                            </td>
+                    </tr>
+                        <td class="tdInfoFact">CE</td>
+                        <td>
+                                {%if mailInterPrep==1%}
+                                <input name="mailInterPrep" class="inputCE" type="checkbox"
+                                    style="cursor: pointer; accent-color: rgb(90, 90, 90);" checked>
+                                {%else%}
+                                <input name="mailInterPrep" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: rgb(90, 90, 90)">
+                                {%endif%}
+                            </td>
+                        
+                            <td>
+                                {%if mailInterFact==1%}
+                                <input name="mailInterFact" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: green;" checked>
+                                {%else%}
+                                <input name="mailInterFact" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: green;">
+                                {%endif%}
+                            </td>
+                            <td>
+                                {%if mailInterRelFact==1%}
+                                <input name="mailInterRelFact" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: rgb(181, 118, 0);" checked>
+                                {%else%}
+                                <input name="mailInterRelFact" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: rgb(181, 118, 0);">
+                                {%endif%}
+                            </td>
+                            <td>
+                                {%if mailInterRel==1%}
+                                <input name="mailInterRel" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: purple;" checked>
+                                {%else%}
+                                <input name="mailInterRel" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: purple;">
+                                {%endif%}
+                            </td>
+                            <td>
+                                {%if mailInterRupt==1%}
+                                <input name="mailInterRupt" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: red;" checked>
+                                {%else%}
+                                <input name="mailInterRupt" class="inputCE" type="checkbox"
+                                    style="cursor: pointer;accent-color: red;">
+                                {%endif%}
+                            </td>
+                        
+
+                    </tr>
+                    
+                </table>
+            </div>
+            
+        </form>
+    </div>
+
+</html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+    function attente() {
+        var element = document.getElementById("html");
+        element.className = "attente";
+    }
+</script>

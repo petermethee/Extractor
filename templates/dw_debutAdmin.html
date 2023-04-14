@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="darkworld.css") }}'>
+
+<body>
+    <div class="bienvenue">Mode Administrateur</div>
+    <div class="modeAdmin">
+        <form action="/admin" id="action" method="post">
+            <button onclick="attente()" type="submit" class="extractorBt" name="action" value="0">Extractor</button>
+            <button onclick="attente()" type="submit" class="adminBt" name="action" value="1">Administrateur</button>
+        </form>
+    </div>
+</body>
+
+</html>
+<script>
+    function attente() {
+        var element = document.getElementById("html");
+        element.className = "attente";
+    }
+</script>

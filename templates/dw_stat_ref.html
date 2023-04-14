@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <div id="html" class=""></div>
+
+  <head>
+    <title>Parfumerie Mireille</title>
+  </head>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"
+  />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href='{{ url_for("static", filename="darkworld.css") }}'
+  />
+
+  <body>
+    <div class="topOnglets">
+      <a class="onglet" href="/utilisateurs" onclick="attente()"
+        >Utilisateurs</a
+      >
+      <a class="onglet" href="/corbeille" onclick="attente()">Corbeille</a>
+      <a class="onglet" href="/export_de_donnees" onclick="attente()"
+        >Export de Données</a
+      >
+      <a class="ongletActif" href="/stat" onclick="attente()">Statistiques</a>
+      <a class="onglet" href="/clients" onclick="attente()">Clients</a>
+      <a class="onglet" href="/logout" onclick="attente()">
+        <button
+          class="invisible"
+          onclick="attente()"
+          type="button"
+          data-hover="Se Déconnecter"
+          data-active="Se Déconnecter"
+        >
+          <span
+            ><i class="fas fa-user span" style="padding-right: 10px"></i
+            >{{session['user']['username']}}</span
+          >
+        </button>
+      </a>
+    </div>
+    <br />
+    <div align="center" class="topnav">
+      <a href="/stat" onclick="attente()">Général</a>
+      <a href="/statCE" onclick="attente()">Stat CE</a>
+      <a class="active" href="/statRef" onclick="attente()">Référentes</a>
+      <a href="/statUser" onclick="attente()">Commandes / Utilisateur</a>
+      <a href="/statUserPdt" onclick="attente()">Produits / Utilisateur</a>
+    </div>
+    <form action="/statRef" method="POST">
+      <div class="txt">
+        Du :
+        <input
+          class="fourchette"
+          type="date"
+          name="dateMin"
+          value="{{dateMin}}"
+          onchange="this.form.submit()"
+        />
+        Au :
+        <input
+          class="fourchette"
+          type="date"
+          name="dateMax"
+          value="{{dateMax}}"
+          onchange="this.form.submit()"
+        />
+      </div>
+    </form>
+    <table align="center" class="statGenTab"></table>
+    <br />
+
+    <div class="statRef">
+      {%for i in range (Lref|length) %}
+      <table>
+        <th class="txt">{{Lref[i]['prenom']}}</th>
+
+        <tr>
+          <td>
+            <table align="center" class="sousStat">
+              <th class="thsousStat">Commandes TOTALES</th>
+              <tr class="trsousStat">
+                <td class="tdsousTab">{{LtotRef[i][0]}}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <table align="center" class="sousStat">
+              <th class="thsousStat">Chiffre d'affaire</th>
+              <tr class="trsousStat">
+                <td class="tdsousTab">{{LtotRef[i][1]}} €</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <table align="center" class="sousStat">
+              <th class="thsousStat">Temps de traitement</th>
+              <tr class="trsousStat">
+                <td class="tdsousTab">{{LtotRef[i][2]}} jours</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div id="curve_chart{{i}}" style="width: 100%; height: 300px"></div>
+          </td>
+        </tr>
+      </table>
+      {%endfor%}
+    </div>
+
+    <br />
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+    <script type="text/javascript">
+      google.charts.load('current', { 'packages': ['corechart'], 'language': 'fr' });
+      google.charts.setOnLoadCallback(chartLoadCallback);
+      LLdate = [];
+      LtotRef = {{ LtotRef | tojson | safe }};
+      nbrRef = LtotRef.length;
+      for (j = 0; j < nbrRef; j++) {
+          tdata1 = JSON.parse(LtotRef[j][3]);
+          Ldate1 = tdata1.Ldate;
+          LLdate.push(Ldate1)
+      }
+
+      /**
+       * Hook to be called by google chart when it has finished loading.
+       */
+      function chartLoadCallback() {
+          drawChart();
+          window.onresize = function (event) { drawChart(); };
+      }
+
+      function drawChart() {
+          var formatter = new google.visualization.DateFormat({ pattern: 'd MMMM' });
+          var options = {
+              colors: ['#EF851C'],
+              pointSize: 1,
+              pointShape: { type: 'string' },
+              "vAxis": {
+                  "viewWindowMode": "explicit",
+                  "viewWindow": {
+                      "min": 0
+                  }
+              },
+              "title": 'Commandes en cours',
+              "curveType": 'function',
+              "legend": { "position": 'bottom' },
+              'chartArea': { 'width': '80%', 'height': '80%' },
+              "selectionMode": 'multiple',
+              "tooltip": { "trigger": 'both' },
+              "aggregationTarget": 'none',
+              "focusTarget": "category",
+              "explorer": {
+                  "axis": 'horizontal',
+                  "actions": ['dragToZoom', 'rightClickToReset']
+              },
+              "crosshair": {
+                  "trigger": "both",
+                  "orientation": 'vertical'
+              },
+              "hAxis": {
+                  "format": 'd MMMM Y'
+              }
+          };
+          var LchartData = [];
+
+          for (j = 0; j < nbrRef; j++) {
+              LchartData.push([["temps", "Nombre de Commandes"]]);
+              for (i = 0; i < LLdate[j].length; i++) {
+                  LchartData[j].push([new Date(LLdate[j][i][0]), LLdate[j][i][1]]);
+              }
+              var dataTable = google.visualization.arrayToDataTable(LchartData[j]);
+              formatter.format(dataTable, 0);
+              var chart = new google.visualization.AreaChart(document.getElementById('curve_chart' + j.toString()));
+              chart.draw(dataTable, options);
+          }
+      }
+      function attente() {
+          var element = document.getElementById("html");
+          element.className = "attente";
+      }
+    </script>
+  </body>
+</html>

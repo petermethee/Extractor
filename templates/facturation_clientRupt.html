@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+		<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="ongletActif" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" type="button" onclick="attente()" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+	<div align="center" class="topnav">
+		<a href="/choixLot/{{user}}" onclick="attente()">Sélectionner un lot</a>
+		<a href="/facturation/{{user}}" onclick="attente()">Fiche synthèse pour facturation</a>
+		<a href="/recap/{{user}}" onclick="attente()">Récap des états</a>
+		<a class="active" href="/clientRupt/{{user}}" onclick="attente()">Client à contacter</a>
+	</div>
+
+	<div class="center">
+		<form action="/clientRupt/{{user}}" method="POST" style="display: inline;">
+			<button onclick="attente()" {%if ref==None %} class="AllRefSel" {%else%} class="AllRef"
+				{%endif%}>{{listeAll[0]['prenom']}}</button>
+		</form>
+		{% for liste in listeRef %}
+		<form action="/clientRupt/{{user}}" method="POST" style="display: inline;">
+			<input type="hidden" name="ref" id="ref" value="{{liste['id']}}">
+			<button onclick="attente()" value="{{liste['id']}}" {% if ref==liste['id'] %} class="Ref2Sel" {% else %}
+				class="Ref2" {%endif%}>{{liste['prenom']}}</button>
+		</form>
+		{% endfor %}
+	</div>
+
+	<br>
+	<p class="container">Ici figurent les clients qui ont commandés des produits en rupture. Il faut les contacter afin
+		de leur proposer une alternative, puis cocher la case "Fait" quand c'est fait.</p>
+	<table align="center" class="tab1">
+		<th class="thPetit toutselect"><input type="checkbox" onclick="selectAll(this.id)" id="all">Tout</input></th>
+		<th class="thRecap thP">ID</th>
+		<th class="thRecap thP">CE</th>
+		<th class="thRecap thMoy1">Nom CE</th>
+		<th class="thRecap thP">Lot</th>
+		<th class="thRecap">Produits</th>
+		<th class="thRecap thG">Client</th>
+		<th class="thRecap thMoy1">Tel</th>
+		<th class="thRecap thG">Mail</th>
+		<th class="thRecap thPetit">Date de Réception</th>
+		{%for i in range(Lclient|length)%}
+		<tr class="trRec">
+			<td class="tdButton"><input type="checkbox" value="{{Lclient[i]['id_commande']}}" name="check"
+					id="{{Lclient[i]['id_commande']}}" onchange="modifRupt(this.id)"></td>
+			<td>
+				<button class="linkDetails" type="button" onclick="detailsCmd(this.id)"
+					id="{{Lclient[i]['id_commande']}}"
+					value="{{Lclient[i]['id_commande']}}"><span>{{Lclient[i]["id_commande"]}}</span></button>
+			</td>
+			<td>{{Lclient[i]["idCE"]}}</td>
+			<td>{{Lclient[i]["entreprise"]}}</td>
+			<td>{{Lclient[i]["lot"]}}</td>
+			<td>
+				<table align="center" class="soustab">
+					<th class="thMin">Code</th>
+					<th>Libellé</th>
+					<th class="thMin">Quantité</th>
+					<th class="thMin">Prix</th>
+					{%for prod in Lprod[i]%}
+					<tr>
+						<td>{{prod["code"]}}</td>
+						<td>{{prod["libW"]}}</td>
+						<td>{{prod["qte"]}}</td>
+						<td>{{prod["prix"]}}</td>
+					</tr>
+					{%endfor%}
+				</table>
+			</td>
+			<td>{{Lclient[i]["client"]}}</td>
+			<td>{{Lclient[i]["tel"]}}</td>
+			<td>{{Lclient[i]["mail"]}}</td>
+			<td>{{Lclient[i]["date"]}}</td>
+		</tr>
+		{%endfor%}
+	</table>
+	<br>
+	<form action="/detailsCmd/{{user}}" method="POST" id="form">
+		<input type="hidden" value="clientRupt" name="previousPage">
+	</form>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script>
+		function detailsCmd(t) {
+			$('#form').append(`<input type="hidden" name="idCmd" value="${t}">`);
+			$('#form').submit();
+		}
+		function modifRupt(t) {
+			var checkbox = document.getElementById(t);
+			var check = null;
+			if (checkbox.checked) {
+				check = 1;
+			}
+			req = jQuery.ajax({
+				url: '/modifClientRupt',
+				type: 'POST',
+				data: { idCmd: t, check: check }
+			});
+		}
+		function selectAll(t) {
+			var all = document.getElementById(t);
+			var items = document.getElementsByName("check")
+
+			if (all.checked) {
+				for (var i = 0; i < items.length; i++) {
+					items[i].checked = true;
+					modifRupt(items[i].value)
+				}
+			}
+			else {
+				for (var i = 0; i < items.length; i++) {
+					items[i].checked = false;
+				}
+			}
+
+		}
+		function attente() {
+			var element = document.getElementById("html");
+			element.className = "attente";
+		}
+	</script>
+</body>
+
+</html>

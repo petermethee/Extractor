@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{url_for("static", filename="mycss8.css")}}'>
+<link rel='stylesheet' type='text/css' href='G:/CEPROG/bdd/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+<body>
+    <!-- Menu à gauche -->
+    <div class="ensemble">
+        <div class="menu">
+            
+            <form action="/{{previousPage}}/{{user}}">
+                <button class="retourBt" onclick="attente()">Retour</button>
+            </form>
+
+            <div class="titrerefDataG">Informations</div>
+            <table align="center" class="tabrefData">
+                <tr class="trRefData">
+                    <td class="tdRefData">ID</td>
+                    <td class="tdRefData">{{client[0]['id_commande']}}</td>
+                </tr>
+                <tr class="trRefData">
+                    <td class="tdRefData">Lot</td>
+                    <td class="tdRefData">{{client[0]['lot']}}</td>
+                </tr>
+                <tr class="trRefData">
+                    <td class="tdRefData">Etat</td>
+                    {%if client[0]['etatCmd']==0 %}
+                    <td class="tdSuivi">
+                        <div class="Prep">Préparation</div>
+                    </td>
+                    {%elif client[0]['etatCmd']==1 %}
+                    <td class="tdSuivi">
+                        <div class="Fact">Facturation</div>
+                    </td>
+                    {%elif client[0]['etatCmd']==2 %}
+                    <td class="tdSuivi">
+                        <div class="Facture">Facturé</div>
+                    </td>
+                    {%elif client[0]['etatCmd']==3 %}
+                    <td class="tdSuivi">
+                        <div class="Livre">Livré</div>
+                    </td>
+                    {%else%}
+                    <td class="tdSuivi">
+                        <div class="AnnulerSuivi">Annulé</div>
+                    </td>
+                    {%endif%}
+                </tr>
+                {%for i in range(Luser|length)%}
+                    {%if Luser[i]!='null' %}
+                        <tr class="trRefData">
+                            <td class="tdRefData">{{Ltitle[i]}}</td>
+                            <td class="tdRefData">{{Luser[i]}}</td>
+                        </tr>
+                    {%endif%}
+                {%endfor%}
+            </table>
+
+            <div class="titrerefDataG">Dates</div>
+            <table align="center" class="tabrefData">
+                <tr class="trRefData">
+                    <td class="tdRefData">Réception</td>
+                    <td class="tdRefData">{{client[0]['date']}}</td>
+                </tr>
+                <tr class="trRefData">
+                    <td class="tdRefData">Lot</td>
+                    <td class="tdRefData">{{client[0]['dateLot']}}</td>
+                </tr>
+                <tr class="trRefData">
+                    <td class="tdRefData">Facturation</td>
+                    <td class="tdRefData">{{client[0]['dateFact']}}</td>
+                </tr>
+                <tr class="trRefData">
+                    <td class="tdRefData">Livraison</td>
+                    <td class="tdRefData">{{client[0]['dateLivraison']}}</td>
+                </tr>
+            </table>
+
+
+            <form action="/actionFromDetails/{{user}}" method="POST" id="form" enctype="multipart/form-data">
+                 <input type="hidden" name="idCmd" value="{{client[0]['id_commande']}}">
+                <button class="Btmenu_beige" value=0 name="action" onclick="pdf()">Voir PDF</button>
+                <button class="Btmenu_jaune" value=1 name="action" onclick="attente();">Exporter Colissimo</button>
+                <button class="Btmenu_vert" value=2 name="action" onclick="enregistrer()">Enregistrer</button>
+                <!-- {%if nomPDF!=[]%}
+                <button class="Btmenu" value=3 name="action">Télécharger les factures</button>
+                {%endif%} -->
+                <button class="Btmenu_violet" value=4 name="action" onclick="attente();duplication()">Dupliquer</button>
+                <button class="Btmenu_bleu" value=5 name="action" onclick="attente();">Infos CE</button>
+
+                <!-- BOUCLE DE TOUS LES TYPES DE PAIEMENTS -->
+                {%for paiement in typePaiement%}
+                    {%if paiement[1]!=[]%}
+                    <div class="titrerefDataG">{{paiement[0]}}</div>
+                        {%for p in paiement[1]%}
+                            {%if p['lastOne']==1%}
+                                <div class="titrerefData">Demande n° {{p['idPaiement']}} - {{p['montant']}} € </div>
+                            {%endif%}
+                            <input name="idPaiement{{paiement[2]}}" style="display: none;" value="{{p['idPaiement']}}">
+                            <input name="idMontant{{paiement[2]}}" style="display: none;" value="{{p['montant']}}">
+                            <input name="idRelance{{paiement[2]}}"style="display: none;" value="{{p['relance']}}">
+                            <input name="idUnique{{paiement[2]}}" style="display: none;" value="{{p['idUnique']}}">
+                            <table align="center" class="tabrefData">
+                                <tr class="trRefData">
+                                    <td class="tdRefData">Date</td>
+                                    <td class="tdRefData">{{p['date']}}</td>
+                                </tr>
+                                <tr class="trRefData">
+                                    <td class="tdRefData">Heure</td>
+                                    <td class="tdRefData">{{p['heure']}}</td>
+                                </tr>
+                                <tr class="trRefData">
+                                    <td class="tdRefData">N° de la relance</td>
+                                    <td class="tdRefData" name="idRelanceLien">{{p['relance']}}</td>
+                                </tr>
+                                {%if p['etat']==0 %}
+                                <tr class="trRefData">
+                                    <td class="tdRefData">Etat</td>
+                                    <td class="tdRefData">
+                                        <div class="impaye" align="center">Impayé</div>
+                                    </td>
+                                </tr>
+                                {%elif p['etat']==1 %}
+                                <tr class="trRefData">
+                                    <td class="tdRefData">Etat</td>
+                                    <td class="tdRefData">
+                                        <div class="paye" align="center">Payé</div>
+                                    </td>
+                                </tr>
+                                {%elif p['etat']==2 %}
+                                <tr class="trRefData">
+                                    <td class="tdRefData">Etat</td>
+                                    <td class="tdRefData">
+                                        <div class="annule" align="center">Annulé</div>
+                                    </td>
+                                </tr>
+                                {%endif%}
+                                {%if (p['lastOne']==1) and (p['etat']==0) %}
+                                <tr>
+                                    <td>
+                                        <button class="lienBtAnnule" id="{{paiement[2]['idUnique']}}-{{paiement[2]}}" value="annule{{paiement[2]}}"
+                                            name="action" onclick="clickAnnule(this);attente()">
+                                            Annuler
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button class="lienBtRelance" id="{{paiement[2]['idUnique']}}-{{paiement[2]}}" value="relance{{paiement[2]}}"
+                                            name="action" onclick="clickRelance(this);attente()">
+                                            Relancer
+                                        </button>
+                                    </td>
+                                </tr>
+                                {%endif%}
+                            </table>
+
+                        {%endfor%}
+                    {%endif%}
+                {%endfor%}
+
+                {%if nomPDF!=[]%}
+                    <div class="titrerefDataG">{{qte}} facture(s)</div>
+                    <input type="hidden" name="idCmd" value="{{client[0]['id_commande']}}"><button class="btn-download" name="action" value="3"><i class="fa fa-download"></i></button>
+                    <table align="center" class="tabrefData">
+                    {%for nom in nomPDF%}
+                        <tr class="trRefData">
+                            <td class="tdRefData">
+                                {{nom}}
+                            </td>
+                        </tr>
+                    {%endfor%}
+                    </table>
+                {%endif%}
+                <!-- Lien CB OLD -->
+                <!-- <div class="titrerefDataG">Lien CB</div>
+                {%if paiementLien==[]%}
+                <table align="center" class="tabrefData">
+                    <tr class="trRefData">
+                        <td class="tdRefData">Aucun</td>
+                    </tr>
+                </table>
+                {%else%}
+                {%for p in paiementLien%}
+                {%if p['lastOne']==1%}
+                <div class="titrerefData">Demande n° {{p['idPaiement']}} - {{p['montant']}} € </div>
+                {%endif%}
+                <input name="idPaiementLien" style="display: none;" value="{{p['idPaiement']}}">
+                <input name="idMontantLien" style="display: none;" value="{{p['montant']}}">
+                <input name="idRelanceLien" style="display: none;" value="{{p['relance']}}">
+                <table align="center" class="tabrefData">
+                    <tr class="trRefData">
+                        <td class="tdRefData">Date</td>
+                        <td class="tdRefData">{{p['date']}}</td>
+                    </tr>
+                    <tr class="trRefData">
+                        <td class="tdRefData">Heure</td>
+                        <td class="tdRefData">{{p['heure']}}</td>
+                    </tr>
+                    <tr class="trRefData">
+                        <td class="tdRefData">N° de la relance</td>
+                        <td class="tdRefData" name="idRelanceLien">{{p['relance']}}</td>
+                    </tr>
+                    {%if p['etat']==0 %}
+                    <tr class="trRefData">
+                        <td class="tdRefData">Etat</td>
+                        <td class="tdRefData">
+                            <div class="impaye" align="center">Impayé</div>
+                        </td>
+                    </tr>
+                    {%elif p['etat']==1 %}
+                    <tr class="trRefData">
+                        <td class="tdRefData">Etat</td>
+                        <td class="tdRefData">
+                            <div class="paye" align="center">Payé</div>
+                        </td>
+                    </tr>
+                    {%elif p['etat']==2 %}
+                    <tr class="trRefData">
+                        <td class="tdRefData">Etat</td>
+                        <td class="tdRefData">
+                            <div class="annule" align="center">Annulé</div>
+                        </td>
+                    </tr>
+                    {%endif%}
+                    {%if (p['lastOne']==1) and (p['etat']==0) %}
+                    <tr>
+                        <td>
+                            <button class="lienBtAnnule" id="{{idDetailCmd}}-lien" value="annuleLien"
+                                name="action" onclick="clickAnnule(this);attente()">
+                                Annuler
+                            </button>
+                        </td>
+                        <td>
+                            <button class="lienBtRelance" id="{{idDetailCmd}}-lien" value="relanceLien"
+                                name="action" onclick="clickRelance(this);attente()">
+                                Relancer
+                            </button>
+                        </td>
+                    </tr>
+                    {%endif%}
+                </table>
+
+                {%endfor%}
+                {%endif%}
+                 -->
+                
+        </div>
+
+        <div class="contenu">
+            {%if  client[0]['etatCmd']==99 %}
+                <h1 class="titreDetailAnnule">Commande annulée</h1>
+                    <table align="center" class="tabinfoClient">
+                        <th class="thMoy1"></th>
+                            <tr class="trinfoClient">
+                                <td class="tdinfoClient2">Justification</td>
+                                <td class="tdinfoClient">{{client[0]['justification']}}</td>
+                        </tr>
+                </table>
+            {%endif%}
+            <h1 class="titreDetail">Détails de la commande</h1>
+            <p class="SousTitreDetails">Informations clients</p>
+            <table align="center" class="tabinfoClient">
+                <th class="thPetit"></th>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient2">N°CE</td>
+                    <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
+                            value="{{client[0]['idCE']}}" name="idCE"></td>
+                </tr>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient2">Societe</td>
+                    <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
+                            value="{{client[0]['societe']}}" name="societe"></td>
+                </tr>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient2">Nom</td>
+                    <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
+                            value="{{client[0]['client']}}" name="client"></td>
+                </tr>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient2">Mail</td>
+                    <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
+                            value="{{client[0]['mail']}}" name="mail"></td>
+                </tr>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient2">Tel</td>
+                    <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
+                            value="{{client[0]['tel']}}" name="tel"></td>
+                </tr>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient2">Adresse</td>
+                    <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
+                            value="{{client[0]['adresse']}}" name="adresse"></td>
+                </tr>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient2">Remarque</td>
+                    <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
+                            value="{{client[0]['commentaire']}}" name="commentaire"></td>
+                </tr>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient2">TOTAL</td>
+                    <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
+                            value="{{client[0]['total']}}" name="total"></td>
+                </tr>
+            </table>
+
+            <p class="SousTitreDetails">Produits commandés</p>
+
+            <table align="center" class="tabCmd">
+                <th class="thButton thMini"></th>
+                <th class="thCmd thMin">Code</th>
+                <th class="thCmd thG">Libellé</th>
+                <th class="thCmd thMini">Prix</th>
+                <th class="thCmd thMin">Quantité</th>
+                <th class="thCmd thMin">Atomiseur</th>
+                <th class="thCmd thMin">Etat</th>
+
+                {%for cmd in Lcmd%}
+                {%if cmd['etatMax']== 0%}
+                <tr class="trinputProd" id="{{cmd['idProd']}}">
+                    <input type="hidden" value="{{cmd['idProd']}}" name="idProd">
+                    <input type="hidden" id="ean_{{cmd['idProd']}}" value="{{cmd['ean']}}" name="ean">
+                    <input type="hidden" id="libW_{{cmd['idProd']}}" value="{{cmd['libW']}}" name="libW">
+                    <td class="tdButton"><button type="button" id="{{cmd['idProd']}}" onclick="annuler(this)"
+                            name="{{cmd['code']}};{{cmd['lib']}};{{cmd['prix']}};{{cmd['qte']}};{{cmd['ato']}}"
+                            class="suprCircle">X</button></td>
+                    <td><input type="text" id="code_{{cmd['idProd']}}" class="input" value="{{cmd['code']}}"
+                            onchange="checkCode(this.id)" name="code"></td>
+                    <td><input type="text" class="input" value="{{cmd['lib']}}" name="lib"></td>
+                    <td><input type="number" class="input" step="0.01" value="{{cmd['prix']}}" name="prix"></td>
+                    <td><input type="number" min="0" max="30" class="input" value="{{cmd['qte']}}" name="qte" id="{{cmd['idProd']}}" onchange="verifQte(this)"></td>
+                    <td>
+                        {%if cmd['ato']=="oui" %}
+                        <input checked type="checkbox" name="ato" value="{{cmd['idProd']}}">
+                        {%else%}
+                        <input type="checkbox" name="ato">
+                        {%endif%}
+                    </td>
+
+                    {%else%}
+                <tr class="trinputProd">
+                    <td class="thBlanc"></td>
+                    <td>{{cmd['code']}}</td>
+                    <td>{{cmd['lib']}}</td>
+                    <td>{{cmd['prix']}}</td>
+                    <td>{{cmd['qte']}}</td>
+                    <td>{{cmd['ato']}}</td>
+
+                    {%endif%}
+                    <td>
+                        <table class="soustab">
+                            {%set Letat= cmd['etatProd'].split(";")%}
+                            {%for etat in Letat%}
+                            <tr>
+                                {%if etat=='1' %}
+                                <td class="Rel">Reliquat</td>
+                                {% elif etat=='2' %}
+                                <td class="Facture">Facturé</td>
+                                {%elif etat=='3' %}
+                                <td class="Rupt">Rupture</td>
+                                {%elif etat=='5' %}
+                                <td class="Livre">Livré</td>
+                                {%elif etat!='4' %}
+                                <td class="Prep">Préparation</td>
+                                {%endif%}
+                            </tr>
+                            {%endfor%}
+                        </table>
+                    </td>
+                </tr>
+                {%endfor%}
+            </table>
+
+            <table align="center" class="tabinfoClient" id="addTab">
+                <th class="thMini"></th>
+                <th class="thCmdAnnul thMin"></th>
+                <th class="thCmdAnnul thG"></th>
+                <th class="thCmdAnnul thMini"></th>
+                <th class="thCmdAnnul thMin"></th>
+                <th class="thCmdAnnul thMin"></th>
+                <th class="thCmdAnnul thMin"></th>
+                <tbody id="bodyAdd">
+                </tbody>
+            </table>
+
+            <table align="center" class="tabinfoClient">
+                <th class="thMini"></th>
+                <th class="thCmdAnnul thMin"></th>
+                <th class="thCmdAnnul thG"></th>
+                <th class="thCmdAnnul thMini"></th>
+                <th class="thCmdAnnul thMin"></th>
+                <th class="thCmdAnnul thMin"></th>
+                <th class="thCmdAnnul thMin"></th>
+
+                <tbody id="bodyAnnule">
+                    {%for cmd in LcmdAnnule%}
+                    <tr class="trAnnule">
+                        <td class="thBlanc thMini"></td>
+                        <td class="thMin">{{cmd['code']}}</td>
+                        <td class="thG">{{cmd['lib']}}</td>
+                        <td class="thMini">{{cmd['prix']}}</td>
+                        <td class="thMin">{{cmd['qte']}}</td>
+                        <td class="thMin">{{cmd['ato']}}</td>
+                        <td class="thMin">Annulé</td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+
+            {%if 2>client[0]['etatCmd']%}
+            <div class="containAddCE">
+                <table align="center" class="tabCE">
+                    <tr class="trAjout">
+                        <td><input type="text" class="inputadd" list="Lcode" maxlength="8" id="code"
+                                placeholder="Code Produit"></td>
+
+                        <datalist id="Lcode">
+                            {%for code in Lcode%}
+                            <option value="{{code}}">
+                                {%endfor%}
+                        </datalist>
+
+                        <td><input type="number" min="0" max="30" class="inputadd" id="qte" placeholder="Quantité désirée"></td>
+                        <td>Atomiseur si rupture :<input type="checkbox" id="ato"></td>
+                        <td><button type="button" onclick="onAddProd()" class="generateBt">AJOUTER</button></td>
+                    </tr>
+                </table>
+            </div>
+            {%endif%}
+
+            {%if 0<client[0]['etatCmd']<99 %} 
+            <p class="SousTitreDetails">Nouvelle demande de Paiement</p>
+
+            <table align="center">
+                <th><input type="hidden" name="idCommande" value="{{idDetailCmd}}"></th>
+                <th class="thMoy2"></th>
+                <th class="thMoy2"></th>
+                <th class="thMoy2"></th>
+                <th class="thMoy2"></th>
+                <th class="thMoy2"></th>
+                <tr >
+				<td class="tdLienBlack">Montant facturé</td>
+				<td><button class="btLien" id="{{idDetailCmd}}-Lien" value="lien" name="action"
+						onclick="clickPaiement(this)">Lien</button></td>
+				<td><button class="btRIB" id="{{idDetailCmd}}-Rib" value="rib" name="action"
+						onclick="clickPaiement(this)">RIB</button></td>
+				<td><button class="btEspece" id="{{idDetailCmd}}-Espece" value="espece" name="action"
+						onclick="clickPaiement(this)">Espèces</button></td>
+				<td><button class="btChequeR" id="{{idDetailCmd}}-ChequeR" value="chequeR" name="action"
+						onclick="clickPaiement(this)">Chq reçu</button></td>
+				<td><button class="btChequeAV" id="{{idDetailCmd}}-ChequeAV" value="chequeAV" name="action"
+						onclick="clickPaiement(this)">Chq avant envoi</button></td>
+				<td><button class="btChequeAP" id="{{idDetailCmd}}-ChequeAP" value="chequeAP" name="action"
+						onclick="clickPaiement(this)">Chq après réception</button></td>
+				<td><button class="btAutre" id="{{idDetailCmd}}-Autre" value="autre" name="action"
+						onclick="clickPaiement(this)">Autre</button></td>
+			</tr>
+			<tr>
+				<td><input type="number" min="0" placeholder="Montant" step="0.01" id="{{idDetailCmd}}-montant" name="montant" style="cursor:pointer"></td>
+				<td>
+					<div id="{{idDetailCmd}}-Lien" class="tdLien" style="display: none;">Envoyé</div>
+				</td>
+				<td align="center">
+					<div id="{{idDetailCmd}}-Rib" style="display: none;">Envoyé</div>
+				</td>
+				<td>
+					<div id="{{idDetailCmd}}-Espece" style="display: none;">Envoyé</div>
+				</td>
+				<td>
+					<div id="{{idDetailCmd}}-ChequeR" style="display: none;">Envoyé</div>
+				</td>
+                <td>
+					<div id="{{idDetailCmd}}-ChequeAV" style="display: none;">Envoyé</div>
+				</td>
+                <td>
+					<div id="{{idDetailCmd}}-ChequeAP" style="display: none;">Envoyé</div>
+				</td>
+				<td>
+					<div id="{{idDetailCmd}}-Autre" style="display: none;">Envoyé</div>
+				</td>
+			</tr>	
+		</table>
+        <!-- <p class="SousTitreDetails">Factures à envoyer</p>
+        <table>
+            <th class="thGGG"></th>
+            <th class="thGGG"></th>
+            <th class="thMoy1"></th>
+            <th class="thMoy1"></th>
+            <tr>
+            <td></td>
+            <td>
+                <div align="center" class="selFich thGGG">
+			        <input type="file" name="file" multiple class="test">
+                </div>
+            </td>
+            <td></td>
+            <td>
+                <button class="validBt" id="{{idDetailCmd}}" value="factures" name="action" onclick="clickFactures(this)">Envoyer factures</button>
+            </td>
+	</tr>
+        </table> -->
+        
+        
+                {%endif%}
+
+                <br>
+        </div>
+        </form>
+    </div>
+</body>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+    const bodyAdd = document.getElementById("bodyAdd");
+    const bodyAnnule = document.getElementById("bodyAnnule");
+    const tableEl = document.getElementById("addTab");
+    var i = 0;
+    var bool = true;
+    let liste =[];
+
+    function checkCode(t) {
+        const id = t.split("_")[1];
+        const Icode = document.getElementById(t);
+        const code = Icode.value;
+        const Iean = document.getElementById(`ean_${id}`);
+        const IlibW = document.getElementById(`libW_${id}`);
+        req = jQuery.ajax({
+            url: '/addProd',
+            type: 'POST',
+            data: { code: code }
+        });
+        req.done(function (data) {
+            if (data.errone == 1) {
+                alert("Code produit incorrect");
+                Icode.value = "";
+            }
+            else {
+                Iean.value = data.ean;
+                IlibW.value = data.lib;
+            }
+        });
+    }
+
+    function onAddProd() {
+        var code = document.getElementById("code").value;
+        var qte = document.getElementById("qte").value;
+        var checkbox = document.getElementById("ato");
+        if (checkbox.checked) {
+            var ato = "oui";
+        }
+        else {
+            var ato = "non";
+        }
+        if (qte == "" || code == "") {
+            alert("Vous avez oublié quelque chose")
+        }
+        else {
+            if(0>qte || qte>30){
+                alert("La quantité ajouté doit être comprise entre 0 et 30 !")
+            }
+            else{
+                req = jQuery.ajax({
+                    url: '/addProd',
+                    type: 'POST',
+                    data: { code: code }
+                });
+    
+
+                req.done(function (data) {
+                    if (data.errone == 1) {
+                        alert("Code produit incorrect")
+                    }
+                    else if (data.errone == -1) {
+                        alert("Ce produit est en rupture jusqu'au : " + data.date);
+                    }
+                    else {
+                        $('#form').append(`<input id="n${i}" type="hidden" name="idProd" value="n${i}">`);
+                        $('#form').append(`<input id="n${i}" type="hidden" name="code" value="${code}">`);
+                        $('#form').append(`<input id="n${i}" type="hidden" name="ean" value="${data.ean}">`);
+                        $('#form').append(`<input id="n${i}" type="hidden" name="libW" value="${data.lib}">`);
+                        $('#form').append(`<input id="n${i}" type="hidden" name="lib" value="${data.lib}">`);
+                        $('#form').append(`<input id="n${i}" type="hidden" name="prix" value="${data.prix}">`);
+                        $('#form').append(`<input id="n${i}" type="hidden" name="qte" value="${qte}">`);
+                        if (ato == "oui") {
+                            $('#form').append(`<input id="n${i}" type="hidden" name="ato" value="n${i}">`);
+                        }
+                        bodyAdd.innerHTML += `
+                        <tr class="trinputProd" id="n${i}">
+                            <td class="tdButton"><button  type="button" class="suprCircle" id="n${i}">X</button></td>
+                            <td>${code}</td>
+                            <td>${data.lib}</td>
+                            <td>${data.prix}</td>
+                            <td>${qte}</td>
+                            <td>${ato}</td>
+                            <td>Préparation</td>
+                        </tr>`;
+                        i += 1;
+                        document.getElementById("code").value = "";
+                        document.getElementById("qte").value = "";
+                        document.getElementById("ato").checked = false;
+                        
+                    }
+                    
+                });
+            }
+        }
+    }
+    
+    function annuler(t) {
+        const id = t.id;
+        const info = t.name;
+        L = info.split(";");
+
+        req = jQuery.ajax({
+            url: '/annuler',
+            type: 'POST',
+            data: { id: id }
+        });
+        $(`[id=${id}]`).children('td')
+            .animate({ padding: 0 })
+            .wrapInner('<div />')
+            .children()
+            .slideUp(function () { $(this).closest('tr').remove(); });
+        bodyAnnule.innerHTML += `
+            <tr class="trAnnule">
+            <td class="tdButton"></td>
+            <td>${L[0]}</td>
+            <td>${L[1]}</td>
+            <td>${L[2]}</td>
+            <td>${L[3]}</td>
+            <td>${L[4]}</td>
+            <td>Annulé</td>
+        </tr>
+            `
+    }
+
+    function verifQte(t){
+        const value = t.value;
+        const id = t.id;
+        if (value>30){
+            alert("Attention quantité supérieure à 30 !!!");
+            if (liste.includes(id)){
+            }
+            else{
+                liste.push(id);
+            }
+        }
+        else{
+            if (liste.includes(id)){
+                var index=liste.indexOf(id);
+                liste.splice(index,1);
+            }
+        }
+    }
+
+    function onDeleteRow(e) {
+        e.preventDefault();
+        if (!e.target.classList.contains("suprCircle")) {
+            return;
+        }
+        const btn = e.target;
+        const name = e.target.id;
+        $(`[id=${name}]`).remove();
+    }
+
+    tableEl.addEventListener("click", onDeleteRow);
+    
+    function clickFactures(){
+        alert("Facture(s) envoyée(s) !")
+    }
+    function clickPaiement(t) {
+        var type = t.id.split("-")[1];
+        var montant = document.getElementById(t.id.split("-")[0] + "-montant").value;
+        var x = document.getElementById(t.id + "Texte");
+        if (montant == "" || montant == "0") {
+            alert("Montant non renseigné");
+        }
+        else {
+            if (type == "Lien") {
+                alert("Lien CB envoyé");
+            }
+            else if (type == "Espece") {
+                alert("Demande de paiement par espèce envoyée");
+            }
+            else if (type == "ChequeR") {
+                alert("Demande de paiement par chèque (le chèque a déjà été reçu)");
+            }
+            else if (type == "ChequeAV") {
+                alert("Demande de paiement par chèque envoyée (le chèque est attendu avant l'expedition)");
+            }
+            else if (type == "ChequeAP") {
+                alert("Demande de paiement par chèque envoyée (le chèque sera recu apres l'expédition)");
+            }
+            else if (type == "Autre") {
+                alert("Autre demande de paiement envoyée");
+            }
+            else {
+                alert("RIB envoyé");
+            }
+        }
+    }
+
+    function clickRelance(t) {
+        var type = t.id.split("-")[1];
+        if (type == "Lien") {
+            alert("Relance du lien CB envoyée");
+        }
+        else if (type == "Espece") {
+            alert("Relance du paiement par espèce envoyée");
+        }
+        else if (type == "ChequeR") {
+            alert("Relance du paiement par chèque envoyée");
+        }
+        else if (type == "ChequeAV") {
+            alert("Relance du paiement par chèque envoyée");
+        }
+        else if (type == "ChequeAP") {
+            alert("Relance du paiement par chèque envoyée");
+        }
+        else if (type == "Autre") {
+            alert("Autre relance du paiement envoyée");
+        }
+        else {
+            alert("Relance du paiement par RIB envoyée");
+        }
+    }
+
+    function clickAnnule(t) {
+        var type = t.id.split("-")[1];
+        if (type == "Lien") {
+            alert("Lien CB annulé");
+        }
+        else if (type == "Espece") {
+            alert("Demande de paiement par espèce annulée");
+        }
+        else if (type == "ChequeR") {
+            alert("Demande de paiement par chèque annulée");
+        }
+        else if (type == "ChequeAV") {
+            alert("Demande de paiement par chèque annulée");
+        }
+        else if (type == "ChequeAP") {
+            alert("Demande de paiement par chèque annulée");
+        }
+        else if (type == "Autre") {
+            alert("Autre demande annulée");
+        }
+        else {
+            alert("Demande de paiement par RIB annulée");
+        }
+    }
+    
+    function attente() {
+        var element = document.getElementById("html");
+        element.className = "attente";
+    }
+    
+    function pdf() {
+        alert("Le PDF apparaîtra à condition qu'il existe");
+    }
+    
+    function enregistrer() {
+        if (liste.length==0){
+        alert("Modification(s) enregistrée(s) !");}
+        else{
+            alert("Impossible d'enregistrer car il y a des quantités supérieures à 30 !!");
+        }
+    }
+    
+    function duplication() {
+        alert("Succès de la duplication");
+    }
+</script>
+
+
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="darkworld.css") }}'>
+
+<body>
+	<div class="topOnglets">
+		<a class="ongletActif" href="/utilisateurs" onclick="attente()">Utilisateurs</a>
+		<a class="onglet" href="/corbeille" onclick="attente()">Corbeille</a>
+		<a class="onglet" href="/export_de_donnees" onclick="attente()">Export de Données</a>
+		<a class="onglet" href="/stat" onclick="attente()">Statistiques</a>
+		<a class="onglet" href="/clients" onclick="attente()">Clients</a>
+		<a class="onglet" href="/logout" onclick="attente()">
+			<button class="invisible" type="button" onclick="attente()" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+
+	<div align="center" class="topnav">
+		<a href="/utilisateurs" onclick="attente()">Sessions</a>
+		<a class="active" href="/postes" onclick="attente()">Postes PC</a>
+	</div>
+
+	<br>
+	<div align="center" class="topnav">
+		<form action="/postes" method="POST">
+			<button name="action" value="ajouter" type="button" onclick="add()" class="ajoutBtInfo">AJOUTER</button>
+		</form>
+		<div style="margin-bottom: 30px;margin-top: 30px;">ATTENTION : Pour que cela fonctionne correctement, il faut
+			remplacer les / (slash) par des \ (anti-slash).</div>
+
+		<table class="tab">
+			<th></th>
+			<th class="thMoy1">N° PC</th>
+			<th class="thGGG">Dossier Extraction</th>
+			<th class="thGGG">Dossier Erreur</th>
+			<th></th>
+
+			{% for pc in Lpc %}
+			<tr>
+				<td class="tdUser"><button type="button" id="{{pc['id']}}" onclick="supprimer(this)"
+						class="retourBtInfo">x</button></td>
+				<td class="tdUser"><input id="numPC{{pc['id']}}" name="numPC-{{pc['id']}}" value="{{pc['numPC']}}"
+						class="inputUser" /></td>
+				<td class="tdUser"><input id="dossierExtract{{pc['id']}}" name="dossierExtract-{{pc['id']}}"
+						value="{{pc['dossierExtract']}}" class="inputUser" /></td>
+				<td class="tdUser"><input id="dossierErreur{{pc['id']}}" name="dossierErreur-{{pc['id']}}"
+						value="{{pc['dossierErreur']}}" class="inputUser" /></td>
+				<td><button id="{{pc['id']}}" onclick="update(this)" class="selectBtInfo">Valider</button></td>
+			</tr>
+			{%endfor%}
+		</table>
+
+</html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+
+	function update(t) {
+		alert("Changement(s) pris en compte");
+		var id = t.id;
+		var numPC = document.getElementById(`numPC${id}`).value;
+		var dossierExtract = document.getElementById(`dossierExtract${id}`).value;
+		var dossierErreur = document.getElementById(`dossierErreur${id}`).value;
+		req = jQuery.ajax({
+			url: '/modifPoste',
+			type: 'POST',
+			data: { id: id, numPC: numPC, dossierExtract: dossierExtract, dossierErreur: dossierErreur }
+		});
+		$(`[id=${id}]`).fadeOut(1000).fadeIn(1000);
+	}
+
+	function add() {
+		req = jQuery.ajax({
+			url: '/ajoutPoste',
+			type: 'POST'
+		});
+		window.location.reload()
+	}
+
+	function supprimer(t) {
+		var id = t.id;
+		req = jQuery.ajax({
+			url: '/supprPoste',
+			type: 'POST',
+			data: { id: id }
+		});
+		req.done(function (data) {
+			alert(data.message);
+		});
+	}
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>

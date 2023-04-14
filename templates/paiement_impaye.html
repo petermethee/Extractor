@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+    <div class="topOnglets">
+        <a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+        <a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+        <a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+        <a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+        <a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+        <a class="ongletActif" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+        <a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+        <a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+        <a class="onglet" href="/logout">
+            <button class="invisible" type="button" data-hover="Se Déconnecter" data-active="Se Déconnecter">
+                <span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+            </button>
+        </a>
+    </div>
+
+    <div align="center" class="topnav">
+        <a class="active" href="/paiements/{{user}}" onclick="attente()">Impayés</a>
+        <a href="/relanceGroupe/{{user}}" onclick="attente()">Paiements Groupés</a>
+        <a href="/paiementsPaye/{{user}}" onclick="attente()">Payés</a>
+
+    </div>
+    <br>
+    <div class="center">
+        <form action="/extractImpayes" method="POST">
+        <button class="generateBt" name="action" value="0" onclick="attente();extraction()">
+          Extraire les infos en Excel
+        </button>
+      </form>
+    </div>
+    <div class="glob">
+        <div class="center">
+            <form action="/paiements/{{user}}" method="POST" style="display: inline;">
+                <button onclick="attente()" {%if ref==None %} class="AllRefSel" {%else%} class="AllRef"
+                    {%endif%}>{{listeAll[0]['prenom']}}</button>
+            </form>
+            {% for liste in listeRef %}
+            <form action="/paiements/{{user}}" method="POST" style="display: inline;">
+                <input type="hidden" name="ref" id="ref" value="{{liste['id']}}">
+                <button onclick="attente()" value="{{liste['id']}}" {% if ref==liste['id'] %} class="Ref2Sel" {% else %}
+                    class="Ref2" {%endif%}>{{liste['prenom']}}</button>
+            </form>
+
+            {% endfor %}
+        </div>
+    </div>
+    <table align="center" class="tabSuivi">
+        <th class="thPetit relancerPaiement"></th>
+        <th class="thSuivi thSuiviPetit">Date</th>
+        <th class="thSuivi thSuiviPetit">Heure</th>
+        <th class="thSuivi thPetit">ID</th>
+        <th class="thSuivi thSuiviPetit">N°CE</th>
+        <th class="thSuivi thSuiviPetit">N° lot</th>
+        <th class="thSuivi">Client</th>
+        <th class="thSuivi thSuiviPetit">Type</th>
+        <th class="thSuivi thSuiviPetit">Montant</th>
+        <th class="thSuivi thSuiviPetit">Relance n°</th>
+        <th class="thPetit validerPaiement"></th>
+        <th class="thPetit validerPaiement"></th>
+        <tr>
+            <td>
+                <form action="/paiements/{{user}}" method="POST">
+                    <input type="hidden" name="filtre" id="filtre" value="filtre">
+
+                    <button onclick="attente()" class="filtre">Retirer les filtres</button>
+                </form>
+            </td>
+            <form action="/searchImpaye/{{user}}" method="POST" id="searchImpaye">
+                <td class="tdRechercheG">
+                    <table>
+                        <tr>
+                            <td class="tdDate">du : <input class="inputSuivi inputDate" type="date" name="dateMin"
+                                    value="{{dateMin}}" onchange="search()"></td>
+                        </tr>
+                        <tr>
+                            <td class="tdDate">au : <input class="inputSuivi inputDate" type="date" name="dateMax"
+                                    value="{{dateMax}}" onchange="search()">
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="tdRecherche"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNum" type="number" placeholder="ID" name="idCmd"
+                        value="{{idCmd}}" onchange="search()"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNum" type="number" placeholder="N° de CE"
+                        name="idCE" value="{{idCE}}" onchange="search()"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNom" type="text" placeholder="N° du lot"
+                        name="lot" value="{{lot}}" onchange="search()"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNom" type="text" placeholder="Nom Prénom"
+                        name="client" value="{{client}}" onchange="search()"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNom" type="text" placeholder="Type" name="type"
+                        value="{{type}}" onchange="search()">
+                    </td>
+                <td class="tdRechercheD"><input class="inputSuivi inputNom" type="number" placeholder="Montant"
+                        name="montant" value="{{montant}}" onchange="search()"></td>
+                </td>
+                <td class="tdRechercheD"></td>
+            </form>
+            {% for client in Lclients %}
+
+        <tr class="trSuivi"
+            id="TR-{{client['idCd']}}-{{client['idPaiement']}}-{{client['relance']}}-{{client['montant']}}-{{client['type']}}">
+
+            <input id="idPaiement" style="display: none;" value="{{client['idPaiement']}}">
+            <input id="idCmd" style="display: none;" value="{{client['idCd']}}">
+            <input id="idRelance" style="display: none;" value="{{client['relance']}}">
+            <input id="montant" style="display: none;" value="{{client['montant']}}">
+            <input id="type" style="display: none;" value="{{client['type']}}">
+            <td class="tdButton"><button onclick="relancer(this)" type='input' name='action' value='relancer'
+                    class="btRelance"
+                    id="{{client['idCd']}}-{{client['idPaiement']}}-{{client['relance']}}-{{client['montant']}}-{{client['type']}}">Relancer</button>
+            </td>
+            <td class="tdSuivi">{{client["date"]}}</td>
+            <td class="tdSuivi">{{client["heure"]}}</td>
+            <td class="tdSuivi">{{client["idCd"]}}</td>
+            <td class="tdSuivi">{{client["idCE"]}}</td>
+            <td class="tdSuivi">{{client["lot"]}}</td>
+            <td class="tdSuivi">{{client["client"]}}</td>
+            <td class="tdSuivi">
+            {%if client["type"]=='rib'%}
+                <div class="RIB">{{client["type"]}}</div>
+            {%elif client["type"]=='lien'%}
+                <div class="Lien">{{client["type"]}}</div>
+            {%elif client["type"]=='espece'%}
+                <div class="Espece">{{client["type"]}}</div>
+            {%elif client["type"]=='chequeR'%}
+                <div class="ChequeR">chèque reçu</div>
+            {%elif client["type"]=='chequeAV'%}
+                <div class="ChequeAV">chèque avant récep</div> 
+            {%elif client["type"]=='chequeAP'%}
+                <div class="ChequeAP">chèque après récep</div> 
+            {%else%}   
+                <div class="Autre">{{client["type"]}}</div>  
+            {%endif%}
+            </td>
+            <td class="tdSuivi">{{client["montant"]}}</td>
+            <td class="tdSuivi">{{client["relance"]}}</td>
+            <td class="tdButton"><button onclick="annuler(this)" type='input' name='action' value='annuler'
+                    class="btAnnule" name="{{client['idCd']}}-{{client['idPaiement']}}-{{client['relance']}}-{{client['montant']}}-{{client['type']}}"
+                    id="{{client['idCd']}}-{{client['idPaiement']}}-{{client['relance']}}-{{client['montant']}}-{{client['type']}}">Annuler</button>
+            </td>
+            <td class="tdButton"><button onclick="valider(this)" type='input' name='action' value='valider'
+                    class="btValide" name="{{client['idCd']}}-{{client['idPaiement']}}-{{client['relance']}}-{{client['montant']}}-{{client['type']}}"
+                    id="{{client['idCd']}}-{{client['idPaiement']}}-{{client['relance']}}-{{client['montant']}}-{{client['type']}}">Valider</button>
+            </td>
+        </tr>
+
+        {% endfor %}
+        <tbody id="bodyBottom"></tbody>
+    </table>
+    <br>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        const searchImpaye = document.getElementById("searchImpaye");
+        const bodyBottom = document.getElementById("bodyBottom");
+        function search() {
+            searchImpaye.submit();
+        }
+
+        function details(e, f) {
+            if (e.target.tagName != "BUTTON") {
+                const form = e.currentTarget.id;
+                document.getElementById(form).submit();
+            }
+        }
+        function extraction(){
+            alert("L'extraction se trouvera dans le dossier 'Extraction' nommé 'Impayés.csv'. Tous les impayés sont renseigner dans ce fichier.")
+        }
+        function relancer(t) {
+            const id = t.id;
+            var idTR="TR-"+id;
+            document.getElementById(idTR).remove();
+            req = jQuery.ajax({
+                url: '/relancePaiement',
+                type: 'POST',
+                data: { id: id }
+            });
+            req.done(function (data) {
+                bodyBottom.innerHTML += `
+            <tr class="trSuiviAjout">
+            <td class="tdButton"></td>
+            <td class="tdSuivi">${data.L[0]}</td>
+            <td class="tdSuivi">${data.L[1]}</td>
+            <td class="tdSuivi">${data.L[2]}</td>
+            <td class="tdSuivi">${data.L[3]}</td>
+            <td class="tdSuivi">${data.L[4]}</td>
+            <td class="tdSuivi">${data.L[5]}</td>
+            <td class="tdSuivi">${data.L[6]}</td>
+            <td class="tdSuivi">${data.L[7]}</td>
+            <td class="tdSuivi">${data.L[8]}</td>
+            </tr>`;
+            });
+            alert(data.message);
+        }
+
+        function valider(t) {
+            const id = t.id;
+            var idTR="TR-"+id;
+            document.getElementById(idTR).remove();
+            req = jQuery.ajax({
+                url: '/validePaiement',
+                type: 'POST',
+                data: { id: id }
+            });
+            req.done(function (data) {
+                alert(data.message)
+            });
+        }
+
+        function annuler(t) {
+            const id = t.id;
+            var idTR="TR-"+id;
+            document.getElementById(idTR).remove();
+            req = jQuery.ajax({
+                url: '/annulePaiement',
+                type: 'POST',
+                data: { id: id }
+            });
+            $(`[id='${idTR}']`).children('td')
+                .animate({ padding: 0 })
+                .wrapInner('<div />')
+                .children()
+                .slideUp(function () { $(this).closest('tr').remove(); });
+            req.done(function (data) {
+                alert(data.message)
+
+            });
+        }
+        function attente() {
+            var element = document.getElementById("html");
+            element.className = "attente";
+        }
+
+        function desactiveBtn(id){
+            
+        }
+
+    </script>
+</body>
+
+</html>

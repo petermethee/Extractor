@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="darkworld.css") }}'>
+
+<body>
+	<div class="topOnglets">
+		<a class="ongletActif" href="/utilisateurs" onclick="attente()">Utilisateurs</a>
+		<a class="onglet" href="/corbeille" onclick="attente()">Corbeille</a>
+		<a class="onglet" href="/export_de_donnees" onclick="attente()">Export de Données</a>
+		<a class="onglet" href="/stat" onclick="attente()">Statistiques</a>
+		<a class="onglet" href="/clients" onclick="attente()">Clients</a>
+		<a class="onglet" href="/logout">
+			<button onclick="attente()" class="invisible" type="button" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+
+	<div align="center" class="topnav">
+		<a class="active" href="/utilisateurs" onclick="attente()">Sessions</a>
+		<a href="/postes" onclick="attente()">Postes PC</a>
+	</div>
+
+	<br>
+	<div align="center" class="topnav">
+		<form action="/utilisateurs" method="POST">
+			<button name="action" value="ajouter" type="button" onclick="add()" class="ajoutBtInfo">AJOUTER</button>
+		</form>
+		<table class="tab">
+			<th></th>
+			<th class="thMini">Id</th>
+			<th class="thG">Nom</th>
+			<th class="thG">Prenom</th>
+			<th class="thGGG">Mail</th>
+			<th class="thG">Niveau</th>
+			<th></th>
+			<th></th>
+
+			{% for user in utilisateur %}
+			<tr>
+				<td class="tdUser"><button type="button" id="{{user['id']}}" onclick="supprimer(this)"
+						class="retourBtInfo">x</button></td>
+				<td class="tdUser" align="center" id="id">{{user['id']}}</td>
+				<td class="tdUser"><input id="nom{{user['id']}}" name="nom-{{user['id']}}" value="{{user['nom']}}"
+						class="inputUser" /></td>
+				<td class="tdUser"><input id="prenom{{user['id']}}" name="prenom-{{user['id']}}"
+						value="{{user['prenom']}}" class="inputUser" /></td>
+				<td class="tdUser"><input id="mail{{user['id']}}" name="mail-{{user['id']}}" value="{{user['mail']}}"
+						class="inputUser" /></td>
+				<td class="tdUser"><select id="niveau{{user['id']}}" name="niveau-{{user['id']}}"
+						value="{{user['niveau']}}" class="inputUser" {% if user['niveau']=="NORMAL" %}
+						style="background-color: rgb(233,233,233); color: rgb(36, 36, 36);" {% elif
+						user['niveau']=="REF" %} style="background-color: rgb(97, 248, 97);  color: green;" {% elif
+						user['niveau']=="ADMIN" %} style="background-color: rgb(255, 104, 104); color:rgb(155, 3, 3)"
+						{%else %} style="background-color: rgb(253, 253, 93);color: rgb(134, 134, 0);" {%endif%}>
+
+						<option value="NORMAL" style="background-color: rgb(233, 233, 233);" {% if
+							user['niveau']=="NORMAL" %} selected {%endif%}>NORMAL</option>
+						<option value="REF" style="background-color: rgb(97, 248, 97);  color: green;" {% if
+							user['niveau']=="REF" %} selected {%endif%}>REF</option>
+						<option value="ADMIN" style="background-color: rgb(255, 104, 104); color:rgb(155, 3, 3)" {% if
+							user['niveau']=="ADMIN" %} selected {%endif%}>ADMIN</option>
+						<option value="TOUT LE MONDE"
+							style="background-color: rgb(253, 253, 93);color: rgb(134, 134, 0);" {% if
+							user['niveau']=="TOUT LE MONDE" %} selected {%endif%}>TOUT LE MONDE</option>
+
+					</select>
+				</td>
+				<td><button id="{{user['id']}}" onclick="update(this)" class="selectBtInfo">Valider</button></td>
+
+				<form action="/initMDP" method="post">
+					<input type='hidden' name='idMDP' value="{{user['id']}}">
+					<td><button class="mdpBtInfo" onclick="attente()">Nouveau MDP</button></td>
+				</form>
+			</tr>
+
+			{%endfor%}
+		</table>
+
+</html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+
+	function update(t) {
+		alert("Changement(s) pris en compte");
+		var id = t.id;
+		var prenom = document.getElementById(`prenom${id}`).value;
+		var nom = document.getElementById(`nom${id}`).value;
+		var mail = document.getElementById(`mail${id}`).value;
+		var niveau = document.getElementById(`niveau${id}`).value;
+		req = jQuery.ajax({
+			url: '/modifUtilisateur',
+			type: 'POST',
+			data: { id: id, prenom: prenom, nom: nom, mail: mail, niveau: niveau }
+		});
+		$(`[id=${id}]`).fadeOut(1000).fadeIn(1000);
+	}
+
+	function add() {
+		req = jQuery.ajax({
+			url: '/ajoutUtilisateur',
+			type: 'POST'
+		});
+		window.location.reload()
+	}
+
+	function supprimer(t) {
+		var id = t.id;
+		req = jQuery.ajax({
+			url: '/supprUtilisateur',
+			type: 'POST',
+			data: { id: id }
+		});
+		req.done(function (data) {
+			alert(data.message);
+		});
+	}
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <div id="html" class=""></div>
+
+  <head>
+    <title>Parfumerie Mireille</title>
+  </head>
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href='{{ url_for("static", filename="mycss8.css") }}'
+  />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href="C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"
+  />
+
+  <body>
+    <div class="topOnglets">
+      <a class="onglet" href="/suivi/{{user}}" onclick="attente()"
+        >Suivi de commandes</a
+      >
+      <a class="onglet" href="/start/{{user}}" onclick="attente()"
+        >Traitements</a
+      >
+      <a class="onglet" href="/choixCE/{{user}}" onclick="attente()"
+        >1. Préparer</a
+      >
+      <a class="ongletActif" href="/reliquats/{{user}}" onclick="attente()"
+        >2. Reliquats</a
+      >
+      <a class="onglet" href="/choixLot/{{user}}" onclick="attente()"
+        >3. Facturer</a
+      >
+      <a class="onglet" href="/paiements/{{user}}" onclick="attente()"
+        >4. Paiements</a
+      >
+      <a class="onglet" href="/livraison/{{user}}" onclick="attente()"
+        >5. Livraison</a
+      >
+      <a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+      <a class="onglet" href="/logout">
+        <button
+          class="invisible"
+          onclick="attente()"
+          type="button"
+          data-hover="Se Déconnecter"
+          data-active="Se Déconnecter"
+        >
+          <span
+            ><i class="fas fa-user span" style="padding-right: 10px"></i
+            >{{session['user']['username']}}</span
+          >
+        </button>
+      </a>
+    </div>
+    <div align="center" class="topnav">
+      <a href="/reliquats/{{user}}" onclick="attente()">Choix du Lot</a>
+      <a class="active" href="/defReliquat/{{user}}" onclick="attente()"
+        >Demande de reliquats</a
+      >
+      <a href="/visuReliquat/{{user}}" onclick="attente()"
+        >Où sont les reliquats ?</a
+      >
+      <a href="/rupture/{{user}}" onclick="attente()">Produit en rupture</a>
+      <a href="/michael/{{user}}" onclick="attente()">Prévision Michael</a>
+    </div>
+
+    <div class="divTabInfo">
+      <table class="tabInfoReli">
+        <tr class="trInfo">
+          <td class="tdInfo">N° CE</td>
+          <td class="tdInfo">Nom du CE</td>
+          <td class="tdInfo">N° de Lot</td>
+          <td class="tdInfo">Date de lot</td>
+          <td class="tdInfo">Référente</td>
+        </tr>
+
+        <tr class="trInfo">
+          <td class="tdInfo">{{idCE}}</td>
+          <td class="tdInfo">{{nomCE}}</td>
+          <td class="tdInfo">{{lot}}</td>
+          <td class="tdInfo">{{dateLot}}</td>
+          <td class="tdInfo">{{referente}}</td>
+        </tr>
+      </table>
+    </div>
+    <div class="bascule">
+      <a href="/defReliquat/{{user}}" onclick="attente()" class="relik"
+        >Demande Transfert</a
+      >
+      <a href="/bonPrep/{{user}}" onclick="attente()" class="bonSelect"
+        >Bon de préparation</a
+      >
+      <input
+        type="button"
+        value="Imprimer feuille caisse"
+        onclick="imprimer();"
+        class="generateBt"
+      />
+    </div>
+
+    <div id="imprimer" style="display: none">
+      <span style="font-size: 70px; display: block; text-align: center"
+        >{{idCE}}</span
+      ><br style="font-size: 20px" />
+      <span style="font-size: 70px; display: block; text-align: center"
+        >{{nomCE}}</span
+      ><br style="font-size: 20px" />
+      <span style="font-size: 70px; display: block; text-align: center"
+        >{{referente}}</span
+      ><br style="font-size: 20px" />
+      <span style="font-size: 70px; display: block; text-align: center"
+        >{{dateLot}}</span
+      >
+      <br /><br />
+      <table style="width:100%">
+        <th style="width:45%"></th>
+          <b>Informations complémentaires :</b>
+        </th>
+        <th style="width:10%"></th>
+        <th style="width:45%"></th>
+        <tr>
+          <td style="font-size: 15px">
+            <b>Correspondant(e):</b> {{Linfo['intermediaire']}}
+          </td>
+          <td></td>
+          <td style="font-size: 15px">
+            <b>Téléphone:</b> {{Linfo['tel']}}
+          </td>
+        </tr>
+        <tr>
+          <td style="font-size: 15px"><b>Mail:</b> {{Linfo['mail']}}</td>
+          <td></td>
+          <td style="font-size: 15px"><b>Catalogues:</b> {{Linfo['catalogue']}}</td>
+        </tr>
+        <tr>
+          <td style="font-size: 15px">
+            <b>Mail automatique au client :</b> {%if Linfo['mailCl']==1%} OUI {%else%}
+            NON{%endif%}
+          </td>
+          <td></td>
+          <td style="font-size: 15px">
+            <b>au CE :</b> {%if Linfo['mailInter']==1%} OUI {%else%} NON{%endif%}
+          </td>
+        </tr>
+        <tr>
+          <td style="font-size: 15px">
+            <b>Quantité de factures:</b> {{Linfo['qteFact']}}
+          <td></td>
+          </td>
+          <td style="font-size: 15px">
+           <b>Sac:</b>  {{Linfo['sac']}}
+          </td>
+        </tr>
+        <tr>
+          <td style="font-size: 15px">
+            <b>Retrait magasin:</b> {{Linfo['retraitMag']}}
+          <td></td>
+          </td>
+          <td style="font-size: 15px">
+            <b>Colis individuel:</b> {{Linfo['colisIndiv']}}
+          </td>
+        </tr>
+        <tr>
+          <td style="font-size: 15px">
+            <b>Colis collectif:</b> {{Linfo['colisCol']}}
+          <td></td>
+          </td>
+          <td style="font-size: 15px">
+            <b>Colis expédition:</b> {{Linfo['colisExpe']}}
+          </td>
+        </tr>
+      </table>
+    </br></br>
+      <span style="font-size: 15px; display: block; text-align: left"
+        ><b>Commentaires: </b>{{Linfo['commentaires']}}</span
+      ><span style="font-size: 15px; display: block; text-align: left"
+        ><b>Adresse: </b>{{Linfo['adresse']}}</span
+      >
+    </div>
+
+    <table align="center" class="tabRelPrep">
+      <th class="thRelPrep thMoy1">Code</th>
+      <th class="thRelPrep thMoy2">EAN</th>
+      <th class="thRelPrep">Libellé WINPARF</th>
+      <th class="thRelPrep">Libellé Client</th>
+      <th class="thRelPrep thNbr">Quantité</th>
+      <th class="thRelPrep thNbr">Ato</th>
+      <th class="thRelPrep thNbr">
+        <table align="center" class="sousTab">
+          <tr>
+            <td colspan="2">Stock</td>
+          </tr>
+          <tr>
+            <td>0</td>
+            <td>1</td>
+          </tr>
+        </table>
+      </th>
+      {% for i in range(nProd) %}
+      <tr class="trRelPrep">
+        <td>{{code[i]}}</td>
+        <td>{{ean[i]}}</td>
+        <td>{{lib[i]}}</td>
+
+        <td>
+          <table class="sousTab" align="center">
+            {% for j in range(libCl[i]|length) %}
+            <tr class="trLib">
+              <td>
+                {%if LidHW[i][j]==-1%} {{libCl[i][j]}} {%else%}
+                <img
+                  src="{{url_for('static', filename='image_cmd/'+libCl[i][j]|string+'_lib.jpg')}}"
+                />
+                {%endif%}
+              </td>
+            </tr>
+
+            {% endfor %}
+          </table>
+        </td>
+        <td>{{quantite[i]}}</td>
+        <td>{{atom[i]}}</td>
+        <td>
+          <table class="sousTab" align="center">
+            <td>{{Lstock[i][0]}}</td>
+            <td>{{Lstock[i][1]}}</td>
+          </table>
+        </td>
+        {% endfor %}
+      </tr>
+    </table>
+
+    <br />
+  </body>
+</html>
+
+<script type="text/javascript">
+  function imprimer() {
+    var imprimer = document.getElementById("imprimer");
+    var popupcontenu = window.open("", "_blank");
+    popupcontenu.document.open("about:blank", "hello", "width=200,height=200");
+    popupcontenu.document.write(
+      "<html><body onload='window.print()'>" + imprimer.innerHTML + "</html>"
+    );
+    popupcontenu.document.close();
+  }
+  function attente() {
+    var element = document.getElementById("html");
+    element.className = "attente";
+  }
+</script>

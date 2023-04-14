@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+    <div class="topOnglets">
+        <a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+        <a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+        <a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+        <a class="ongletActif" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+        <a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+        <a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+        <a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+        <a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+        <a class="onglet" href="/logout">
+            <button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter"
+                data-active="Se Déconnecter">
+                <span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+            </button>
+        </a>
+    </div>
+    <div align="center" class="topnav">
+        <a href="/reliquats/{{user}}" onclick="attente()">Choix du Lot</a>
+        <a href="/defReliquat/{{user}}" onclick="attente()">Demande de reliquats</a>
+        <a href="/visuReliquat/{{user}}" onclick="attente()">Où sont les reliquats ?</a>
+        <a class="active" href="/rupture/{{user}}" onclick="attente()">Produit en rupture</a>
+        <a href="/michael/{{user}}" onclick="attente()">Prévision Michael</a>
+    </div>
+    <div>
+        <form action="/planning/{{user}}">
+            <button class="annulBt" onclick="attente()">Planning</button>
+        </form>
+
+        <form action="/validRupt/{{user}}" method="POST">
+            <button class="saveNewCmd" onclick="attente()">Valider</button>
+    </div>
+
+    <p class="labelRel4">Michael</p>
+    <table align="center" class="tabRel">
+        <th class="thRelTrans4 thPetit">Code</th>
+        <th class="thRelTrans4 thPetit">EAN</th>
+        <th class="thRelTrans4">Libelle WP</th>
+        <th class="thRelTrans4 thPetit">Quantité</th>
+        <th class="thRelTrans4">Fin de rupture</th>
+        {%for relik in Lrelik%}
+        <input type="hidden" name="code" value="{{relik['code']}}">
+        <input type="hidden" name="lib" value="{{relik['libW']}}">
+        <tr class="trRelTrans4">
+            <td>{{relik['code']}}</td>
+            <td>{{relik['ean']}}</td>
+            <td>{{relik['libW']}}</td>
+            <td>{{relik['qte']}}</td>
+            <td>
+                <input type="date" name="date" value="{{relik['date']}}">
+            </td>
+        </tr>
+        {%endfor%}
+    </table>
+    </form>
+    <br>
+</body>
+
+</html>
+<script>
+    function attente() {
+        var element = document.getElementById("html");
+        element.className = "attente";
+    }
+</script>

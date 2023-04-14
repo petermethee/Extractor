@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<div id="html" class=""></div>
+	<head> <title>Parfumerie Mireille</title> </head>
+	<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+	<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+	<body>
+		<div class="topOnglets">
+			<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+			<a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+			<a class="ongletActif" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+			<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+			<a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+			<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+			<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+			<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+			<a class="onglet" href="/logout">
+				<button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter" data-active="Se Déconnecter">
+					<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+				</button>
+			</a>
+		</div>
+		
+			<div align="center" class="topnav">
+				<a href="/choixCE/{{user}}" onclick="attente()">Choix du CE</a>
+				<a href="/erreurs/{{user}}" onclick="attente()">Erreurs à modifier</a>
+				<a class="active" href="/listeProduits/{{user}}" onclick="attente()">Bon de préparation de commandes</a>
+			</div>
+			{%if nbError>0%}
+			<br>
+			<button class="lotBtErreur">Il reste des erreurs</button>
+			{%else%}
+			<form action="/lot/{{user}}" method="post">
+				<button class="lotBt" {%if nProd==0 %} style="display:None" {%else%} onClick="window.print();attente()" {%endif%}>Former un lot</button>
+			</form>
+			{%endif%}
+			<table class="tabInfo">
+				<tr class="trInfo">
+					<td class="tdInfo">N° CE</td>
+					<td class="tdInfo">Nom du CE</td>
+					<td class="tdInfo">Référente</td>
+					<td class="tdInfo">Date</td>
+					<td class="tdInfo">Heure</td>
+				</tr>
+				<tr class="trInfo">
+					<td class="tdInfo">{{idCE}}</td>
+					<td class="tdInfo">{{nomCE}}</td>
+					<td class="tdInfo">{{referente}}</td>
+					<td class="tdInfo">{{date}}</td>
+					<td class="tdInfo">{{heure}}</td>
+				</tr>
+			</table>
+
+	<table align="center" class="tab1">
+		<th class="thPrep thPetit">Code</th><th class="thPrep thMoy2">EAN</th><th class="thPrep">Libellé WINPARF</th><th class="thPrep thPetit">ID client</th><th class="thPrep">Libellé Client</th><th class="thPrep thNbr">Quantité</th><th class="thPrep thNbr">Ato</th>
+		<th class="thPrep thNbr	">
+			<table align="center" class="sousTab">
+				<tr><td colspan="2">Stock</td></tr>
+				<tr><td>0</td><td>1</td></tr>
+			</table>
+		</th>
+		{% for i in range(nProd) %}
+			<tr class="trPrep">
+				<td>{{code[i]}}</td><td>{{ean[i]}}</td><td>{{lib[i]}}</td>
+				<td>
+					<table class="sousTab" align="center">
+						{% for j in range(libCl[i]|length) %}
+						<tr>
+							<td><form action="/detailsCmd/{{user}}" method="POST">
+								<input type="hidden" value="listeProduits" name="previousPage">
+								<input type="hidden" name="idCmd" value="{{Lidclient[i][j]}}">
+								<button class="linkDetails"><span>{{Lidclient[i][j]}}</span></button>
+							</form></td>
+						</tr>
+						{%endfor%}
+					</table>
+				</td>
+				<td>
+					<table class="sousTab" align="center">
+					{% for j in range(libCl[i]|length) %}
+					<tr class="trLib">
+						<td>
+						{%if LidHW[i][j]==-1%}
+						{{libCl[i][j]}}
+						{%else%}
+						<img src="{{url_for('static', filename='image_cmd/'+libCl[i][j]|string+'_lib.jpg')}}">
+						{%endif%}
+						</td>
+					</tr>
+					
+					{% endfor %}
+					</table>
+				</td>
+				<td>{{quantite[i]}}</td>
+				<td>{{atom[i]}}</td>
+				<td>
+					<table class="sousTab" align="center">
+						<td>{{Lstock[i][0]}}</td>
+						<td>{{Lstock[i][1]}}</td>
+					</table>
+				</td>
+		{% endfor %}
+	</table>
+	<br>
+    </body>
+	</html>
+	<script>
+		function attente(){
+            var element=document.getElementById("html");
+            element.className="attente";
+        }
+	</script>

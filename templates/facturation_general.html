@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/Jeanne/Desktop/CE/bdd/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"/>
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+		<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="ongletActif" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+	<div align="center" class="topnav">
+		<a href="/choixLot/{{user}}" onclick="attente()">Sélectionner un lot</a>
+		<a class="active" href="/facturation/{{user}}" onclick="attente()">Fiche synthèse pour facturation</a>
+		<a href="/recap/{{user}}" onclick="attente()">Récap des états</a>
+		<a href="/clientRupt/{{user}}" onclick="attente()">Client à contacter</a>
+	</div>
+
+
+	<div>
+		<form action="/detailsCmd/{{user}}" method="POST" id="form">
+			<input type="hidden" value="facturation" onclick="attente()" name="previousPage">
+		</form>
+
+		<form action="/nextStep/{{user}}" method="POST" id="form2" enctype="multipart/form-data">
+			<button class="validBt" onclick="attente()" value="valider" name="action">Valider avec mail</button>
+			<button class="validBt0" onclick="attente()" value="info" name="action"><i class="f05a"></i>Infos</button>
+			<button class="validBt2" onclick="attente()" value="validerSansMail" name="action">Valider sans mail</button>
+
+	</div>
+	<input type="hidden" id="qtePdt" name="qtePdt" value="0" />
+	<table class="tabInfo">
+		<tr class="trInfo">
+			<td class="tdInfo">N° CE</td>
+			<td class="tdInfo">Nom du CE</td>
+			<td class="tdInfo">N° de Lot</td>
+			<td class="tdInfo">Référente</td>
+		</tr>
+
+		<tr class="trInfo">
+			<td class="tdInfo">{{idCE}}</td>
+			<td class="tdInfo">{{nomCE}}</td>
+			<td class="tdInfo">{{lot}}</td>
+			<td class="tdInfo">{{referente}}</td>
+		</tr>
+	</table>
+	
+
+	{% set i=namespace(value=0) %}
+	{% for client in Lclients %}
+	<div class="containerClient">
+		<table align="center" class="tabFact">
+			<th class="thclientFact thNbr">ID</th>
+			<th class="thclientFact">Nom/Prénom</th>
+			<th class="thclientFact thLib">Société</th>
+			<th class="thclientFact thLib">Mail</th>
+			<th class="thclientFact">Tel</th>
+			<th class="thclientFact thNbr">TOTAL</th>
+			<tr class="trclientFact">
+				<td class="tdErr">
+					<button class="linkDetails" type="button" name="idCmd" onclick="detailsCmd(this.id)"
+						id="{{client['id_commande']}}"><span>{{client["id_commande"]}}</span></button>
+				</td>
+				<td>{{client["client"]}}</td>
+				<td>{{client["societe"]}}</td>
+				<td>{{client["mail"]}}</td>
+				<td>{{client["tel"]}}</td>
+				<td>{{client["total"]}}</td>
+			</tr>
+		</table>
+
+		{% if client["commentaire"]!="" %}
+			<table align="center" class="tabFact">
+				<th class="thclientFact">Remarque</th>
+				<tr class="trclientFact">
+					<td>{{client["commentaire"]}}</td>
+				</tr>
+			</table>
+		{%endif%}
+
+		<table align="center" class="tabBons">
+			<th class="thbon thidCE">Code</th>
+			<th class="thbon thLib">Libellé WINPARF</th>
+			<th class="thbon thLib">Libellé Client</th>
+			<th class="thbon thNbr">Quantité</th>
+			<th class="thbon thNbr">Prix</th>
+			<th class="thbon thNbr">Ato</th>
+			<th class="thbon thRadio">Etat</th>
+			{% set bons=Lbons[i.value] %}
+			{% set j=namespace(value=0) %}
+			{% for bon in bons %}
+			<tr class="trbon">
+				<td class="tdbon">{{bon["code"]}}</td>
+				<td class="tdbon">{{bon["libW"]}}</td>
+				{% if bon['idHW']==-1 %}
+				<td class="tdbon">{{bon["lib"]}}</td>
+				{%else%}
+				<td class="tdImg"><img
+						src="{{url_for('static', filename='image_cmd/'+bon['idProd']|string+'_lib'+'.jpg')}}"></td>
+				{%endif%}
+				<td class="tdbon">{{bon["qte"]}}</td>
+				<td class="tdbon">{{bon["prix"]}}</td>
+				<td class="tdbon">{{bon["ato"]}}</td>
+				<td>
+					{%if bon['etatMin']==4%}
+					Annulé
+					{%elif bon['etatMin']==5%}
+					Livré
+					{%else%}
+
+					<table align="center">
+						{%for k in range(bon["qte"]|int)%}
+						<tr>
+							{%if LEtatTot[i.value][j.value][k]=="5"%}
+							<td>Livré</td>
+							{%else%}
+							<input type="hidden" id="oldEtat-{{k}}{{bon['idProd']}}"
+								value='{{LEtatTot[i.value][j.value][k]}}' />
+							<td class="tdRadio">
+								{%if LEtatTot[i.value][j.value][k] =="1"%}
+								<input type="radio" onclick="check(this)" checked class="checked"
+									id="{{k}}{{bon['idProd']}}-f" name="{{k}}-{{bon['idProd']}}" value=1>
+								{%else%}
+								<input type="radio" onclick="check(this)" id="{{k}}{{bon['idProd']}}-f"
+									name="{{k}}-{{bon['idProd']}}" value="1">
+								{%endif%}
+								<label for="{{k}}{{bon['idProd']}}-f">Reliquat</label>
+							</td>
+
+							<td class="tdRadio">
+								{%if LEtatTot[i.value][j.value][k]=="2"%}
+								<input type="radio" onclick="check(this)" checked class="checked"
+									id="{{k}}{{bon['idProd']}}-r" name="{{k}}-{{bon['idProd']}}" value=2>
+								{%else%}
+								<input type="radio" onclick="check(this)" id="{{k}}{{bon['idProd']}}-r"
+									name="{{k}}-{{bon['idProd']}}" value=2>
+								{%endif%}
+								<label for="{{k}}{{bon['idProd']}}-r">Facturé</label>
+							</td>
+
+							<td class="tdRadio">
+								{%if LEtatTot[i.value][j.value][k]=="3"%}
+								<input type="radio" onclick="check(this)" checked class="checked"
+									id="{{k}}{{bon['idProd']}}-a" name="{{k}}-{{bon['idProd']}}" value=3>
+								{%else%}
+								<input type="radio" onclick="check(this)" id="{{k}}{{bon['idProd']}}-a"
+									name="{{k}}-{{bon['idProd']}}" value=3>
+								{%endif%}
+								<label for="{{k}}{{bon['idProd']}}-a">Rupture</label>
+							</td>
+							{%endif%}
+						</tr>
+						{%endfor%}
+					</table>
+
+					{%endif%}
+				</td>
+			</tr>
+			{% set j.value=j.value+1 %}
+			{% endfor %}
+			<tr class="trbon">
+				<td colspan="7">TOTAL : {{Lsomme[i.value]}}</td>
+			</tr>
+		</table>
+		<br>
+
+		<table align="center" class="tabBons">
+			<th></th>
+			<th class="thGG"></th>
+			<th class="thMoy1"></th>
+			<th class="thMoy1"></th>
+			<th class="thMoy1"></th>
+			<th class="thMoy1"></th>
+			<th class="thMoy1"></th>
+			<th class="thMoy1"></th>
+			<th class="thMoy1"></th>
+			<tr >
+				<td>
+					<div align="center" class="selFich">
+						<input type="file" name="file" multiple class="test">
+					</div>
+				</td>
+				<td class="tdLien">Montant facturé</td>
+				<td><button class="btLien" id="{{client['id_commande']}}-lien" value="lien-{{client['id_commande']}}" name="action"
+						onclick="clickPaiement(this)">Lien</button></td>
+				<td><button class="btRIB" id="{{client['id_commande']}}-rib" value="rib-{{client['id_commande']}}" name="action"
+						onclick="clickPaiement(this)">RIB</button></td>
+				<td><button class="btEspece" id="{{client['id_commande']}}-espece" value="espece-{{client['id_commande']}}" name="action"
+						onclick="clickPaiement(this)">Espèces</button></td>
+				<td><button class="btChequeR" id="{{client['id_commande']}}-chequeR" value="chequeR-{{client['id_commande']}}" name="action"
+						onclick="clickPaiement(this)">Chq reçu</button></td>
+				<td><button class="btChequeAV" id="{{client['id_commande']}}-chequeAV" value="chequeAV-{{client['id_commande']}}" name="action"
+						onclick="clickPaiement(this)">Chq avant envoi</button></td>
+				<td><button class="btChequeAP" id="{{client['id_commande']}}-chequeAP" value="chequeAP-{{client['id_commande']}}" name="action"
+						onclick="clickPaiement(this)">Chq après réception</button></td>
+				<td><button class="btAutre" id="{{client['id_commande']}}-autre" value="autre-{{client['id_commande']}}" name="action"
+						onclick="clickPaiement(this)">Autre</button></td>
+			</tr>
+			<tr>
+				<td><input type="hidden" name="idCommande" value="{{client['id_commande']}}"></td>
+				<td><input type="number" min="0" placeholder="Montant" step="0.01" id="{{client['id_commande']}}-montant" name="montant-{{client['id_commande']}}" style="cursor:pointer"></td>
+				<td>
+					<div id="{{client['id_commande']}}-lienTexte" class="tdLien" style="display: none;">Envoyé</div>
+				</td>
+				<td align="center">
+					<div id="{{client['id_commande']}}-ribTexte" style="display: none;">Envoyé</div>
+				</td>
+				<td>
+					<div id="{{client['id_commande']}}-especeTexte" style="display: none;">Envoyé</div>
+				</td>
+				<td>
+					<div id="{{client['id_commande']}}-chequeRTexte" style="display: none;">Envoyé</div>
+				</td>
+				<td>
+					<div id="{{client['id_commande']}}-chequeAVTexte" style="display: none;">Envoyé</div>
+				</td>
+				<td>
+					<div id="{{client['id_commande']}}-chequeAPTexte" style="display: none;">Envoyé</div>
+				</td>
+				<td>
+					<div id="{{client['id_commande']}}-autreTexte" style="display: none;">Envoyé</div>
+				</td>
+			</tr>	
+		</table>
+
+	</div>
+
+	{% set i.value=i.value+1 %}
+	{% endfor %}
+	<br>
+</body>
+</form>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+	function detailsCmd(t) {
+		$('#form').append(`<input type="hidden" name="idCmd" value="${t}">`);
+		$('#form').submit();
+	}
+	function check(t) {
+		var radio = document.getElementById(t.id);
+		var name = radio.name;
+		var etatCmd = radio.value;
+		var id = t.id.split('-')[0];
+		var oldEtat = document.getElementById('oldEtat-' + id).value;
+		if (etatCmd == 2 && oldEtat != etatCmd) {
+			var qtePdt = document.getElementById('qtePdt');
+			qtePdt.value = parseInt(qtePdt.value) + 1;
+		}
+		if ($(radio).hasClass("checked")) {
+			$(radio).removeClass("checked");
+			radio.checked = false;
+			etatCmd = 0;
+		}
+		else {
+			var radiof = document.getElementById(t.id.split("-")[0] + "-f");
+			var radior = document.getElementById(t.id.split("-")[0] + "-r");
+			var radioa = document.getElementById(t.id.split("-")[0] + "-a");
+			$(radiof).removeClass("checked");
+			$(radior).removeClass("checked");
+			$(radioa).removeClass("checked");
+			$(radio).addClass("checked");
+			radio.checked = true;
+		}
+		req = jQuery.ajax({
+			url: '/changeEtat',
+			type: 'POST',
+			data: { name: name, etatCmd: etatCmd }
+		});
+	}
+	function clickPaiement(t) {
+		var type = t.id.split("-")[1];
+		var montant = document.getElementById(t.id.split("-")[0] + "-montant").value;
+		var x = document.getElementById(t.id + "Texte");
+		if (montant == "" || montant == "0") {
+			alert("Montant non renseigné");
+		}
+		else {
+			if (type == "lien") {
+				alert("Lien CB envoyé");
+			}
+			else if (type == "rib") {
+				alert("RIB envoyé");
+			}
+			else if (type == "espece") {
+				alert("Espèces");
+			}
+			else if (type == "chequeR") {
+				alert("Chèque reçu");
+			}
+			else if (type == "chequeAV") {
+				alert("Chèque avant envoi");
+			}
+			else if (type == "chequeAP") {
+				alert("Chèque après réception");
+			}
+			else {
+				alert("Autres");
+			}
+			x.style.display = 'block';
+			x.style.color = 'white';
+		}
+	}
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>
+
+</html>

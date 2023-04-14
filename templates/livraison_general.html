@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+    <div class="topOnglets">
+        <a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+        <a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+        <a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+        <a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+        <a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+        <a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+        <a class="ongletActif" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+        <a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+        <a class="onglet" href="/logout">
+            <button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter"
+                data-active="Se Déconnecter">
+                <span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+            </button>
+        </a>
+    </div>
+    <div align="center" class="topnav">
+        <a href="/livraison/{{user}}" onclick="attente()">Choix du CE</a>
+        <a class="active" href="/visuLivraison/{{user}}" onclick="attente()">Commandes à livrer</a>
+        <a href="/histLivraison/{{user}}" onclick="attente()">Historique des livraisons</a>
+    </div>
+
+    <form action="/livrer/{{user}}" method="post">
+        <input type="hidden" name="idCE" value="{{idCE}}">
+        <button class="lotBt" onclick="attente()">Livrer</button>
+
+        <table class="tabInfo">
+            <tr class="trInfo">
+                <td class="tdInfo">N° CE</td>
+                <td class="tdInfo">Nom du CE</td>
+            </tr>
+            <tr class="trInfo">
+                <td class="tdInfo">{{idCE}}</td>
+                <td class="tdInfo">{{nomCE}}</td>
+            </tr>
+        </table>
+
+        <table align="center" class="tabSuivi">
+            <th class="thPetit toutselect"><input type="checkbox" onclick="selectAll(this.id)" id="all"
+                    style="cursor: pointer;">Tout</input></th>
+            <th class="thHistLiv">ID client</th>
+            <th class="thHistLiv">Lot</th>
+            <th class="thHistLiv">Nom et Prénom</th>
+            <th class="thHistLiv">Prix</th>
+            <th class="thHistLiv">Etat</th>
+            <tr></tr>
+            {%for cmd in Lcmd%}
+            <tr class="trLiv">
+                <td class="tdButton"><input type="checkbox" id="{{cmd['id_commande']}}" name="check"
+                        value="{{cmd['id_commande']}}" style="cursor: pointer;"></td>
+                <td>{{cmd['id_commande']}}</td>
+                <td>{{cmd['lot']}}</td>
+                <td>{{cmd['client']}}</td>
+                <td>{{cmd['total']}}</td>
+                <td>{%if cmd['etatCmd']==1%}
+                    Facturation
+                    {%else%}
+                    Facturé
+                    {%endif%}
+                </td>
+            </tr>
+            {%endfor%}
+        </table>
+    </form>
+</body>
+<br>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+    function selectAll(t) {
+        var all = document.getElementById(t);
+        var items = document.getElementsByName("check")
+        if (all.checked) {
+            for (var i = 0; i < items.length; i++) {
+                items[i].checked = true;
+            }
+        }
+        else {
+            for (var i = 0; i < items.length; i++) {
+                items[i].checked = false;
+            }
+        }
+
+    }
+    function attente() {
+        var element = document.getElementById("html");
+        element.className = "attente";
+    }
+</script>
+
+</html>

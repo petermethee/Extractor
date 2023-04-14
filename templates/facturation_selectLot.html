@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/Jeanne/Desktop/CE/bdd/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+		<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="ongletActif" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+	<div align="center" class="topnav">
+		<a class="active" href="/choixLot/{{user}}" onclick="attente()">Sélectionner un lot</a>
+		<a href="/facturation/{{user}}" onclick="attente()">Fiche synthèse pour facturation</a>
+		<a href="/recap/{{user}}" onclick="attente()">Récap des états</a>
+		<a href="/clientRupt/{{user}}" onclick="attente()">Client à contacter</a>
+	</div>
+	<br>
+
+	<div class="center">
+		<form action="/choixLot/{{user}}" method="POST" style="display: inline;">
+			<button onclick="attente()" {%if ref==None %} class="AllRefSel" {%else%} class="AllRef"
+				{%endif%}>{{listeAll[0]['prenom']}}</button>
+		</form>
+		{% for liste in listeRef %}
+		<form action="/choixLot/{{user}}" method="POST" style="display: inline;">
+			<input type="hidden" name="ref" id="ref" value="{{liste['id']}}">
+			<button onclick="attente()" value="{{liste['id']}}" {% if ref==liste['id'] %} class="Ref2Sel" {% else %}
+				class="Ref2" {%endif%}>{{liste['prenom']}}</button>
+		</form>
+		{% endfor %}
+	</div <br><br>
+	<div>
+		<table align="center" class="tabHist">
+			<th class="thHistFact">Numéro de CE</th>
+			<th class="thHistFact">Lot</th>
+			<th class="thHistFact">Nom du CE</th>
+			<th class="thHistFact">Nombre de commandes</th>
+			<th class="thHistFact">Ancienneté</th>
+			<th class="thHistFact">Référente</th>
+
+			{% set i=namespace(value=0) %}
+			{% for client in listLot %}
+			{%if lot != client["lot"]%}
+			<tr class="trFact">
+				{%else%}
+			<tr class="trSelectedFact">
+				{%endif%}
+				<td class="tdHist">{{client["idCE"]}}</td>
+				<td class="tdHist">{{client["lot"]}}</td>
+				<td class="tdHist">{{client["entreprise"]}}</td>
+				<td class="tdHist">{{nbClient[i.value]}}</td>
+
+				<td class="tdHist" {% if dateLim>client['dateLot'] %} style="color:red;font-weight: bold;"
+					{%else%} style="color:black" {%endif%}>
+					{{client["dateLot"]}}</td>
+				<td class="tdHist">{{client["prenom"]}}</td>
+				{%if lot != client["lot"]%}
+				<form action="/selectLot/{{user}}" method="post">
+					<input type='hidden' name='lot' value="{{client['lot']}}">
+					<td class="tdButton"><button class="selectBt" onclick="attente()">VISUALISER</button></td>
+				</form>
+				{%else%}
+				<td class="tdSelected"><span class="select">Sélectionné</span></td>
+				{%endif%}
+			</tr>
+			{% set i.value=i.value+1 %}
+			{% endfor %}
+		</table>
+	</div>
+	<br>
+</body>
+
+</html>
+<script>
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>

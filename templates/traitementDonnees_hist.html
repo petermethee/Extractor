@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="ongletActif" href="/start/{{user}}" onclick="attente()">Traitements</a>
+		<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" type="button" onclick="attente()" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+	<div align="center" class="topnav">
+		<a href="/start/{{user}}" onclick="attente()">Extraction</a>
+		<a href="/assoClientCE/{{user}}" onclick="attente()">Association Client/CE</a>
+		<a class="active" href="/historique/{{user}}" onclick="attente()">Historique des Extractions</a>
+	</div>
+	<br><br>
+	<div>
+		<table align="center" class="tabHist">
+			<th></th>
+			<th class="thHist">Créé par</th>
+			<th class="thHist">Date</th>
+			<th class="thHist">Numéro de CE</th>
+			<th class="thHist">Description</th>
+			{% for extract in listExtract %}
+			{%if idExtraction!=extract["idExtraction"]%}
+			<tr class="tr" id="{{extract['idExtraction']}}">
+				{%else%}
+			<tr class="trSelected" id="{{extract['idExtraction']}}">
+				{%endif%}
+
+				<td class="tdButton"><button onclick="deleteFun(this)" class="suprBt"
+						id="{{extract['idExtraction']}}">SUPPRIMER</button></td>
+
+				<td class="tdHist">{{extract["createur"]}}</td>
+				<td class="tdHist">{{extract["date"]}}</td>
+				<td class="tdHist">{{extract["idCE"]}}</td>
+				<td class="tdHist">{{extract["description"]}}</td>
+				{%if idExtraction!=extract["idExtraction"]%}
+				<form action="/selectExtract/{{user}}" method="post">
+					<input type='hidden' name='id' value="{{extract['idExtraction']}}">
+					<input type='hidden' name='nCE' value="{{extract['idCE']}}">
+					<input type='hidden' name='description' value="{{extract['description']}}">
+					<input type='hidden' name='date' value="{{extract['date']}}">
+					<input type='hidden' name='createur' value="{{extract['createur']}}">
+					<td class="tdButton"><button class="selectBt">VISUALISER</button></td>
+				</form>
+				{%else%}
+				<td class="tdSelected"><span class="select">Sélectionné</span></td>
+				{%endif%}
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+	<br>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script>
+		function deleteFun(t) {
+			const idExtract = t.id;
+			req = jQuery.ajax({
+				url: '/suprExtract',
+				type: 'POST',
+				data: { id: idExtract }
+			});
+			$(`[id=${idExtract}]`).children('td')
+				.animate({ padding: 0 })
+				.wrapInner('<div />')
+				.children()
+				.slideUp(function () { $(this).closest('tr').remove(); });
+		}
+
+		function attente() {
+			var element = document.getElementById("html");
+			element.className = "attente";
+		}
+	</script>
+</body>
+
+</html>

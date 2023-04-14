@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+		<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="ongletActif" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+	<div align="center" class="topnav">
+		<a href="/reliquats/{{user}}" onclick="attente()">Choix du Lot</a>
+		<a href="/defReliquat/{{user}}" onclick="attente()">Demande de reliquats</a>
+		<a class="active" href="/visuReliquat/{{user}}" onclick="attente()">Où sont les reliquats ?</a>
+		<a href="/rupture/{{user}}" onclick="attente()">Produit en rupture</a>
+		<a href="/michael/{{user}}" onclick="attente()">Prévision Michael</a>
+	</div>
+
+	<table class="tabInfo">
+		<tr class="trInfo">
+			<td class="tdInfo">Date</td>
+			<td class="tdInfo">Heure</td>
+			<td class="tdInfo">Max Reliquat</td>
+			<div>Pour vos transferts, n'oubliez pas de renseigner le prénom de la responsable / n° CE / n° lot. Merci !
+			</div>
+			<td></td>
+		</tr>
+		<tr class="trInfo">
+			<td class="tdInfo">{{date}}</td>
+			<td class="tdInfo">{{heure}}</td>
+			<td class="tdInfo">{{maxRelik}}</td>
+			<td class="tdInfo">
+				<form action="/filtreReliquat/{{user}}" method="POST">
+					<input type="hidden" name="tout" value="1">
+					<input type="hidden" name="idReliquat" value="">
+					<button class="toutvoirBt" onclick="attente()">TOUT VOIR</button>
+				</form>
+			</td>
+		</tr>
+	</table>
+
+
+	<div style="display: flex; width: 100%;justify-content: center;">
+		<form action="/filtreReliquat/{{user}}" method="POST">
+			<input type="hidden" name="tout" value="0">N° RELIQUAT :</input>
+			<input type="number" name="idReliquat" class="inputFiltre" value="{{idReliquat}}">
+			<button class="filtrerBt" onclick="attente()">FILTRER</button>
+		</form>
+		<form action="/filtreReliquatCE/{{user}}" method="POST">
+			<input type="hidden" value="2">N° CE :</input>
+			<input type="number" name="idCE" class="inputFiltre" value="{{idCE}}">
+			<datalist id="idCE">
+				{%for idCE in LidCE%}
+				<option value="{{idCE['idCE']}}">
+					{%endfor%}
+			</datalist>
+			<button class="filtrerBt" onclick="attente()">FILTRER</button>
+		</form>
+	</div>
+
+	{%for i in range(Lmag|length-1)%}
+	<p class="labelRel{{i}}">{{Lmag[i]}}</p>
+	<table align="center" class="tabRel">
+		<th class="thRelTrans{{i}} thPetit">ID reliquat</th>
+		<th class="thRelTrans{{i}} thPetit">Date</th>
+		<th class="thRelTrans{{i}} thPetit">Responsable</th>
+		<th class="thRelTrans{{i}} thPetit">CE</th>
+		<th class="thRelTrans{{i}} thPetit">Lot</th>
+		<th class="thRelTrans{{i}} thPetit">Code</th>
+		<th class="thRelTrans{{i}} thMoy2">EAN</th>
+		<th class="thRelTrans{{i}}">Libelle WP</th>
+		<th class="thRelTrans{{i}} thPetit">Quantité</th>
+		{%for relik in Lrelik[i]%}
+		<tr class="trRelTrans{{i}}">
+			<td>{{relik['idReliquat']}}</td>
+			<td>{{relik['dateLot']}}</td>
+			<td>{{relik['prenom']}}</td>
+			<td>{{relik['idCE']}}</td>
+			<td>{{relik['lot']}}</td>
+			<td>{{relik['code']}}</td>
+			<td>{{relik['ean']}}</td>
+			<td>{{relik['libW']}}</td>
+			<td>{{relik['qte']}}</td>
+		</tr>
+		{%endfor%}
+	</table>
+	{%endfor%}
+
+	<p class="labelRel4">{{Lmag[5]}}</p>
+	<table align="center" class="tabRel">
+		<th class="thRelTrans4 thPetit">ID reliquat</th>
+		<th class="thRelTrans4 thPetit">Date</th>
+		<th class="thRelTrans4 thPetit">Responsable</th>
+		<th class="thRelTrans4 thPetit">CE</th>
+		<th class="thRelTrans4 thPetit">Lot</th>
+		<th class="thRelTrans4 thPetit">Code</th>
+		<th class="thRelTrans4 thMoy2">EAN</th>
+		<th class="thRelTrans4">Libelle WP</th>
+		<th class="thRelTrans4 thPetit">Quantité</th>
+		<th class="thRelTrans4 thPetit">Quantité donnée</th>
+		{%for relik in Lrelik[5]%}
+		<tr class="trRelTrans{{i}}">
+			<td>{{relik['idReliquat']}}</td>
+			<td>{{relik['dateLot']}}</td>
+			<td>{{relik['prenom']}}</td>
+			<td>{{relik['idCE']}}</td>
+			<td>{{relik['lot']}}</td>
+			<td>{{relik['code']}}</td>
+			<td>{{relik['ean']}}</td>
+			<td>{{relik['libW']}}</td>
+			<td>{{relik['qte']}}</td>
+			<td><input class="inputPrep" id="{{relik['idReliquat']}}" type="number" min="0"
+					value="{{relik['qteDonnee']}}" onchange="changeQteDonnee(this.id)"></td>
+		</tr>
+		{%endfor%}
+	</table>
+</body>
+<br>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+	function changeQteDonnee(id) {
+		var qteDonnee = document.getElementById(`${id}`).value;
+		req = jQuery.ajax({
+			url: '/changeQteDonnee',
+			type: 'POST',
+			data: { idRelik: id, qteDonnee: qteDonnee }
+		});
+	}
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>
+
+</html>

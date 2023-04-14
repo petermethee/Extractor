@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<div id="html" class=""></div>
+	<head> <title>Parfumerie Mireille</title> </head>
+	<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+	<link rel='stylesheet' type='text/css' href='G:/CEPROG/bdd/static/mycss8.css'>
+	
+		<div class="topOnglets">
+			<a class="onglet"href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+			<a class="ongletActif" href="/start/{{user}}" onclick="attente()">Traitements</a>
+			<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+			<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+			<a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+			<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+			<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+			<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+			<a class="onglet" href="/logout"><button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter" data-active="Se Déconnecter"><span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span></button></a>
+		</div>   	
+	<body>
+		
+
+		<div align="center" class="topnav">
+			<a class="active" href="/" onclick="attente()">Extraction</a>
+			<a href="/assoClientCE/{{user}}" onclick="attente()">Association Client/CE</a>
+			<a href="/historique/{{user}}" onclick="attente()">Historique des Extractions</a>
+		</div>
+	<br>
+	<div align="center">
+		<form action="/generer/{{user}}" enctype="multipart/form-data" method="post">
+		<table>
+			<tr>
+				<td>N° CE</td>
+				<td><input type="number" list="idCE" name="nCE" style="cursor:pointer"></td>
+						
+<datalist id="idCE" >
+	{%for idCE in LidCE%}
+	<option value="{{idCE['idCE']}}">
+	{%endfor%}
+</datalist>
+				<td rowspan="3"><button class="generateBt" onclick="attente()">EXTRAIRE</button></td>
+			</tr>
+			<tr>
+				<td>Description</td>
+				<td><input type="text" name="description" style="cursor:pointer"></td>
+			</tr>
+			<tr>
+				<td>Créé par</td>
+				<td><input type="text" name="createur" style="cursor:pointer" value="{{session['user']['username']}}"></td>
+			</tr>
+			<tr>
+				<td>PC : </td>
+				<td>
+					<select name="idPoste" id="idPoste" type="input" style="cursor:pointer" onchange="changePC(this)">
+						{% for pc in Lpc %}
+						<option  value="{{pc['id']}}" {%if session['user']['PC']==pc['numPC'] %} selected {%endif%} >{{pc['numPC']}}</option>
+						{%endfor%}
+
+					</select>
+				</td>
+			</tr>
+		</table>
+		</form>
+	</div>
+	<br>
+	<table align="center" class="tabHist">
+		<th class="thHist">Commande en préparation/à facturer</th>
+		<tr class="tr">
+			<td class="tdHist">{{encours}}</td>
+		</tr>
+		<tr>
+			<td></td>
+		</tr>
+	<table align="center" class="tabHist">
+		<th class="thHist">Date</th>
+		<th class="thHist">Commandes encodées</th>
+		<th class="thHist">Commandes facturées</th>
+		{%for date in Ldate%}
+		{%if date==Ldate[0]%}
+			<tr class="trSelected">
+		{%else%}
+			<tr class="tr">
+		{%endif%}
+				<td class="tdHist">{{date[0]}}</td>
+				<td class="tdHist">{{date[1]}}</td>
+				<td class="tdHist">{{date[2]}}</td>
+		{%endfor%}
+	</table>
+	<!-- <td><img class="imgPres" src='{{url_for("static",filename="presentation.png")}}'></td> -->
+	<br>
+	<input type="hidden" id="nbError" value="{{nbError}}"></body>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script>
+		var nbError=document.getElementById('nbError').value;
+
+		if(nbError>0){
+			alert("Il y a "+ nbError+" bons de commande qui ont été déplacés dans Erreur")
+		}
+
+		function changePC(t){
+			var e = document.getElementById("idPoste");
+			var idPC = e.options[e.selectedIndex].text;
+			alert(idPC);
+			req = jQuery.ajax({
+                    url: '/changePC',
+                    type: 'POST',
+                    data: { idPC: idPC }
+                });
+		}
+		function attente(){
+            var element=document.getElementById("html");
+            element.className="attente";
+        }
+		
+	</script>
+</body>
+</html>

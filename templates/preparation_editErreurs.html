@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+		<a class="ongletActif" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+	<div align="center" class="topnav">
+		<a href="/choixCE/{{user}}" onclick="attente()">Choix du CE</a>
+		<a class="active" href="/erreurs/{{user}}" onclick="attente()">Erreurs à corriger</a>
+		<a href="/listeProduits/{{user}}" onclick="attente()">Bon de préparation de commandes</a>
+	</div>
+
+	<table class="tabInfo">
+		<tr class="trInfo">
+			<td class="tdInfo">N° CE</td>
+			<td class="tdInfo">Nom du CE</td>
+			<td class="tdInfo">Référente</td>
+
+		</tr>
+		<tr class="trInfo">
+			<td class="tdInfo">{{idCE}}</td>
+			<td class="tdInfo">{{nomCE}}</td>
+			<td class="tdInfo">{{referente}}</td>
+
+		</tr>
+	</table>
+
+	{% if codeErreur|length>0 or codeErreurHW|length>0 %}
+	<p class="container">Commandes qui présentent une erreur de CODE</p>
+
+	<table align="center" class="tabErr">
+		<th class="thErr thNbr">ID</th>
+		<th class="thErr">Nom du client</th>
+		<th class="thErr thLib">Code</th>
+		<th class="thErr thLib">Libellé</th>
+		<th class="thErr thNbr">Prix</th>
+		<th class="thErr thNbr">Quantité</th>
+		<th class="thErr thNbr">Ato</th>
+		<th class="thButton"></th>
+		{% for cmd in codeErreur %}
+		<tr class="trErr">
+			<td class="tdErr">
+				<form action="/detailsCmd/{{user}}" method="POST">
+					<input type="hidden" value="erreurs" name="previousPage">
+					<input type="hidden" name="idCmd" value="{{cmd['idCmd']}}">
+					<button class="linkDetails" onclick="attente()"><span>{{cmd["idCmd"]}}</span></button>
+				</form>
+			</td>
+			<td class="tdErr">{{cmd["client"]}}</td>
+			<form action="/validerModif/{{user}}" method="post">
+				<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["code"]}}' name="code"></td>
+				<td class="tdErr">{{cmd["lib"]}}</td>
+				<td class="tdErr">{{cmd["prix"]}}</td>
+				<td class="tdErr">{{cmd["qte"]}}</td>
+				<td class="tdErr">{{cmd["ato"]}}</td>
+				<input type='hidden' name='erreurType' value="code">
+				<input type='hidden' name='idProd' value="{{cmd['idProd']}}">
+				<input type='hidden' name='HWouNum' value="Num">
+				<td class="tdButton"><button class="selectBt">VALIDER</button></td>
+			</form>
+		</tr>
+		{% endfor %}
+
+		{% for cmd in codeErreurHW %}
+		<tr class="trErr">
+			<td class="tdErr">
+				<form action="/detailsCmd/{{user}}" method="POST">
+					<input type="hidden" value="erreurs" name="previousPage">
+					<input type="hidden" name="idCmd" value="{{cmd['idCmd']}}">
+					<button class="linkDetails"><span>{{cmd["idCmd"]}}</span></button>
+				</form>
+			</td>
+			<td class="tdErr">{{cmd["client"]}}</td>
+
+			<form action="/validerModif/{{user}}" method="post">
+				<input type='hidden' name='idProd' value="{{cmd['idProd']}}">
+				<input type='hidden' name='HWouNum' value="HW">
+
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_code'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["code"]}}' name="code">
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td class="tdErr"><img
+						src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_lib'+'.jpg')}}"></td>
+
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_prix'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["prix"]}}' name="prix">
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_qte'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["qte"]}}' name="qte">
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td class="tdErr">{{cmd["ato"]}}</td>
+
+				<td class="tdButton"><button class="selectBt">VALIDER</button></td>
+		</tr>
+
+		</form>
+
+		{% endfor %}
+	</table>
+	<br>
+	{% endif %}
+
+	{% if prixErreur|length>0 or prixErreurHW|length>0%}
+
+	<p class="container">Commandes qui présentent une erreur de Prix mal associé au CODE</p>
+
+	<table align="center" class="tabErr">
+		<th class="thErr thNbr">Fichier</th>
+		<th class="thErr">Nom du client</th>
+		<th class="thErr thLib">Code</th>
+		<th class="thErr thLib">Libéllé</th>
+		<th class="thErr thMoy1">Prix</th>
+		<th class="thErr thNbr">Quantité</th>
+		<th class="thErr thNbr">Ato</th>
+		<th class="thButton"></th>
+		{% set i=namespace(value=0)%}
+		{% for cmd in prixErreur %}
+		<tr class="trErr">
+			<td class="tdErr">
+				<form action="/detailsCmd/{{user}}" method="POST">
+					<input type="hidden" value="erreurs" name="previousPage">
+					<input type="hidden" name="idCmd" value="{{cmd['idCmd']}}">
+					<button class="linkDetails" onclick="attente()"><span>{{cmd["idCmd"]}}</span></button>
+				</form>
+			</td>
+			<td class="tdErr">{{cmd["client"]}}</td>
+			<form action="/validerModif/{{user}}" method="post">
+				<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["code"]}}' name="code"></td>
+				<td class="tdErr">{{cmd["lib"]}}</td>
+				<td class="tdErr"><input type="number" step="0.01" class="inputPrep" value='{{cmd["prix"]}}' name="prix"
+						list="suggest1" autocomplete="off"></td>
+				<datalist id="suggest1">
+					<option>{{LprixSuggest[i.value]}}</option>
+				</datalist>
+				<td class="tdErr">{{cmd["qte"]}}</td>
+				<td class="tdErr">{{cmd["ato"]}}</td>
+				<input type='hidden' name='erreurType' value="prix">
+				<input type='hidden' name='idProd' value="{{cmd['idProd']}}">
+				<input type='hidden' name='HWouNum' value="Num">
+				<td class="tdButton"><button class="selectBt">VALIDER</button></td>
+			</form>
+		</tr>
+		{% set i.value=i.value+1 %}
+		{% endfor %}
+		{% for cmd in prixErreurHW %}
+		<tr class="trErr">
+			<td class="tdErr">
+				<form action="/detailsCmd/{{user}}" method="POST">
+					<input type="hidden" value="erreurs" name="previousPage">
+					<input type="hidden" name="idCmd" value="{{cmd['idCmd']}}">
+					<button class="linkDetails" onclick="attente()"><span>{{cmd["idCmd"]}}</span></button>
+				</form>
+			</td>
+			<td class="tdErr">{{cmd["client"]}}</td>
+
+			<form action="/validerModif/{{user}}" method="post">
+				<input type='hidden' name='idProd' value="{{cmd['idProd']}}">
+				<input type='hidden' name='HWouNum' value="HW">
+
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_code'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["code"]}}' name="code">
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td class="tdErr"><img
+						src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_lib'+'.jpg')}}"></td>
+
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_prix'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" list="suggest2" class="inputPrep"
+									value='{{cmd["prix"]}}' name="prix" autocomplete="off"></td>
+						</tr>
+						<datalist id="suggest2">
+							<option>{{LprixSuggest[i.value]}}</option>
+						</datalist>
+					</table>
+				</td>
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_qte'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["qte"]}}' name="qte">
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td class="tdErr">{{cmd["ato"]}}</td>
+
+				<td class="tdButton"><button class="selectBt">VALIDER</button></td>
+		</tr>
+
+		</form>
+		{% set i.value=i.value+1 %}
+		{% endfor %}
+	</table>
+	<br>
+	{% endif %}
+
+	{% if qteErreur|length>0 or qteErreurHW|length>0 %}
+
+	<p class="container">Commandes qui présentent une erreur de Quantité (vide,texte, inférieure à 0 ou supérieure à 30)</p>
+
+	<table align="center" class="tabErr">
+		<th class="thErr thNbr">Fichier</th>
+		<th class="thErr">Nom du client</th>
+		<th class="thErr thLib">Code</th>
+		<th class="thErr thLib">Libéllé</th>
+		<th class="thErr thNbr">Prix</th>
+		<th class="thErr thNbr">Quantité</th>
+		<th class="thErr thNbr">Ato</th>
+		<th class="thButton"></th>
+		{% for cmd in qteErreur %}
+		<tr class="trErr">
+			<td class="tdErr">
+				<form action="/detailsCmd/{{user}}" method="POST">
+					<input type="hidden" value="erreurs" name="previousPage">
+					<input type="hidden" name="idCmd" value="{{cmd['idCmd']}}">
+					<button class="linkDetails" onclick="attente()"><span>{{cmd["idCmd"]}}</span></button>
+				</form>
+			</td>
+			<td class="tdErr">{{cmd["client"]}}</td>
+			<td class="tdErr">{{cmd["code"]}}</td>
+			<td class="tdErr">{{cmd["lib"]}}</td>
+			<td class="tdErr">{{cmd["prix"]}}</td>
+			<form action="/validerModif/{{user}}" method="post">
+				<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["qte"]}}' name="qte" required></td>
+				<td class="tdErr">{{cmd["ato"]}}</td>
+				<input type='hidden' name='erreurType' value="qte">
+				<input type='hidden' name='idProd' value="{{cmd['idProd']}}">
+				<input type='hidden' name='HWouNum' value="Num">
+				<td class="tdButton"><button class="selectBt">VALIDER</button></td>
+			</form>
+		</tr>
+		{% endfor %}
+
+		{% for cmd in qteErreurHW %}
+		<tr class="trErr">
+			<td class="tdErr">
+				<form action="/detailsCmd/{{user}}" method="POST">
+					<input type="hidden" value="erreurs" name="previousPage">
+					<input type="hidden" name="idCmd" value="{{cmd['idCmd']}}">
+					<button class="linkDetails" onclick="attente()"><span>{{cmd["idCmd"]}}</span></button>
+				</form>
+			</td>
+			<td class="tdErr">{{cmd["client"]}}</td>
+
+			<form action="/validerModif/{{user}}" method="post">
+				<input type='hidden' name='idProd' value="{{cmd['idProd']}}">
+				<input type='hidden' name='HWouNum' value="HW">
+
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_code'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["code"]}}' name="code">
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td class="tdErr"><img
+						src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_lib'+'.jpg')}}"></td>
+
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_prix'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["prix"]}}' name="prix">
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td class="tdErr">
+					<table class="soustab">
+						<tr>
+							<td><img
+									src="{{url_for('static', filename='image_cmd/'+cmd['idProd']|string+'_qte'+'.jpg')}}">
+							</td>
+						</tr>
+						<tr>
+							<td class="tdErr"><input type="text" class="inputPrep" value='{{cmd["qte"]}}' name="qte">
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td class="tdErr">{{cmd["ato"]}}</td>
+
+				<td class="tdButton"><button class="selectBt">VALIDER</button></td>
+		</tr>
+
+		</form>
+		{% endfor %}
+	</table>
+	{% endif %}
+	<br>
+</body>
+
+</html>
+<script>
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>

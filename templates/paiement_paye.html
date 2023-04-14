@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+    <div class="topOnglets">
+        <a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+        <a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+        <a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+        <a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+        <a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+        <a class="ongletActif" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+        <a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+        <a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+        <a class="onglet" href="/logout">
+            <button  onclick="attente()" class="invisible" type="button" data-hover="Se Déconnecter" data-active="Se Déconnecter">
+                <span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+            </button>
+        </a>
+    </div>
+
+    <div align="center" class="topnav">
+        <a href="/paiements/{{user}}" onclick="attente()">Impayés</a>
+        <a href="/relanceGroupe/{{user}}" onclick="attente()">Paiements Groupés</a>
+        <a class="active" href="/paiementsPaye/{{user}}" onclick="attente()">Payés</a>
+
+    </div>
+<br>
+<div class="glob">
+    <div class="center">
+        <form action="/paiementsPaye/{{user}}" method="POST" style="display: inline;">
+            <button onclick="attente()" {%if ref==None %} class="AllRefSel" {%else%} class="AllRef"
+                {%endif%}>{{listeAll[0]['prenom']}}</button>
+        </form>
+        {% for liste in listeRef %}
+        <form action="/paiementsPaye/{{user}}" method="POST" style="display: inline;">
+            <input type="hidden" name="ref" id="ref" value="{{liste['id']}}">
+            <button  onclick="attente()" value="{{liste['id']}}" {% if ref==liste['id'] %} class="Ref2Sel" {% else %} class="Ref2"
+                {%endif%}>{{liste['prenom']}}</button>
+        </form>
+
+        {% endfor %}
+    </div>
+</div>
+    <table align="center" class="tabSuivi">
+        <th class="thPetit validerPaiement"></th>
+
+        <th class="thSuivi thSuiviPetit">Date</th>
+        <th class="thSuivi thSuiviPetit">Heure</th>
+        <th class="thSuivi thPetit">ID</th>
+        <th class="thSuivi thSuiviPetit">N°CE</th>
+        <th class="thSuivi thSuiviPetit">N° lot</th>
+        <th class="thSuivi">Client</th>
+        <th class="thSuivi thSuiviPetit">Type</th>
+        <th class="thSuivi thSuiviPetit">Montant</th>
+        <th class="thSuivi thSuiviPetit">Relance n°</th>
+        <th class="thPetit validerPaiement"></th>
+        <tr> 
+                <td>
+                    <form action="/paiementsPaye/{{user}}" method="POST">
+                        <input type="hidden" name="filtre" id="filtre" value="filtre" >
+
+                        <button class="filtre"  onclick="attente()">Retirer les filtres</button>
+                    </form>
+                </td>
+                <form action="/searchPaye/{{user}}" method="POST" id="searchImpaye">
+                <td class="tdRechercheG">
+                    <table>
+                        <tr>
+                            <td class="tdDate">du : <input class="inputSuivi inputDate" type="date" name="dateMin"
+                                    value="{{dateMin}}" onchange="search()"></td>
+                        </tr>
+                        <tr>
+                            <td class="tdDate">au : <input class="inputSuivi inputDate" type="date" name="dateMax"
+                                    value="{{dateMax}}" onchange="search()">
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="tdRecherche"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNum" type="number" placeholder="ID"
+                        name="idCmd" value="{{idCmd}}" onchange="search()"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNum" type="number" placeholder="N° de CE"
+                        name="idCE" value="{{idCE}}" onchange="search()"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNom" type="text" placeholder="N° du lot"
+                        name="lot" value="{{lot}}" onchange="search()"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNom" type="text" placeholder="Nom Prénom"
+                    name="client" value="{{client}}" onchange="search()"></td>
+                <td class="tdRecherche"><input class="inputSuivi inputNom" type="text" placeholder="Type"
+                    name="type" value="{{type}}" onchange="search()"></td>
+                <td class="tdRechercheD"><input class="inputSuivi inputNom" type="number" placeholder="Montant"
+                    name="montant" value="{{montant}}" onchange="search()"></td>
+                </td>
+                <td class="tdRechercheD"></td>
+            </form>
+            {% for client in Lclients %}
+            
+            <form action="/actionFromPaiementPaye/{{user}}" method="POST">
+        <tr class="trSuivi" id="{{client['idCd']}}">
+            
+            <input name="idPaiement" style="display: none;" value="{{client['idPaiement']}}">
+            <input name="idCmd" style="display: none;" value="{{client['idCd']}}">
+            <input name="idRelance" style="display: none;" value="{{client['relance']}}">
+            <input name="montant" style="display: none;" value="{{client['montant']}}">
+            <input name="type" style="display: none;" value="{{client['type']}}">
+            <input name="idUnique" style="display: none;" value="{{client['idUnique']}}">
+            <td class="tdButton"></td>
+            <td class="tdSuivi">{{client["date"]}}</td>
+            <td class="tdSuivi">{{client["heure"]}}</td>
+            <td class="tdSuivi">{{client["idCd"]}}</td>
+            <td class="tdSuivi">{{client["idCE"]}}</td>
+            <td class="tdSuivi">{{client["lot"]}}</td>
+            <td class="tdSuivi">{{client["client"]}}</td>
+             <td class="tdSuivi">
+            {%if client["type"]=='rib'%}
+                <div class="RIB">{{client["type"]}}</div>
+            {%elif client["type"]=='lien'%}
+                <div class="Lien">{{client["type"]}}</div>
+            {%elif client["type"]=='espece'%}
+                <div class="Espece">{{client["type"]}}</div>
+            {%elif client["type"]=='chequeR'%}
+                <div class="ChequeR">chèque reçu</div>
+            {%elif client["type"]=='chequeAV'%}
+                <div class="ChequeAV">chèque avant récep</div> 
+            {%elif client["type"]=='chequeAP'%}
+                <div class="ChequeAP">chèque après récep</div> 
+            {%else%}   
+                <div class="Autre">{{client["type"]}}</div>  
+            {%endif%}
+            </td>
+            <td class="tdSuivi">{{client["montant"]}}</td>
+            <td class="tdSuivi" name="idRelance">{{client["relance"]}}</td>
+            <td class="tdButton"><button  type='input' name='action' value="annuler-{{client['idUnique']}}" class="btAnnule"
+                id="{{client['idCd']}}">Annuler</button></td>
+        </tr>
+
+        {% endfor %}
+    </form>
+    </table>
+    <br>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        const searchImpaye = document.getElementById("searchImpaye");
+        function search() {
+            searchImpaye.submit();
+        }
+        
+        function details(e, f) {
+            if (e.target.tagName != "BUTTON") {
+                const form = e.currentTarget.id;
+                document.getElementById(form).submit();
+            }
+        }
+
+        function attente(){
+            var element=document.getElementById("html");
+            element.className="attente";
+        }
+    </script>
+</body>
+
+</html>

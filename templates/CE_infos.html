@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+    <div class="topOnglets">
+        <a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+        <a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+        <a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+        <a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+        <a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+        <a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+        <a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+        <a class="ongletActif" href="/CE/{{user}}" onclick="attente()">CE</a>
+        <a class="onglet" href="/logout" onclick="attente()">
+            <button class="invisible" type="button" data-hover="Se Déconnecter" data-active="Se Déconnecter">
+                <span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+            </button>
+        </a>
+    </div>
+    <div align="center" class="topnav">
+        <a href="/ajoutCE/{{user}}" onclick="attente()">Ajout CE</a>
+        <a href="/rechercheCE/{{user}}" onclick="attente()">Recherche CE</a>
+        <a href="/CE/{{user}}" onclick="attente()">Listing CE</a>
+        <a class="active" href="/infoCE/{{user}}" onclick="attente()">Informations facturations CE</a>
+        <a href="/adresseCE/{{user}}" onclick="attente()">Adresses CE</a>
+
+    </div>
+    <div style="margin-bottom: 20px;">
+        <div class="center">
+            <form action="/infoCE/{{user}}" method="POST" style="display: inline;">
+                <input type="hidden" name="ref" id="ref" value="{{listeAll[0]['id']}}">
+                <button onclick="attente()" {%if ref==None %} class="AllRefSel" {%else%} class="AllRef"
+                    {%endif%}>{{listeAll[0]['prenom']}}</button>
+            </form>
+            {% for liste in listeRef %}
+            <form action="/infoCE/{{user}}" method="POST" style="display: inline;">
+                <input type="hidden" name="ref" id="ref" value="{{liste['id']}}">
+                <button onclick="attente()" value="{{liste['id']}}" {% if ref==liste['id'] %} class="Ref2Sel" {% else %}
+                    class="Ref2" {%endif%}>{{liste['prenom']}}</button>
+            </form>
+            {% endfor %}
+        </div>
+    </div>
+    <table align="center" class="tabCE">
+        <th class="thHistCE thP2">N° de CE</th>
+        <th class="thHistCE thGG">Nom du CE</th>
+        <th class="thHistCE thMoy2">Réf.</th>
+        <th class="thHistCE thP2">Factures</th>
+        <th class="thHistCE thP2">Sacs</th>
+        <th class="thHistCE thP">Retrait Mag</th>
+        <th class="thHistCE thMoy1">Colis Indiv.</th>
+        <th class="thHistCE thP2">Colis Collectif</th>
+        <th class="thHistCE thMoy1">Expé.</th>
+        <th class="thHistCE thP">Cat.</th>
+        <th class="thHistCE thP">Promo.</th>
+        <th class="thHistCE thGG">Commentaires</th>
+
+        <th class="thButton"></th>
+        {% for CE in LCE %}
+        <tr id="{{CE['id']}}" class="trCE">
+            <td id="idCE{{CE['id']}}" class="textInfoCE thP2" type="number" value="{{CE['idCE']}}">{{CE['idCE']}}</td>
+            <td id="entreprise{{CE['id']}}" class="textInfoCE thGG" type="text" value="{{CE['entreprise']}}">
+                {{CE['entreprise']}}</td>
+            <td id="ref{{CE['id']}}" class="textInfoCE thMoy2" type="text" value="{{CE['referente']}}">{{CE['prenom']}}
+            </td>
+            <td><select id="qteFact{{CE['id']}}" class="inputCE thP2" value="{{CE['qteFact']}}"
+                    style="cursor: pointer;">
+                    <option value="1" {% if CE['qteFact']==1 %} selected {%endif%}>1</option>
+                    <option value="2" {% if CE['qteFact']==2 %} selected {%endif%}>2</option>
+                    <option value="3" {% if CE['qteFact']==3 %} selected {%endif%}>3</option>
+                    <option value="4" {% if CE['qteFact']==4 %} selected {%endif%}>4</option>
+                </select></td>
+            <td><select id="sac{{CE['id']}}" class="inputCE thP2" value="{{CE['sac']}}" style="cursor: pointer;">
+                    <option value="Papier" {% if CE['sac']=="Papier" %} selected {%endif%}>Papier</option>
+                    <option value="Plastique" {% if CE['sac']=="Plastique" %} selected {%endif%}>Plastique</option>
+                    <option value="Aucun" {% if CE['sac']=="Aucun" %} selected {%endif%}>Aucun</option>
+                </select></td>
+            <td><select id="retraitMag{{CE['id']}}" class="inputCE thP" style="cursor: pointer;">
+                    <option value="NON" {% if retraitMag=="NON" %} selected {%endif%}>NON</option>
+                    <option value="1" {% if CE['retraitMag']=="1" %} selected {%endif%}>1</option>
+                    <option value="2" {% if CE['retraitMag']=="2" %} selected {%endif%}>2</option>
+                    <option value="3" {% if CE['retraitMag']=="3" %} selected {%endif%}>3</option>
+                    <option value="4" {% if CE['retraitMag']=="4" %} selected {%endif%}>4</option>
+                    <option value="5" {% if CE['retraitMag']=="5" %} selected {%endif%}>5</option>
+                    <option value="6" {% if CE['retraitMag']=="6" %} selected {%endif%}>6</option>
+                </select></td>
+            <td><select id="colisIndiv{{CE['id']}}" class="inputCE thMoy1" style="cursor: pointer;">
+                    <option value="NON" {% if CE['colisIndiv']=="NON" %} selected {%endif%}>NON</option>
+                    <option value="Entreprise" {%if CE['colisIndiv']=="Entreprise" %} selected {%endif%}>Entreprise
+                    </option>
+                    <option value="Domicile" {%if CE['colisIndiv']=="Domicile" %} selected {%endif%}>Domicile</option>
+                </select></td>
+            <td><select id="colisCol{{CE['id']}}" class="inputCE thP2" style="cursor: pointer;">
+                    <option value="NON" {%if CE['colisCol']=="NON" %} selected {%endif%}>NON</option>
+                    <option value="OUI" {%if CE['colisCol']=="OUI" %} selected {%endif%}>OUI</option>
+                </select></td>
+            <td><select id="colisExpe{{CE['id']}}" class="inputCE thMoy1" style="cursor: pointer;">
+                    <option value="Aucun" {%if CE['colisExpe']=="Aucun" %} selected {%endif%}>Aucun</option>
+                    <option value="Colissimo" {%if CE['colisExpe']=="Colissimo" %} selected {%endif%}>Colissimo</option>
+                    <option value="Dililog" {%if CE['colisExpe']=="Dililog" %} selected {%endif%}>Dililog</option>
+                </select></td>
+                <td><input id="catalogue{{CE['id']}}" class="inputCE thP" type="number" value="{{CE['catalogue']}}"
+                    style="cursor: pointer;"></td>
+                <td><input id="promotion{{CE['id']}}" class="inputCE thP" type="number" value="{{CE['promotion']}}"
+                    style="cursor: pointer;"></td>
+            <td><input id="commentaires{{CE['id']}}" class="inputCE thGG" type="text" value="{{CE['commentaires']}}"
+                    style="cursor: pointer;"></td>
+            <td class="tdButton"><button id="{{CE['id']}}" class="selectBt" onclick="update(this)">VALIDER</button></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+</body>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+
+    function update(t) {
+        const id = t.id;
+        var ref = document.getElementById(`ref${id}`).value;
+        var qteFact = document.getElementById(`qteFact${id}`).value;
+        var sac = document.getElementById(`sac${id}`).value;
+        var retraitMag = document.getElementById(`retraitMag${id}`).value;
+        var colisIndiv = document.getElementById(`colisIndiv${id}`).value;
+        var colisCol = document.getElementById(`colisCol${id}`).value;
+        var colisExpe = document.getElementById(`colisExpe${id}`).value;
+        var catalogue = document.getElementById(`catalogue${id}`).value;
+        var promotion = document.getElementById(`promotion${id}`).value;
+        var commentaires = document.getElementById(`commentaires${id}`).value;
+        alert("Changement(s) pris en compte");
+        req = jQuery.ajax({
+            url: '/modifCEInfo',
+            type: 'POST',
+            data: { ref: ref, qteFact: qteFact, sac: sac, retraitMag: retraitMag, colisIndiv: colisIndiv, colisCol: colisCol, colisExpe: colisExpe,catalogue:catalogue,promotion:promotion, commentaires: commentaires, id: id }
+        });
+        $(`[id=${id}]`).fadeOut(1000).fadeIn(1000);
+    }
+    function attente() {
+        var element = document.getElementById("html");
+        element.className = "attente";
+    }
+</script>
+
+</html>

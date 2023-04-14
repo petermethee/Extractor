@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="darkworld.css") }}'>
+
+<body>
+    <div class="topOnglets">
+        <a class="onglet" href="/utilisateurs" onclick="attente()">Utilisateurs</a>
+        <a class="onglet" href="/corbeille" onclick="attente()">Corbeille</a>
+		<a class="onglet" href="/export_de_donnees" onclick="attente()">Export de Données</a>
+        <a class="ongletActif" href="/stat" onclick="attente()">Statistiques</a>
+        <a class="onglet" href="/clients" onclick="attente()">Clients</a>
+        <a class="onglet" href="/logout">
+            <button onclick="attente()" class="invisible" type="button" data-hover="Se Déconnecter"
+                data-active="Se Déconnecter">
+                <span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+            </button>
+        </a>
+    </div>
+    <br>
+    <div align="center" class="topnav">
+        <a class="active" href="/stat" onclick="attente()">Général</a>
+        <a href="/statCE" onclick="attente()">Stat CE</a>
+        <a href="/statRef" onclick="attente()">Référentes</a>
+        <a href="/statUser" onclick="attente()">Commandes / Utilisateur</a>
+        <a href="/statUserPdt" onclick="attente()">Produits / Utilisateur</a>
+
+    </div>
+
+    <form action="/stat" method="POST">
+        <div class="txt">Du : <input class="fourchette" type="date" name="dateMin" value="{{dateMin}}"
+                onchange="this.form.submit()"> Au : <input class="fourchette" type="date" name="dateMax"
+                value="{{dateMax}}" onchange="this.form.submit()"></div>
+    </form>
+    <form action="/export">
+        <button class="BtRest" onclick="clic()">EXPORTER</button>
+    </form>
+    <table align="center" class="statGenTab">
+        <tr>
+            <td>
+                <table align="center" class="sousStat">
+                    <th class="thsousStat">Commandes TOTALES</th>
+                    <tr class="trsousStat">
+                        <td class="tdsousTab">{{cmdTot}}</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table align="center" class="sousStat">
+                    <th class="thsousStat">Chiffre d'affaire</th>
+                    <tr class="trsousStat">
+                        <td class="tdsousTab">{{CA}} €</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table align="center" class="sousStat">
+                    <th class="thsousStat">Temps de traitement</th>
+                    <tr class="trsousStat">
+                        <td class="tdsousTab">{{tpstot}} jours</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <table align="center" class="sousStat">
+                    <th class="thsousStat" colspan="2">Meilleur CE</th>
+                    <tr class="trsousStat">
+                        <td class="tdsousTab">{{idCEmax}}</td>
+                        <td>{{CAmax}} €</td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table align="center" class="sousStat">
+                    <th class="thsousStat" colspan="2">Meilleur vente en quantité
+        </tr>
+        <tr class="trsousStat">
+            <td class="tdsousTab">{{bestP}}</td>
+            <td>{{nbProd}}</td>
+        </tr>
+    </table>
+    </td>
+    <td>
+        <table align="center" class="sousStat">
+            <th class="thsousStat" colspan="2">Meilleur vente en €</tr>
+                <tr class="trsousStat">
+                    <td class="tdsousTab">{{libMax}}</td>
+                    <td>{{CAProdMax}} €</td>
+                </tr>
+        </table>
+    </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <table align="center" class="sousStat">
+                <th class="thsousStat" colspan="2">Ruptures
+    </tr>
+    <tr class="trsousStat">
+        <td class="tdsousTab">{{nbRupt}} Produits en rupture</td>
+        <td>{{coutRupt}} €</td>
+    </tr>
+    </table>
+    </td>
+    </tr>
+    </table>
+
+    <div id="curve_chart" style="width: 100%; height: 500px"></div>
+
+    <br>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'], 'language': 'fr' });
+        google.charts.setOnLoadCallback(chartLoadCallback);
+        tdata = JSON.parse({{ jsondata|tojson|safe}});
+        Ldate = tdata.Ldate;
+        /**
+         * Hook to be called by google chart when it has finished loading.
+         */
+        function chartLoadCallback() {
+            drawChart();
+            window.onresize = function (event) { drawChart(); };
+        }
+
+
+        /**
+         * Draw the chart. Calling this will replace the chart. You may wish to do this when you
+         * resize a window etc.
+         */
+        function drawChart() {
+            var chartData = [["temps", "Nombre de Commandes"]];
+            for (i = 0; i < Ldate.length; i++) {
+                chartData.push([new Date(Ldate[i][0]), Ldate[i][1]]);
+            }
+
+            var dataTable = google.visualization.arrayToDataTable(chartData);
+            var formatter = new google.visualization.DateFormat({ pattern: 'd MMMM' });
+            // Reformat our data.
+            formatter.format(dataTable, 0);
+            var options = {
+                colors: ['#EF851C'],
+                pointSize: 1,
+                pointShape: { type: 'string' },
+                "vAxis": {
+                    "viewWindowMode": "explicit",
+                    "viewWindow": {
+                        "min": 0
+                    }
+                },
+                "title": 'Commandes en cours',
+                "curveType": 'function',
+                "legend": { "position": 'bottom' },
+                'chartArea': { 'width': '80%', 'height': '80%' },
+                "selectionMode": 'multiple',
+                "tooltip": { "trigger": 'both' },
+                "aggregationTarget": 'none',
+                "focusTarget": "category",
+                "explorer": {
+                    "axis": 'horizontal',
+                    "actions": ['dragToZoom', 'rightClickToReset']
+                },
+                "crosshair": {
+                    "trigger": "both",
+                    "orientation": 'vertical'
+                },
+                "hAxis": {
+                    "format": 'd MMMM Y',
+                }
+            };
+
+            var chart = new google.visualization.AreaChart(document.getElementById('curve_chart'));
+            chart.draw(dataTable, options);
+        }
+        function clic() {
+            alert("Exportation terminé")
+        }
+        function attente() {
+            var element = document.getElementById("html");
+            element.className = "attente";
+        }
+    </script>
+
+</body>
+
+</html>

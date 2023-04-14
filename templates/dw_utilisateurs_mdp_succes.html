@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{url_for("static",filename="cssLoadPage.css")}}'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<table class="label" align="center">
+		<tr>
+			<td><img class="im" src='{{url_for("static",filename="pb.jpg")}}'></td>
+			<td>Bienvenue sur Extractor<p>CSE Parfums</p>
+			</td>
+			<td><img class="im" src='{{url_for("static",filename="jpcorp2.png")}}'></td>
+		</tr>
+	</table>
+
+
+
+	<form action="/utilisateurs" method="post">
+		<div align="center">
+			<table class="table">
+				<div class="bienvenue">L'administrateur doit confirmer le changement de mot de passe </div>
+				<tr>
+					<td align="center"><input type="submit" class="btValider" value="Valider" onclick="attente()" />
+					</td>
+				</tr>
+			</table>
+		</div>
+
+	</form>
+	{% with messages= get_flashed_messages() %}
+	{% if messages %}
+	<ul class="flashes">
+		{% for message in messages%}
+		<li class="txt">{{message}}</li>
+		{%endfor%}
+	</ul>
+	{%endif%}
+	{%endwith%}
+</body>
+
+</html>
+<script>
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>

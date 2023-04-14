@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="ongletActif" href="/start/{{user}}" onclick="attente()">Traitements</a>
+		<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="onglet" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" onclick="attente()" type="button" data-hover="Se Déconnecter"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button></a>
+	</div>
+	<div align="center" class="topnav">
+		<a href="/start/{{user}}" onclick="attente()">Extraction</a>
+		<a class="active" href="/assoClientCE/{{user}}" onclick="attente()">Association Client/CE</a>
+		<a href="/historique/{{user}}" onclick="attente()">Historique des Extractions</a>
+	</div>
+	<div>
+
+		<table class="tabInfo">
+			<tr class="trInfo">
+				<td class="tdInfo">N° CE</td>
+				<td class="tdInfo">Description</td>
+				<td class="tdInfo">Date</td>
+				<td class="tdInfo">Créé par</td>
+			</tr>
+			<tr class="trInfo">
+				<td class="tdInfo">{{nCE}}</td>
+				<td class="tdInfo">{{description}}</td>
+				<td class="tdInfo">{{date}}</td>
+				<td class="tdInfo">{{createur}}</td>
+			</tr>
+		</table>
+	</div>
+
+	{%if Lclients|length >0%}
+	<p class="container">Notice : Associez correctement le numéro de CE au nom de la société</p>
+	<table align="center" class="tabClientCE">
+		<th class="thclient thNbr">ID</th>
+		<th class="thclient thidCE">N° CE</th>
+		<th class="thclient">Société</th>
+		<th class="thclient">Nom/Prénom</th>
+
+		{% for client in Lclients %}
+		<tr class="trclient">
+			<td>
+				<form action="/detailsCmd/{{user}}" method="POST">
+					<input type="hidden" value="assoClientCE" name="previousPage">
+					<input type="hidden" name="idCmd" value="{{client['id_commande']}}">
+					<button class="linkDetails"><span>{{client["id_commande"]}}</span></button>
+				</form>
+			</td>
+			<td><input type="number" onchange="applicModif(this)" class="input" list="idCE" value='{{client["idCE"]}}'
+					name='{{client["idCE"]}}' id="{{client['idClient']}}"></td>
+			<td>{{client["societe"]}}</td>
+			<td>{{client["client"]}}</td>
+			<datalist id="idCE">
+				{%for idCE in LidCE%}
+				<option value="{{idCE['idCE']}}">
+					{%endfor%}
+			</datalist>
+		</tr>
+		{% endfor %}
+	</table>
+	{%endif%}
+
+	{%if LclientsHW|length >0%}
+	<p class="container">Vérifier que les informations : numéros CE, Nom, Prénom, Mail soient correctement détectées</p>
+	<table align="center" class="tabClientCE">
+		<th class="thclient thNbr">ID</th>
+		<th class="thclient thidCE">N° CE</th>
+		<th class="thclient">Société</th>
+		<th class="thclient">Nom/Prénom</th>
+		<th class="thclient">Mail</th>
+		<th class="thclient">Téléphone</th>
+		<th class="thclient">Adresse</th>
+		<th class="thclient thNbr">TOTAL</th>
+		{% for client in LclientsHW %}
+		<tr class="trclient">
+			<td>
+				<form action="/detailsCmd/{{user}}" method="POST">
+					<input type="hidden" value="assoClientCE" name="previousPage">
+					<input type="hidden" name="idCmd" value="{{client['id_commande']}}">
+					<button class="linkDetails"><span>{{client["id_commande"]}}</span></button>
+				</form>
+			</td>
+			<td><input type="number" onchange="applicModifHW(this)" class="input" list="idCE" value='{{client["idCE"]}}'
+					name='{{client["idCE"]}}' id="idCE_{{client['idClient']}}" required></td>
+			<td>
+				<table class="sousTab">
+					<tr>
+						<td class="tdImg"><img
+								src="{{url_for('static', filename='image_client/'+client['id_commande']|string+'_0.jpg')}}">
+						</td>
+					</tr>
+					<tr>
+						<td><input type="text" onchange="applicModifHW(this)" class="input"
+								id="societe_{{client['idClient']}}" value="{{client['societe']}}"></td>
+					</tr>
+				</table>
+			</td>
+			<td>
+				<table class="sousTab">
+					<tr>
+						<td class="tdImg"><img
+								src="{{url_for('static', filename='image_client/'+client['id_commande']|string+'_1.jpg')}}">
+						</td>
+					</tr>
+					<tr>
+						<td><input type="text" onchange="applicModifHW(this)" class="input"
+								id="client_{{client['idClient']}}" value="{{client['client']}}" required></td>
+					</tr>
+				</table>
+			</td>
+			<td>
+				<table class="sousTab">
+					<tr>
+						<td class="tdImg"><img
+								src="{{url_for('static', filename='image_client/'+client['id_commande']|string+'_2.jpg')}}">
+						</td>
+					</tr>
+					<tr>
+						<td><input type="email" onchange="applicModifHW(this)" class="input"
+								id="mail_{{client['idClient']}}" value="{{client['mail']}}"></td>
+					</tr>
+				</table class="sousTab">
+			</td>
+			<td>
+				<table class="sousTab">
+					<tr>
+						<td class="tdImg"><img
+								src="{{url_for('static', filename='image_client/'+client['id_commande']|string+'_3.jpg')}}">
+						</td>
+					</tr>
+					<tr>
+						<td><input type="text" onchange="applicModifHW(this)" class="input"
+								id="tel_{{client['idClient']}}" value="{{client['tel']}}"></td>
+					</tr>
+				</table>
+			</td>
+			<td>
+				<table class="sousTab">
+					<tr>
+						<td class="tdImg"><img
+								src="{{url_for('static', filename='image_client/'+client['id_commande']|string+'_4.jpg')}}">
+						</td>
+					</tr>
+					<tr>
+						<td><input type="text" onchange="applicModifHW(this)" class="input"
+								id="adresse_{{client['idClient']}}" value="{{client['adresse']}}"></td>
+					</tr>
+				</table>
+			</td>
+			<td>
+				<table class="sousTab">
+					<tr>
+						<td class="tdImg"><img
+								src="{{url_for('static', filename='image_client/'+client['id_commande']|string+'_5.jpg')}}">
+						</td>
+					</tr>
+					<tr>
+						<td><input type="text" onchange="applicModifHW(this)" class="input"
+								id="total_{{client['idClient']}}" value="{{client['total']}}"></td>
+					</tr>
+				</table>
+			</td>
+			<datalist id="idCE">
+				{%for idCE in LidCE%}
+				<option value="{{idCE['idCE']}}">
+					{%endfor%}
+			</datalist>
+
+		</tr>
+
+		{% endfor %}
+	</table>
+	{%endif%}
+	<br>
+</body>
+<input type="hidden" id="nbError" value="{{nbError}}">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+	var nbError = document.getElementById('nbError').value;
+
+	if (nbError > 0) {
+		alert("Il y a " + nbError + " bons de commande qui ont été déplacés dans Erreur")
+	}
+	function applicModif(t) {
+		const idClient = t.id;
+		const inputidCE = document.getElementById(t.id);
+		const nouvidCE = inputidCE.value;
+		const idCE = inputidCE.name;
+		req = jQuery.ajax({
+			url: '/applicModif',
+			type: 'POST',
+			data: { idClient: idClient, nouvidCE: nouvidCE }
+		});
+		req.done(function (data) {
+			if (data.result == 0) {
+				alert("Le CE " + nouvidCE + " n'existe pas");
+				inputidCE.value = idCE;
+			}
+		});
+	}
+
+	function applicModifHW(t) {
+		const LidClient = t.id;
+		const idClient = LidClient.split("_")[1];
+		const inputidCE = document.getElementById(`idCE_${idClient}`);
+		const nouvidCE = inputidCE.value;
+		const idCE = inputidCE.name;
+		const societe = document.getElementById(`societe_${idClient}`).value;
+		const client = document.getElementById(`client_${idClient}`).value;
+		const mail = document.getElementById(`mail_${idClient}`).value;
+		const tel = document.getElementById(`tel_${idClient}`).value;
+		const adresse = document.getElementById(`adresse_${idClient}`).value;
+		const total = document.getElementById(`total_${idClient}`).value;
+		req = jQuery.ajax({
+			url: '/applicModifHW',
+			type: 'POST',
+			data: { idClient: idClient, nouvidCE: nouvidCE, societe: societe, client: client, mail: mail, tel: tel, adresse: adresse, total: total }
+		});
+		req.done(function (data) {
+			if (data.result == 0) {
+				alert("Le CE " + nouvidCE + " n'existe pas");
+				inputidCE.value = idCE;
+			}
+		});
+	}
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>
+
+</html>

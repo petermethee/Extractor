@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='F:\mycss8.css'>
+
+<!-- <link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/bdd/static/mycss8.css'> -->
+
+<body>
+    <h1 class="titreCreate">Création d'une commande</h1>
+    <div class="top">
+        <div class="divBt">
+            <form action="/valinuler/{{user}}" method="POST">
+                <button name="mode" value=0 class="annulBt" onclick="attente()">ANNULER</button>
+            </form>
+            <form action="/valinuler/{{user}}" method="POST" id="form">
+                <button type="submit" name="mode" value=1 class="saveNewCmd">ENREGISTRER ET CONTINUER</button>
+                <button type="submit" name="mode" value=2 class="saveNewCmd">ENREGISTRER ET QUITTER</button>
+        </div>
+        <div class="selectClient">
+            <input type="text" list="Lclients" class="inputSearch" onchange="search()"
+                placeholder="Rechercher un client" id="input" autocomplete="off">
+            <datalist id="Lclients">
+                {%for client in Lclients%}
+                <option value="{{client['idCEclient']}} - {{client['idclient']}} - {{client['client']}}">
+                    {%endfor%}
+            </datalist>
+        </div>
+        <div>
+            <table align="center" class="tabinfoClient">
+                <th class="thCmd thMoy2">N°CE</th>
+                <th class="thCmd">Societe</th>
+                <th class="thCmd">Nom</th>
+                <th class="thCmd">Mail</th>
+                <th class="thCmd thMoy2">Tel</th>
+                <tr class="trinfoClient">
+                    <td class="tdinfoClient"><input type="number" class="inputClientAddCmd" onchange="getSociete()"
+                            name="idCE" id="idCE" list="LCE" min="900001" required></td>
+                    <datalist id="LCE">
+                        {%for CE in LCE%}
+                        <option value="{{CE['idCE']}}">
+                            {%endfor%}
+                    </datalist>
+                    <td class="tdinfoClient"><input type="text" class="inputClientAddCmd" name="societe" id="societe">
+                    </td>
+                    <td class="tdinfoClient"><input type="text" class="inputClientAddCmd" name="client" id="client" required>
+                    </td>
+                    <td class="tdinfoClient"><input type="email" class="inputClientAddCmd" name="mail" id="mail"></td>
+                    <td class="tdinfoClient"><input type="text" class="inputClientAddCmd" name="tel" id="tel"></td>
+                </tr>
+            </table>
+            <table align="center" class="tabinfoClient">
+                <th class="thCmd thCmdLarge">Adresse</th>
+                <th class="thCmd thMoy1">TOTAL</th>
+                <tr>
+                    <td class="tdinfoClient"><input type="text" class="inputClientAddCmd" name="adresse" id="adresse">
+                    </td>
+                    <td class="tdinfoClient"><input type="text" class="inputClientAddCmd" name="total"></td>
+                </tr>
+            </table>
+             <table align="center" class="tabinfoClient">
+                <th class="thCmd thCmdLarge">Remarque</th>
+                <tr>
+                    <td class="tdinfoClient"><input type="text" class="inputClientAddCmd" name="commentaire" id="commentaire">
+                    </td>
+                </tr>
+            </table>
+            </form>
+        </div>
+    </div>
+
+    <div class="divCmd">
+        <div>
+            <p class="pprod">Produits commandés</p>
+
+
+            <table align="center" class="tabAddCmd">
+                <th class="thAddCmd thP">Code</th>
+                <th class="thAddCmd thP">EAN</th>
+                <th class="thAddCmd thG">Libellé</th>
+                <th class="thAddCmd thP">Prix</th>
+                <th class="thAddCmd thP">Quantité</th>
+                <th class="thAddCmd thP">Atomiseur</th>
+                <th class="thBtAddCmd thMin"></th>
+                <tbody id="body">
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <table align="center">
+                <tr>
+                    <td>Nombre de lignes :</td>
+                    <td id="qteProd">0</td>
+                </tr>
+            </table>
+        </div>
+        <div class="containAddAdd">
+            <table align="center" class="tabCE">
+                <tr class="trAjout">
+                    <td><input type="text" class="inputadd" list="Lcode" maxlength="8" name="code" id="code"
+                            placeholder="Code Produit"></td>
+
+                    <datalist id="Lcode">
+                        {%for code in Lcode%}
+                        <option value="{{code}}">
+                            {%endfor%}
+                    </datalist>
+
+                    <td><input type="number" min="0" max="30" class="inputadd" name="qte" id="qte" placeholder="Quantité désirée"
+                            value="1"></td>
+                    <td>Atomiseur si rupture :<input type="checkbox" name="ato" id="ato"></td>
+                    <td><button onclick="onAddProd()" class="addBt">AJOUTER</button></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <br>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        const tbodyEl = document.getElementById("body");
+        const tableEl = document.getElementsByClassName("tabAddCmd")[0];
+        var i = 0;
+        var counterVal = 0;
+
+        function incrementClick() {
+            updateDisplay(++counterVal);
+
+        }
+
+        function incrementLessClick() {
+            updateDisplay(--counterVal);
+        }
+        function updateDisplay(val) {
+            document.getElementById("qteProd").innerHTML = val;
+        }
+
+        function getSociete() {
+            var idCE = document.getElementById("idCE").value;
+            req = jQuery.ajax({
+                url: '/getSociete',
+                type: 'POST',
+                data: { idCE: idCE }
+            });
+
+            req.done(function (data) {
+                document.getElementById("societe").value = data.societe;
+            });
+        }
+        function onAddProd() {
+            var code = document.getElementById("code").value;
+            var qte = document.getElementById("qte").value;
+            var checkbox = document.getElementById("ato");
+            if (checkbox.checked) {
+                var ato = "oui";
+            }
+            else {
+                var ato = "non";
+            }
+            if (qte == "" || code == "") {
+                alert("Vous avez oublié quelque chose")
+            }
+            else if (qte>30){
+                alert("La quantité est supérieure à 30 !!");
+            }
+            else if (qte<0){
+                alert("La quantité est inférieure à 0 !!");
+            }
+            else {
+                document.getElementById("qteProd").innerHTML = ++counterVal;
+                req = jQuery.ajax({
+                    url: '/addProd',
+                    type: 'POST',
+                    data: { code: code }
+                });
+
+                req.done(function (data) {
+                    if (data.errone == 1) {
+                        alert("Code produit incorrect");
+                    }
+                    else {
+                        if (data.errone == -1) {
+                            alert("Ce produit est en rupture jusqu'au : " + data.date);
+                        }
+                        $('#form').append(`<input id=${i} type="hidden" name="code" value="${code}">`);
+                        $('#form').append(`<input id=${i} type="hidden" name="ean" value="${data.ean}">`);
+                        $('#form').append(`<input id=${i} type="hidden" name="lib" value="${data.lib}">`);
+                        $('#form').append(`<input id=${i} type="hidden" name="prix" value="${data.prix}">`);
+                        $('#form').append(`<input id=${i} type="hidden" name="qte" value="${qte}">`);
+                        $('#form').append(`<input id=${i} type="hidden" name="ato" value="${ato}">`);
+                        tbodyEl.innerHTML += `
+                        <tr class="trAddCmd" id=${i}>
+                            <td>${code}</td>
+                            <td>${data.ean}</td>
+                            <td>${data.lib}</td>
+                            <td>${data.prix}</td>
+                            <td>${qte}</td>
+                            <td>${ato}</td>
+                            <td class="tdBtAddCmd"><button  type="button" class="deleteBtn" id=${i}>Supprimer</button></td>
+                        </tr>`;
+                        i += 1;
+                        document.getElementById("code").value = "";
+                        document.getElementById("qte").value = "1";
+                        document.getElementById("ato").checked = false;
+                    }
+                });
+            }
+        }
+
+        function onDeleteRow(e) {
+            e.preventDefault();
+            if (!e.target.classList.contains("deleteBtn")) {
+                return;
+            }
+            document.getElementById("qteProd").innerHTML = --counterVal;
+            const btn = e.target;
+            const name = e.target.id;
+            $(`[id=${name}]`).remove();
+        }
+
+        function search(e) {
+            var client = document.getElementById("input").value;
+            req = jQuery.ajax({
+                url: '/searchClient',
+                type: 'POST',
+                data: { client: client }
+            });
+            req.done(function (data) {
+                if (data.taille > 0) {
+                    document.getElementById("idCE").value = data.Linfo[0]
+                    document.getElementById("societe").value = data.Linfo[1]
+                    document.getElementById("client").value = data.Linfo[2]
+                    document.getElementById("mail").value = data.Linfo[3]
+                    document.getElementById("tel").value = data.Linfo[4]
+                    document.getElementById("adresse").value = data.Linfo[5]
+                    document.getElementById("commentaire").value = data.Linfo[6]
+
+                }
+                else {
+                    alert("Ce client n'existe pas")
+                }
+
+            });
+        }
+        tableEl.addEventListener("click", onDeleteRow);
+
+        function attente() {
+            var element = document.getElementById("html");
+            element.className = "attente";
+        }
+    </script>
+</body>
+
+</html>

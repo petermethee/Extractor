@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+    <title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+
+<body>
+    <h1 class="titreDetail">
+        <p align="center">Vérification des données - Colissimo</p>
+    </h1>
+    <p class="SousTitreDetails">Informations clients</p>
+    <table align="center" class="tabinfoClient">
+        <form action="/extractColissimo/{{user}}" method="POST">
+            <th class="thPetit"></th>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Nom</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="nom" value="{{nom}}">
+                </td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Prénom</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="prenom"
+                        value="{{prenom}}"></td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Téléphone Fixe</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="fixe"
+                        value="{{fixe}}"></td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Téléphone Mobile</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="mobile"
+                        value="{{mobile}}"></td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Mail</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="mail"
+                        value="{{mail}}"></td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Adresse</td>
+                <td class="tdinfoClient" colspan="2"><input maxlength="35" type="text" class="inputClient" name="rue"
+                        value="{{rue}}"></td>
+            </tr>
+
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Résidence</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="res"></td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Etage/couloir</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="couls"></td>
+            </tr>
+
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Code Postal</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="CP" value="{{CP}}">
+                </td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Ville</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="ville"
+                        value="{{ville}}"></td>
+            </tr>
+    </table>
+    <button name="bouton" value="1" class="BtSuppr" onclick="attente()">Retour</button>
+    <button name="bouton" value="0" class="BtRest" onclick="exportation()">Exporter</button>
+
+    </form>
+    <script>
+        function exportation() {
+            alert("La fiche client a bien été exporté. Vous la trouverez dans le dossier 'EXPORT'.");
+        }
+        function attente() {
+            var element = document.getElementById("html");
+            element.className = "attente";
+        }
+    </script>
+</body>
+
+</html>

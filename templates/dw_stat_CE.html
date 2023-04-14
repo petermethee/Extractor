@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <div id="html" class=""></div>
+
+  <head>
+    <title>Parfumerie Mireille</title>
+  </head>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"
+  />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href='{{ url_for("static", filename="darkworld.css") }}'
+  />
+
+  <body>
+    <div class="topOnglets">
+      <a class="onglet" href="/utilisateurs" onclick="attente()"
+        >Utilisateurs</a
+      >
+      <a class="onglet" href="/corbeille" onclick="attente()">Corbeille</a>
+      <a class="onglet" href="/export_de_donnees" onclick="attente()"
+        >Export de Données</a
+      >
+      <a class="ongletActif" href="/stat" onclick="attente()">Statistiques</a>
+      <a class="onglet" href="/clients" onclick="attente()">Clients</a>
+      <a class="onglet" href="/logout" onclick="attente()">
+        <button
+          onclick="attente()"
+          class="invisible"
+          type="button"
+          data-hover="Se Déconnecter"
+          data-active="Se Déconnecter"
+        >
+          <span
+            ><i class="fas fa-user span" style="padding-right: 10px"></i
+            >{{session['user']['username']}}</span
+          >
+        </button>
+      </a>
+    </div>
+    <br />
+    <div align="center" class="topnav">
+      <a href="/stat" onclick="attente()">Général</a>
+      <a class="active" href="/statCE" onclick="attente()">Stat CE</a>
+      <a href="/statRef" onclick="attente()">Référentes</a>
+      <a href="/statUser" onclick="attente()"> Commandes / Utilisateur</a>
+      <a href="/statUserPdt" onclick="attente()">Produits / Utilisateur</a>
+    </div>
+    <form action="/statCE" method="POST">
+      <div class="txt">
+        Du :
+        <input
+          class="fourchette"
+          type="date"
+          name="dateMin"
+          value="{{dateMin}}"
+          onchange="this.form.submit()"
+        />
+        Au :
+        <input
+          class="fourchette"
+          type="date"
+          name="dateMax"
+          value="{{dateMax}}"
+          onchange="this.form.submit()"
+        />
+      </div>
+    </form>
+
+    <form action="/exportAdresseCE">
+      <button class="BtRest" onclick="clic()">EXPORTER INFOS CE</button>
+    </form>
+    <table align="center" class="sousStat tabStatCE">
+      <th class="thsousStat thPetit">CE</th>
+      <th class="thsousStat thPetit">Chifre d'affaire</th>
+      <th class="thsousStat thPetit">Nombre de clients</th>
+      <th class="thsousStat">Meilleur vente</th>
+      <th class="thsousStat">Produit le plus vendu</th>
+      {%for i in range(LidCE|length)%}
+      <tr class="trsousStat">
+        <td class="tdsousTab">{{LidCE[i]["idCE"]}}</td>
+        <td class="tdsousTab">{{LCACE[i]}} €</td>
+        <td class="tdsousTab">{{LnbCmd[i]}}</td>
+        <td class="tdsousTab">
+          <table align="center">
+            <tr>
+              <td>{{LbestSell[i][1]}} :</td>
+            </tr>
+            <tr>
+              <td>{{LbestSell[i][0]}} €</td>
+            </tr>
+          </table>
+        </td>
+        <td class="tdsousTab">
+          <table align="center">
+            <tr>
+              <td>{{LbestProd[i][0]}} :</td>
+            </tr>
+            <tr>
+              <td>{{LbestProd[i][1]}}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      {%endfor%}
+    </table>
+    <br />
+  </body>
+  <script>
+    function clic() {
+      alert("Exportation terminée - Le document est dans le fichier STAT");
+    }
+    function attente() {
+      var element = document.getElementById("html");
+      element.className = "attente";
+    }
+  </script>
+</html>

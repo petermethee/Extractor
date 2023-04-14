@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <div id="html" class=""></div>
+
+  <head>
+    <title>Parfumerie Mireille</title>
+  </head>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"
+  />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href='{{ url_for("static", filename="darkworld.css") }}'
+  />
+
+  <body>
+    <div class="topOnglets">
+      <a class="onglet" href="/utilisateurs" onclick="attente()"
+        >Utilisateurs</a
+      >
+      <a class="onglet" href="/corbeille" onclick="attente()">Corbeille</a>
+      <a class="ongletActif" href="/export_de_donnees" onclick="attente()"
+        >Export de Données</a
+      >
+
+      <a class="onglet" href="/stat" onclick="attente()">Statistiques</a>
+      <a class="onglet" href="/clients" onclick="attente()">Clients</a>
+      <a class="onglet" href="/logout">
+        <button
+          class="invisible"
+          onclick="attente()"
+          type="button"
+          data-hover="Se Déconnecter"
+          data-active="Se Déconnecter"
+        >
+          <span
+            ><i class="fas fa-user span" style="padding-right: 10px"></i
+            >{{session['user']['username']}}</span
+          >
+        </button>
+      </a>
+    </div>
+    <br />
+
+    <form action="/action_export_de_donnees" method="POST">
+      <div class="txt">Du : <input class="fourchette" type="date" name="dateMin" value="{{dateMin}}"
+                onchange="this.form.submit()"> Au : <input class="fourchette" type="date" name="dateMax"
+                value="{{dateMax}}" onchange="this.form.submit()"></div>
+      </br>
+
+          <button class="BtSuppr" name="action" value="0" onclick="attente()">
+            Supprimer les doublons
+          </button>
+       
+      </br>
+       
+          <button class="BtRest" name="action" value="1" onclick="clic()">
+            Exporter les mails
+          </button>
+        
+      </br>
+        
+          <button class="BtRest" name="action" value="2" onclick="clic()">
+            Exporter infos CE
+          </button>
+
+      </br>
+        
+          <button class="BtRest" name="action" value="3" onclick="clic()">
+            Exporter les commandes
+          </button>
+
+        </br>
+        
+          <button class="BtRest" name="action" value="4" onclick="clic()">
+            Exporter les paiements
+          </button>
+        </br>
+       
+          <button class="BtRest" name="action" value="5" onclick="clic()">
+            Exporter tout
+          </button>
+    </form>
+    <br />
+  </body>
+  <script>
+    function clic() {
+      alert("Exportation terminé");
+    }
+    function attente() {
+      var element = document.getElementById("html");
+      element.className = "attente";
+    }
+  </script>
+</html>

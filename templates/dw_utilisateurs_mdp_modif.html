@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="darkworld.css") }}'>
+
+<body>
+	<div>PARAMETRAGE DU MOT DE PASSE</div>
+	<div align="center" class="topnav">
+		<table class="tab">
+			<th class="thMini">Id</th>
+			<th  class="thG">Nom</th>
+			<th  class="thG">Prenom</th>
+			<th  class="thGGG">Mail</th>
+			<th  class="thGGG">Mot de passe</th>
+			<tr>
+				<td class="tdUser" align="center">{{user['id']}}</td>
+				<td class="tdUser">{{user['nom']}}</td>
+				<td class="tdUser">{{user['prenom']}}</td>
+				<td class="tdUser">{{user['mail']}}</td>
+				<td class="tdUser"><input type="password" name="mdp" id="mdp"></td>
+
+				<td><button type="button" value="valider" name="action" id="{{user['id']}}" onclick="update(this);attente()" class="selectBtInfo">Valider</button></td>
+			</tr>
+		</table>
+</html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+
+	function update(t){
+		var id = t.id;
+		var mdp = document.getElementById('mdp').value;
+		alert("Changement(s) pris en compte");
+		req=jQuery.ajax({
+			url:'/validerMDP',
+			type:'POST',
+			data:{id:id,mdp:mdp}
+		});
+		$(`[id=${id}]`).fadeOut(1000).fadeIn(1000);
+    }
+	function attente(){
+            var element=document.getElementById("html");
+            element.className="attente";
+        }
+</script>

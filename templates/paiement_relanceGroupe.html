@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <div id="html" class=""></div>
+
+  <head>
+    <title>Parfumerie Mireille</title>
+  </head>
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href='{{ url_for("static", filename="mycss8.css") }}'
+  />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href="C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"
+  />
+
+  <body>
+    <div class="topOnglets">
+      <a class="onglet" href="/suivi/{{user}}" onclick="attente()"
+        >Suivi de commandes</a
+      >
+      <a class="onglet" href="/start/{{user}}" onclick="attente()"
+        >Traitements</a
+      >
+      <a class="onglet" href="/choixCE/{{user}}" onclick="attente()"
+        >1. Préparer</a
+      >
+      <a class="onglet" href="/reliquats/{{user}}" onclick="attente()"
+        >2. Reliquats</a
+      >
+      <a class="onglet" href="/choixLot/{{user}}" onclick="attente()"
+        >3. Facturer</a
+      >
+      <a class="ongletActif" href="/paiements/{{user}}" onclick="attente()"
+        >4. Paiements</a
+      >
+      <a class="onglet" href="/livraison/{{user}}" onclick="attente()"
+        >5. Livraison</a
+      >
+      <a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+      <a class="onglet" href="/logout">
+        <button
+          class="invisible"
+          onclick="attente()"
+          type="button"
+          data-hover="Se Déconnecter"
+          data-active="Se Déconnecter"
+        >
+          <span
+            ><i class="fas fa-user span" style="padding-right: 10px"></i
+            >{{session['user']['username']}}</span
+          >
+        </button>
+      </a>
+    </div>
+
+    <div align="center" class="topnav">
+      <a href="/paiements/{{user}}" onclick="attente()">Impayés</a>
+      <a class="active" href="/relanceGroupe/{{user}}" onclick="attente()"
+        >Paiements Groupés</a
+      >
+      <a href="/paiementsPaye/{{user}}" onclick="attente()">Payés</a>
+    </div>
+    <br />
+
+    <table style="width: 800px" align="center">
+      <td>
+        <input
+          type="text"
+          class="inputaddP"
+          list="LPaiement"
+          id="listeRecherche"
+          placeholder="Rechercher un paiement"
+          autocomplete="off"
+        />
+        <datalist id="LPaiement">
+          {%for p in LPaiement%}
+          <option
+            value="{{p['idCd']}} - {{p['client']}} - {{p['type']}} - {{p['date']}} - {{p['heure']}} - {{p['montant']}}€ - ({{p['idCE']}}) - {{p['idPaiement']}} - {{p['relance']}}"
+          >
+            {%endfor%}
+          </option>
+        </datalist>
+      </td>
+      <td><button onclick="onAddP()" class="addBt">AJOUTER</button></td>
+    </table>
+    <form action="/relanceGroupe/{{user}}" method="POST" id="form">
+      <button
+        class="annuleAll"
+        name="action"
+        value="annuleAll"
+        onclick="attente()"
+      >
+        Tout annuler
+      </button>
+      <button
+        class="relanceAll"
+        name="action"
+        value="relanceAll"
+        onclick="attente()"
+      >
+        Tout relancer
+      </button>
+      <button class="addBt" name="action" value="valideAll" onclick="attente()">
+        Tout valider
+      </button>
+
+      <table align="center" class="tabSuivi">
+        <th class="thSuiviPetit">
+          <button class="enleverUn" name="action" value="enleverUn">
+            Enlever un paiement de la liste
+          </button>
+        </th>
+        <th class="thSuivi thSuiviPetit">Date</th>
+        <th class="thSuivi thSuiviPetit">Heure</th>
+        <th class="thSuivi thPetit">ID</th>
+        <th class="thSuivi thSuiviPetit">N°CE</th>
+        <th class="thSuivi thSuiviPetit">N° lot</th>
+        <th class="thSuivi">Client</th>
+        <th class="thSuivi thSuiviPetit">Type</th>
+        <th class="thSuivi thSuiviPetit">Montant</th>
+        <th class="thSuivi thSuiviPetit">Relance n°</th>
+        <th class="thSuiviPetit"></th>
+
+        {% for client in listeRelance %}
+        <tr class="trSuivi">
+          <td class="tdButton">
+            {%if btEnlever=='oui' %}
+            <button
+              name="action"
+              value="{{client['idCd']}}--{{client['idPaiement']}}--{{client['relance']}}--{{client['type']}}"
+              class="deleteBtn"
+              onclick="enlever(this)"
+            >
+              Enlever
+            </button>
+            {%endif%}
+          </td>
+          <td class="tdSuivi">{{client["date"]}}</td>
+          <td class="tdSuivi">{{client["heure"]}}</td>
+          <td class="tdSuivi" name="idCd">{{client["idCd"]}}</td>
+          <td class="tdSuivi">{{client["idCE"]}}</td>
+          <td class="tdSuivi">{{client["lot"]}}</td>
+          <td class="tdSuivi">{{client["client"]}}</td>
+          <td class="tdSuivi">
+            {%if client["type"]=='rib'%}
+            <div class="RIB">{{client["type"]}}</div>
+            {%elif client["type"]=='lien'%}
+            <div class="Lien">{{client["type"]}}</div>
+            {%elif client["type"]=='espece'%}
+            <div class="Espece">{{client["type"]}}</div>
+            {%elif client["type"]=='cheque'%}
+            <div class="Cheque">{{client["type"]}}</div>
+            {%else%}
+            <div class="Autre">{{client["type"]}}</div>
+            {%endif%}
+          </td>
+          <td class="tdSuivi">{{client["montant"]}}</td>
+          <td class="tdSuivi" name="relance">{{client["relance"]}}</td>
+        </tr>
+        {%endfor%}
+        <tbody id="body"></tbody>
+      </table>
+    </form>
+    <br />
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+      const searchImpaye = document.getElementById("searchImpaye");
+      const tbodyEl = document.getElementById("body");
+
+      function relancer(t) {
+        const idCmd = t.id;
+        req = jQuery.ajax({
+          url: "/relancerPaiement",
+          type: "POST",
+          data: { idCmd: idCmd },
+        });
+      }
+      function valider(t) {
+        const idCmd = t.id;
+        req = jQuery.ajax({
+          url: "/validerImpaye",
+          type: "POST",
+          data: { idCmd: idCmd },
+        });
+      }
+
+      function details(e, f) {
+        if (e.target.tagName != "BUTTON") {
+          const form = e.currentTarget.id;
+          document.getElementById(form).submit();
+        }
+      }
+
+      function search(e) {
+        var client = document.getElementById("input").value;
+        req = jQuery.ajax({
+          url: "/searchImpayeGroupe",
+          type: "POST",
+          data: {
+            idCd: idCd,
+            idPaiement: idPaiement,
+            relance: relance,
+            type: type,
+          },
+        });
+        req.done(function (data) {
+          if (data.taille > 0) {
+            document.getElementById("idCE").value = data.Linfo[0];
+            document.getElementById("societe").value = data.Linfo[1];
+            document.getElementById("client").value = data.Linfo[2];
+            document.getElementById("mail").value = data.Linfo[3];
+            document.getElementById("tel").value = data.Linfo[4];
+            document.getElementById("adresse").value = data.Linfo[5];
+          } else {
+            alert("Ce client n'existe pas");
+          }
+        });
+      }
+
+      function enlever(t) {
+        const valeur = t.id;
+      }
+
+      function onAddP() {
+        const listeRecherche = document.getElementById("listeRecherche").value;
+
+        req = jQuery.ajax({
+          url: "/ajoutImpayeGroupe",
+          type: "POST",
+          data: { listeRecherche: listeRecherche },
+        });
+        req.done(function (data) {
+          if (data.message == "") {
+            $("#form").append(
+              `<input  type="hidden" name="date" value="${data.date}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="heure" value="${data.heure}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="idCd" value="${data.idCd}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="idCE" value="${data.idCE}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="lot" value="${data.lot}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="client" value="${data.client}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="type" value="${data.type}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="montant" value="${data.montant}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="relance" value="${data.relance}">`
+            );
+            $("#form").append(
+              `<input  type="hidden" name="idPaiement" value="${data.idPaiement}">`
+            );
+
+            tbodyEl.innerHTML += `
+                        <tr class="trSuivi" >
+                            
+                            <td class="tdButton"></td>
+                                
+                            <td class="tdSuivi">${data.date}</td>
+                            <td class="tdSuivi">${data.heure}</td>
+                            <td class="tdSuivi">${data.idCd}</td>
+                            <td class="tdSuivi">${data.idCE}</td>
+                            <td class="tdSuivi">${data.lot}</td>
+                            <td class="tdSuivi">${data.client}</td>
+                            <td class="tdSuivi">${data.type}</td>
+                            <td class="tdSuivi">${data.montant}</td>
+                            <td class="tdSuivi">${data.relance}</td>
+                        </tr>`;
+          } else {
+            alert(data.message);
+          }
+        });
+        document.getElementById("listeRecherche").value = "";
+      }
+
+      function onDeleteRow(e) {
+        e.preventDefault();
+        document.getElementById("qteProd").innerHTML = --counterVal;
+        if (!e.target.classList.contains("deleteBtn")) {
+          return;
+        }
+        const btn = e.target;
+        const name = e.target.id;
+        $(`[id=${name}]`).remove();
+      }
+
+      function attente() {
+        var element = document.getElementById("html");
+        element.className = "attente";
+      }
+    </script>
+  </body>
+</html>

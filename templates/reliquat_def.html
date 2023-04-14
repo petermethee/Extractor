@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<div id="html" class=""></div>
+
+<head>
+	<title>Parfumerie Mireille</title>
+</head>
+<link rel='stylesheet' type='text/css' href='{{ url_for("static", filename="mycss8.css") }}'>
+<link rel='stylesheet' type='text/css' href='C:/Users/ggpro/Desktop/Parfumerie upgrade process CE/static/mycss8.css'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
+
+<body>
+	<div class="topOnglets">
+		<a class="onglet" href="/suivi/{{user}}" onclick="attente()">Suivi de commandes</a>
+		<a class="onglet" href="/start/{{user}}" onclick="attente()">Traitements</a>
+		<a class="onglet" href="/choixCE/{{user}}" onclick="attente()">1. Préparer</a>
+		<a class="ongletActif" href="/reliquats/{{user}}" onclick="attente()">2. Reliquats</a>
+		<a class="onglet" href="/choixLot/{{user}}" onclick="attente()">3. Facturer</a>
+		<a class="onglet" href="/paiements/{{user}}" onclick="attente()">4. Paiements</a>
+		<a class="onglet" href="/livraison/{{user}}" onclick="attente()">5. Livraison</a>
+		<a class="onglet" href="/CE/{{user}}" onclick="attente()">CE</a>
+		<a class="onglet" href="/logout">
+			<button class="invisible" type="button" data-hover="Se Déconnecter" onclick="attente()"
+				data-active="Se Déconnecter">
+				<span><i class="fas fa-user span" style="padding-right:10px"></i>{{session['user']['username']}}</span>
+			</button>
+		</a>
+	</div>
+	<div align="center" class="topnav">
+		<a href="/reliquats/{{user}}" onclick="attente()">Choix du Lot</a>
+		<a class="active" href="/defReliquat/{{user}}" onclick="attente()">Demande de reliquats</a>
+		<a href="/visuReliquat/{{user}}" onclick="attente()">Où sont les reliquats ?</a>
+		<a href="/rupture/{{user}}" onclick="attente()">Produit en rupture</a>
+		<a href="/michael/{{user}}" onclick="attente()">Prévision Michael</a>
+	</div>
+
+	<div class="divTabInfo">
+		<table class="tabInfoReli">
+			<tr class="trInfo">
+				<td class="tdInfo">N° CE</td>
+				<td class="tdInfo">Nom du CE</td>
+				<td class="tdInfo">N° de Lot</td>
+				<td class="tdInfo">Date de Lot</td>
+				<td class="tdInfo">Référente</td>
+			</tr>
+
+			<tr class="trInfo">
+				<td class="tdInfo">{{idCE}}</td>
+				<td class="tdInfo">{{nomCE}}</td>
+				<td class="tdInfo">{{lot}}</td>
+				<td class="tdInfo">{{dateLot}}</td>
+				<td class="tdInfo">{{referente}}</td>
+
+			</tr>
+		</table>
+	</div>
+	<div class="bascule">
+		<a href="/defReliquat/{{user}}" class="relikSelect" onclick="attente()">Demande Transfert</a>
+		<a href="/bonPrep/{{user}}" class="bonPrep" onclick="attente()">Bon de préparation</a>
+	</div>
+
+	<table align="center" class="tab1">
+		<th class="thRelTrans thMoy1">Code</th>
+		<th class="thRelTrans thMoy2">EAN</th>
+		<th class="thRelTrans">Libellé WINPARF</th>
+		<th class="thRelTrans thMin">Qte</th>
+		<th class="thRelTrans thMin">1</th>
+		<th class="thRelTrans thMin">2</th>
+		<th class="thRelTrans thMin">3</th>
+		<th class="thRelTrans thMin">5</th>
+		<th class="thRelTrans thMin">6</th>
+		<th class="thRelTrans thTrans thGG">Demande Transfert</th>
+		{% for i in range(nProd) %}
+		<tr class="trRelTrans">
+			<td>{{code[i]}}</td>
+			<td>{{ean[i]}}</td>
+			<td>{{lib[i]}}</td>
+			<td class="Q0">{{quantite[i]}}</td>
+			<td class="Q1">{{Lstockbis[i][1]}}</td>
+			<td class="Q2">{{Lstock[i][0]}}</td>
+			<td class="Q3">{{Lstock[i][1]}}</td>
+			<td class="Q5">{{Lstock[i][2]}}</td>
+			<td class="Q6">{{Lstock[i][3]}}</td>
+			<td><button class="btPlus" id="{{code[i]}}" onclick="addTransfert(this)">+</button>
+				{%if Lreliquats[i]|length>0%}
+				<div id="div{{code[i]}}">
+					{%else%}
+					<div id="div{{code[i]}}" style="display: none;">
+						{%endif%}
+
+						<table align="center" class="tabTransfert" id="tab{{code[i]}}">
+							<th>Lieu</th>
+							<th>Quantite</th>
+							<th></th>
+
+							<tbody id="t{{code[i]}}">
+								{%for reliquat in Lreliquats[i]%}
+								<tr id="{{reliquat['idReliquat']}}" class="trTrans">
+									<td><select class="selectLieu" onchange="changeMagQte(this.name)"
+											name="{{reliquat['idReliquat']}}" id="mag{{reliquat['idReliquat']}}">
+											{% for mag in Lmag%}
+											{%if mag==reliquat['mag']%}
+											<option selected>{{mag}}</option>
+											{%else%}
+											<option>{{mag}}</option>
+											{%endif%}
+											{%endfor%}
+										</select></td>
+									<td>
+										<input class="qte" onchange="changeMagQte(this.name)"
+											name="{{reliquat['idReliquat']}}" class="thNbr" type="number" min="0"
+											value="{{reliquat['qte']}}" id="qte{{reliquat['idReliquat']}}">
+									</td>
+									<td><button onclick="delTrans(this.name,this.id)" id="bt{{reliquat['idReliquat']}}"
+											name="{{reliquat['idReliquat']}}" class="suprRelik">X</button></td>
+								</tr>
+								{%endfor%}
+							</tbody>
+						</table>
+					</div>
+			</td>
+		</tr>
+		{% endfor %}
+	</table>
+</body>
+<br>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+	function addTransfert(t) {
+		var code = t.id;
+		const tbodyEl = document.getElementById(`t${code}`);
+		const divTab = document.getElementById(`div${code}`);
+		const user = {{user}}
+
+
+	req = jQuery.ajax({
+		url: '/addReliquat',
+		type: 'POST',
+		data: { code: code, user: user }
+	});
+
+	req.done(function (data) {
+		var i = data.idReliquat;
+		tbodyEl.innerHTML += `
+				<tr id=${i} class="trTrans">
+								<td><select class="selectLieu" onchange="changeMagQte(${i})" id="mag${i}">
+									<option>1-Sorgues</option>
+									<option>2-République</option>
+									<option>3-Les Halles</option>
+									<option>5-Isle</option>
+									<option>6-Vedène</option>
+									<option>Michael</option>
+								</select></td>
+								<td>
+									<input class="qte" onchange="changeMagQte(${i})" class="thNbr" type="number" min="1" value=1 id="qte${i}">
+								</td>
+								<td><button onclick="delTrans(this.name,this.id)" id="bt${i}" name=${i} class="suprRelik">X</button></td>
+							</tr>`;
+
+	});
+	divTab.style.display = "block";
+	};
+	
+
+	function changeMagQte(i) {
+		const mag = document.getElementById(`mag${i}`).value;
+		const qte = document.getElementById(`qte${i}`).value;
+
+		req = jQuery.ajax({
+			url: '/updateReliquat',
+			type: 'POST',
+			data: { idReliquat: i, mag: mag, qte: qte }
+		});
+	};
+
+	function delTrans(t, i) {
+		const btDel = document.getElementById(i);
+		const divTab = btDel.closest("div");
+		const tab = btDel.closest("table");
+		var Nbrow = $(`#${tab.id} tr`).length;
+		if (Nbrow - 2 == 0) {
+			divTab.style.display = "none"
+		}
+		$(`[id=${t}]`).remove();
+		req = jQuery.ajax({
+			url: '/delReliquat',
+			type: 'POST',
+			data: { idReliquat: t }
+		});
+	};
+
+	function attente() {
+		var element = document.getElementById("html");
+		element.className = "attente";
+	}
+</script>
+
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <div id="html" class=""></div>
+
+  <head>
+    <title>Parfumerie Mireille</title>
+  </head>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"
+  />
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href='{{ url_for("static", filename="darkworld.css") }}'
+  />
+
+  <body>
+    <div class="topOnglets">
+      <a class="onglet" href="/utilisateurs" onclick="attente()"
+        >Utilisateurs</a
+      >
+      <a class="ongletActif" href="/corbeille" onclick="attente()">Corbeille</a>
+      <a class="onglet" href="/export_de_donnees" onclick="attente()"
+        >Export de Données</a
+      >
+      <a class="onglet" href="/stat" onclick="attente()">Statistiques</a>
+      <a class="onglet" href="/clients" onclick="attente()">Clients</a>
+      <a class="onglet" href="/logout">
+        <button
+          class="invisible"
+          onclick="attente()"
+          type="button"
+          data-hover="Se Déconnecter"
+          data-active="Se Déconnecter"
+        >
+          <span
+            ><i class="fas fa-user span" style="padding-right: 10px"></i
+            >{{session['user']['username']}}</span
+          >
+        </button>
+      </a>
+    </div>
+    <br />
+    <div align="center" class="topnav">
+      <a class="active" href="/corbeille" onclick="attente()">Commandes</a>
+      <a href="/corbCE" onclick="attente()">Corbeille CE</a>
+    </div>
+    <form action="/login">
+      <button class="btQuiT" onclick="attente()">QUITTER</button>
+    </form>
+    <form action="/detailsCmd" method="POST" id="formDetails"></form>
+
+    <form action="/actionCorb" method="POST">
+      <button class="BtSuppr" name="action" value="0" onclick="attente()">
+        Supprimer
+      </button>
+      <button class="BtRest" name="action" value="1" onclick="attente()">
+        Restaurer
+      </button>
+
+      <table align="center" class="corbTab">
+        <th class="thMinus">
+          <input type="checkbox" onclick="selectAll(this.id)" id="all" />
+        </th>
+        <th class="thPetit thCorb">ID Commande</th>
+        <th class="thGrand thCorb">Nom Prénom</th>
+        <th class="thGrand thCorb">Société</th>
+        <th class="thPetit thCorb">TOTAL</th>
+        {%for cmd in Lmanu%}
+
+        <tr
+          class="trCorbCmd"
+          onclick="details(event,this.form)"
+          id="{{cmd['id_commande']}}"
+        >
+          <td class="tdCB">
+            <input
+              type="checkbox"
+              name="check"
+              value="{{cmd['id_commande']}}"
+            />
+          </td>
+          <td>{{cmd["id_commande"]}}</td>
+          <td>{{cmd["client"]}}</td>
+          <td>{{cmd["societe"]}}</td>
+          <td>{{cmd["total"]}}</td>
+        </tr>
+        {%endfor%} {%for i in range(Lextract|length)%}
+        <tr class="trCorbExtract">
+          <td class="tdCB">
+            <input
+              type="checkbox"
+              id="{{i}}"
+              name="checkExtract"
+              onclick="selectExtract(this.id)"
+            />
+          </td>
+          <td>ID : {{Lextract[i]["idExtraction"]}}</td>
+          <td colspan="2">Date : {{Lextract[i]["date"]}}</td>
+          <td>Créer par : {{Lextract[i]["createur"]}}</td>
+        </tr>
+        {%for cmd in Lcmd[i]%}
+        <tr
+          class="trCorbCmd"
+          onclick="details(event,this.form)"
+          id="{{cmd['id_commande']}}"
+        >
+          <td class="tdCB">
+            <input
+              type="checkbox"
+              name="check"
+              class="{{i}}"
+              value="{{cmd['id_commande']}}"
+            />
+          </td>
+          <td>{{cmd["id_commande"]}}</td>
+          <td>{{cmd["client"]}}</td>
+          <td>{{cmd["societe"]}}</td>
+          <td>{{cmd["total"]}}</td>
+        </tr>
+
+        {%endfor%} {%endfor%}
+      </table>
+    </form>
+  </body>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script>
+    function details(e, f) {
+      if (e.target.tagName != "INPUT") {
+        idCmd = e.currentTarget.id;
+        $("#formDetails")
+          .append(`<input type="hidden" value="corbeille" name="previousPage">
+				<input type="hidden" value=${idCmd} name="idCmd">`);
+        $("#formDetails").submit();
+      }
+    }
+
+    function selectAll(t) {
+      var all = document.getElementById(t);
+      var items = $("input[name^=check]");
+      if (all.checked) {
+        for (var i = 0; i < items.length; i++) {
+          items[i].checked = true;
+        }
+      } else {
+        for (var i = 0; i < items.length; i++) {
+          items[i].checked = false;
+        }
+      }
+    }
+    function selectExtract(t) {
+      var cb = document.getElementById(t);
+      var items = document.getElementsByClassName(t);
+      if (cb.checked) {
+        for (var i = 0; i < items.length; i++) {
+          items[i].checked = true;
+        }
+      } else {
+        for (var i = 0; i < items.length; i++) {
+          items[i].checked = false;
+        }
+      }
+    }
+    function attente() {
+      var element = document.getElementById("html");
+      element.className = "attente";
+    }
+  </script>
+</html>
