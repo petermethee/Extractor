@@ -44,9 +44,13 @@ sigma=0.33
 ####################################################################
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 
-repertoireImgClient='C:/Users/ggpro/Desktop/CE/bdd/static/image_client'
-repertoireImgCmd='C:/Users/ggpro/Desktop/CE/bdd/static/image_cmd'
-bdd="C:/Users/ggpro/Desktop/CE/bdd/bdd_hist_extraction.db"
+repertoireImgClient='C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/static/image_client'
+repertoireImgCmd='C:/Users/jeann/Desktop/Parfumerie/CE V4/CE/bdd/static/image_cmd'
+bdd="C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/bdd_hist_extraction.db"
+
+# repertoireImgClient='/home/jamessou/CEPROG/bdd/static/image_client'
+# repertoireImgCmd='/home/jamessou/CEPROG/bdd/static/image_cmd'
+# bdd="/home/jamessou/CEPROG/bdd/bdd_hist_extraction.db"
 
 parasites=[",",".",":",";"," ","-","_","None",'REFERENCE','Reference','Référence','reference','référence','REF','Ref','ref','Réf','réf','/']
 LparasiteQte=["l","L","i","I"]

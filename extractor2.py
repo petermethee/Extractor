@@ -19,6 +19,7 @@ from simplecrypt import encrypt, decrypt
 
 #Constantes
 staticDir="C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/static"
+# staticDir="/home/jamessou/CEPROG/bdd/static"
 app = Flask(__name__,static_folder=staticDir)
 app.secret_key = "jpcorp"
 
@@ -28,6 +29,13 @@ repertoireImgClient='C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/static/image_cl
 repertoireImgCmd='C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/static/image_cmd'
 exportFold="C:/Users/jeann/Desktop/Parfumerie/CE V4/Export"
 statFold="C:/Users/jeann/Desktop/Parfumerie/CE V4/Stat"
+
+#app.config['FACTURE_FOLDER'] = '/home/jamessou/CE/Factures'
+#targetFile='/home/jamessou/CE/Succes'
+#repertoireImgClient='/home/jamessou/CEPROG/bdd/static/image_client'
+#repertoireImgCmd='/home/jamessou/CEPROG/bdd/static/image_cmd'
+#exportFold="/home/jamessou/CE/Export"
+#statFold="/home/jamessou/CE/Stat"
 
 Lmag=["1-Sorgues","2-République","3-Les Halles","5-Isle","6-Vedène","Michael"]
 infoIndex=["1","2","3","4","5","14_3"]

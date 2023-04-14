@@ -21,6 +21,13 @@ bddCP="C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/bdd_code_postal.db"
 xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE V4/xml/ARTICLE.xml"
 xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE V4/xml/ARTMAG.xml"
 fact="C:/Users/jeann/Desktop/Parfumerie/CE V4/Factures"
+
+# bdd="/home/jamessou/CEPROG/bdd/bdd_hist_extraction.db"
+# bddCP="/home/jamessou/CEPROG/bdd/bdd_code_postal.db"
+# xmlARTICLE="/home/jamessou/xmlpm/ARTICLE.xml"
+# xmlARTMAG="/home/jamessou/xmlpm/ARTMAG.xml"
+# fact="/home/jamessou/CE/Factures"
+
 EMAIL_ADDRESS="cseparfums@gmail.com"
 PASSWORD="rdlyghzgsadlfeue"
 Lcode=[]
