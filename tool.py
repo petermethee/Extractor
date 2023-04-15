@@ -16,11 +16,11 @@ from simplecrypt import encrypt, decrypt
 import datetime
 
 
-bdd="C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/bdd_hist_extraction.db"
-bddCP="C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/bdd_code_postal.db"
-xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE V4/xml/ARTICLE.xml"
-xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE V4/xml/ARTMAG.xml"
-fact="C:/Users/jeann/Desktop/Parfumerie/CE V4/Factures"
+bdd="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_hist_extraction.db"
+bddCP="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_code_postal.db"
+xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTICLE.xml"
+xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTMAG.xml"
+fact="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures"
 
 # bdd="/home/jamessou/CEPROG/bdd/bdd_hist_extraction.db"
 # bddCP="/home/jamessou/CEPROG/bdd/bdd_code_postal.db"
@@ -34,6 +34,7 @@ Lcode=[]
 passkey="par84fumerie700"
 
 ############Récupération BDD##############
+#region
 def lecture_BDD(requete):
     con=lite.connect(bdd)
     con.row_factory=lite.Row
@@ -49,8 +50,10 @@ def ecriture_BDD(requete):
     cur.execute(requete[0], requete[1])
     con.commit()
     con.close()
+#endregion
 
 #################Fonctions Jeanne#############
+#region
 def majusca(chaine):
     chaine = chaine.upper()
     chnorm = unicodedata.normalize('NFKD', chaine)
@@ -96,6 +99,7 @@ def getSocietor(txt,liste):
         motmax=liste[idMax]["entreprise"]
         ratiomax=1  
     return motmax,ratiomax
+#endregion
 
 ######################fonction XML###########################
 def getXML():
@@ -125,10 +129,14 @@ def getXML():
 
     indiceD=4*longueur_ART
     indiceF=5*longueur_ART
-    prix=prix[indiceD:indiceF]
-    marque_MAG=marque_MAG[:longueur_ART]
-    categorie_MAG=categorie_MAG[:longueur_ART]
-    produit_MAG=produit_MAG[:longueur_ART]
+    print("indiceD")
+    print(indiceD)
+    print("indiceF")
+    print(indiceF)
+    #prix=prix[indiceD:indiceF]
+    #marque_MAG=marque_MAG[:longueur_ART]
+    #categorie_MAG=categorie_MAG[:longueur_ART]
+    #produit_MAG=produit_MAG[:longueur_ART]
 
     for i in range (longueur_ART):
         code=marque_MAG[i].text+categorie_MAG[i].text+produit_MAG[i].text
@@ -145,12 +153,16 @@ def find_id_art(mq,ct,prod,marque,categorie,produit):
     return(-1)
 
 def find_id_art_v2(mq,ct,prod,mag,marque,categorie,produit,magasin):
+    print("Je recherche l'article :"+str(mq)+"."+str(ct)+"."+str(prod)+"dans le magasin"+str(mag))
     for a in range (longueur_ART):
         if mq==marque[a].text:
             if ct==categorie[a].text:
                 if prod==produit[a].text:
                     if mag==magasin[a].text:
+                        ligne=7+8*a
+                        print("Je suis à la ligne :" +str(ligne))
                         return a
+    print('je ne suis pas dans le XML')
     return(-1)
 
 def getLcode():

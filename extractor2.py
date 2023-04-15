@@ -3,7 +3,7 @@ from json import tool
 import re
 from time import time
 from tkinter import ON
-from types import NoneType
+import types
 import PyPDF2 as pypdf
 from pdf2image import convert_from_path
 import os
@@ -18,17 +18,17 @@ from datetime import timedelta
 from simplecrypt import encrypt, decrypt
 
 #Constantes
-staticDir="C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/static"
+staticDir="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static"
 # staticDir="/home/jamessou/CEPROG/bdd/static"
 app = Flask(__name__,static_folder=staticDir)
 app.secret_key = "jpcorp"
 
-app.config['FACTURE_FOLDER'] = 'C:/Users/jeann/Desktop/Parfumerie/CE V4/Factures'
-targetFile='C:/Users/jeann/Desktop/Parfumerie/CE V4/Succes'
-repertoireImgClient='C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/static/image_client'
-repertoireImgCmd='C:/Users/jeann/Desktop/Parfumerie/CE V4/bdd/static/image_cmd'
-exportFold="C:/Users/jeann/Desktop/Parfumerie/CE V4/Export"
-statFold="C:/Users/jeann/Desktop/Parfumerie/CE V4/Stat"
+app.config['FACTURE_FOLDER'] = 'C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures'
+targetFile='C:/Users/jeann/Desktop/Parfumerie/CE_V4/Succes'
+repertoireImgClient='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_client'
+repertoireImgCmd='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_cmd'
+exportFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Export"
+statFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat"
 
 #app.config['FACTURE_FOLDER'] = '/home/jamessou/CE/Factures'
 #targetFile='/home/jamessou/CE/Succes'
@@ -76,13 +76,11 @@ def insertHistorique(monde,page,onglet,action,numero):
 
 #Créer des logs
 
-
-
-####################### Page Connexion Session ###############
+####################### Page Connexion Session ##########################################
+#region
 @app.route('/')	
 def index():
     return render_template('_login.html')
-   
    
 @app.route('/login' ,methods=['GET', 'POST'])
 def login():
@@ -180,7 +178,10 @@ def login():
         else:
             flash("Nom d'utilisateur et/ou mot de passe incorrect")
             return index()
+#endregion
 
+####################### Page Déconnexion Session ########################################
+#region
 # Expiration automatique de la session
 @app.before_request
 def make_session_permanent():
@@ -193,7 +194,10 @@ def logout():
     session['user']['firstCo']='-1'
     session.clear()
     return index()
+#endregion
 
+####################### Page Session Administrateur #####################################
+#region
 @app.route('/admin',methods=['GET', 'POST'])
 def admin():
     try :
@@ -211,358 +215,715 @@ def admin():
             return start(session['user']['id'])
     else:
         return start(session['user']['id'])
-    
-   
-###################### 1-Monde Traitement des données ################
-@app.route('/ajoutCE/<user>', methods=['GET', 'POST'])
-def ajoutCE(user):
+#endregion
+
+####################### Monde du suivi des commandes - OngletSuivi ######################
+#region
+@app.route('/suivi/<user>',methods=['GET', 'POST'])
+def suiviCmd(user):
     try :
         session['user']
     except:
         return(index())
-    req=["SELECT max(idCE) FROM listingCE WHERE idCE<999000 and corbeille=0;",()]
-    idCE=int(lecture_BDD(req)[0]['max(idCE)'])+1
-    CE={"prenom":"","idCE":idCE,"entreprise":"","intermediaire":"","mail":"","tel":"","mailCl":"0","mailInterPrep":"0","mailInterFact":"0","mailInterRelFact":"0","mailInterRel":"0","mailInterRupt":"0","qteFact":"1","sac":"Papier","retraitMag":"NON","colisIndiv":"NON","colisCol":"NON","colisExpe":"Aucun","catalogue":"1","promotion":"1","commentaires":"","adresse":""}
-    req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
-    LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    return render_template('CE_ajout.html',CE=CE,user=user,LCE=LCE,listeRef=listeRef,listeAll=listeAll)
-
-@app.route('/addCE', methods=['GET', 'POST'])
-def addCE():
-    try :
-        session['user']
-    except:
-        return(index())
-    print("je suis la")
-    idCE=request.form.get("idCE")
-    entreprise=request.form.get("entreprise")
-    referente=request.form.get("referente")
-    intermediaire=request.form.get("intermediaire")
-    mail=request.form.get("mail")
-    tel=request.form.get("tel")
-    mailCl=request.form.get("mailCl")
-    mailInterPrep=request.form.get("mailInterPrep")
-    mailInterFact=request.form.get("mailInterFact")
-    mailInterRelFact=request.form.get("mailInterRelFact")
-    mailInterRel=request.form.get("mailInterRel")
-    mailInterRupt=request.form.get("mailInterRupt")
-    mcl=0
-    minterPrep=0
-    minterFact=0
-    minterRelFact=0
-    minterRel=0
-    minterRupt=0
-    print("je suis la 2")
-    if mailCl=="true":
-        mcl=1
-    if mailInterPrep=="true":
-        minterPrep=1
-    if mailInterFact=="true":
-        minterFact=1
-    if mailInterRelFact=="true":
-        minterRelFact=1
-    if mailInterRel=="true":
-        minterRel=1    
-    if mailInterRupt=="true":
-        minterRupt=1 
-    qteFact=request.form.get("qteFact")
-    sac=request.form.get("sac")
-    retraitMag=request.form.get("retraitMag")
-    colisIndiv=request.form.get("colisIndiv")
-    colisCol=request.form.get("colisCol")
-    colisExpe=request.form.get("colisExpe")
-    catalogue=request.form.get("catalogue")
-    promotion=request.form.get("promotion")
-    commentaires=request.form.get("commentaires")
-    adresse=request.form.get("adresse")
-    print("je suis la 3")
-    req=["SELECT max(idCE) FROM listingCE WHERE idCE<999000 and corbeille=0;",()]
-    idCE=int(lecture_BDD(req)[0]['max(idCE)'])+1
-    CE={"prenom":"","idCE":idCE,"entreprise":"","intermediaire":"","mail":"","tel":"","mailCl":"0","mailInterPrep":"0","mailInterFact":"0","mailInterRelFact":"0","mailInterRel":"0","mailInterRupt":"0","qteFact":"1","sac":"Papier","retraitMag":"NON","colisIndiv":"NON","colisCol":"NON","colisExpe":"Aucun","catalogue":"1","promotion":"1","commentaires":"","adresse":""}
-    req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
-    LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-
-    req=["INSERT INTO listingCE (referente,idCE,entreprise,intermediaire,mail,tel,corbeille,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(referente,idCE,entreprise,intermediaire,mail,tel,0,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse)]
-    ecriture_BDD(req)
-    print(req)
-    insertHistorique('normal','pageCE','ajoutCE','ajout CE n°',idCE)
-    return '',204
-
-@app.route('/rechercheCE/<user>',methods=['GET', 'POST'])
-def rechercheCE(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    CEselectionne=request.form.get("CEselectionne")
-    if CEselectionne is NoneType or CEselectionne=="" or CEselectionne is None:
-        idCEselec=""
+    action=request.form.get('filtre')
+    #réactulisation du filtre 
+    if action=='filtre':
+        session['user']['filtreDateMin']="-1"
+        session['user']['filtreDateMax']="-1"
+        session['user']['filtreID']="-1"
+        session['user']['filtreCE']="-1"
+        session['user']['filtreNom']="-1"
+        session['user']['filtreEtat']="-1"
+    #vérification de la sauvegarde des filtres
+    if (session['user']['filtreDateMin']!='-1' or session['user']['filtreDateMax']!='-1' or session['user']['filtreID']!='-1' or session['user']['filtreCE']!='-1' or session['user']['filtreNom']!='-1' or session['user']['filtreEtat']!='-1'):
+        return(searchSuivi(user))
+    ref=request.form.get("ref")
+    if ref!=None:
+        req=["SELECT id_commande,idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd where commande.corbeille=0 and idCE in (SELECT idCE from listingCE where listingCE.referente=? and corbeille=0) order by id_commande DESC LIMIT 1000",(ref,)]
+        ref=int(ref)
+        insertHistorique('normal','suivi','general',"visualisation ref",ref)
     else:
-        idCEselec=int(CEselectionne.split(" - ")[0])
-    insertHistorique('normal','connexion','listingCE','filtre All ref',None)
-    req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
-    LCE=lecture_BDD(req)
+        insertHistorique('normal','suivi','general',"visualisation all ref",None)
+        req=["SELECT id_commande,idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd where commande.corbeille=0  order by id_commande DESC LIMIT 1000",()]
+
+    Lclients=lecture_BDD(req)
     req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
     listeRef=lecture_BDD(req)
     req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
     listeAll=lecture_BDD(req)
-    if idCEselec is None or idCEselec=="":
-        if session['user']['rechercheCE']=='-1':
-            req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
-            CE=lecture_BDD(req)[0]
+    insertHistorique('normal','suivi','general',"visualisation ref",ref)
+    return render_template('suivi_general.html',Lclients=Lclients,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
+
+@app.route('/searchSuivi/<user>',methods=['GET', 'POST'])
+def searchSuivi(user):
+    try :
+        session['user']
+    except:
+        return(index())
+    dateMin=str(request.form.get("dateMin"))
+    dateMax=str(request.form.get("dateMax"))
+    idCmd=str(request.form.get("idCmd"))
+    idCE=str(request.form.get("idCE"))
+    client=request.form.get("client")
+    etat=str(request.form.get("etat"))
+    ref=str(request.form.get("ref"))
+    mail=str(request.form.get("mail"))
+    sansDateMini=False
+    sansDateMax=False
+    #Clés du filtre par session
+    if session['user']['filtreDateMin']!='-1':
+        if dateMin=="" or dateMin==None or dateMin=="None":
+            dateMin=session['user']['filtreDateMin']
         else:
-            try:
-                req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 AND idCE=?",(session['user']['rechercheCE'],)]
-                CE=lecture_BDD(req)[0]
-            except:
-                req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
-                CE=lecture_BDD(req)[0]
-
+            session['user']['filtreDateMin']=dateMin
     else:
-        session['user']['rechercheCE']=idCEselec
-        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 AND idCE=?",(idCEselec,)]
-        CE=lecture_BDD(req)[0]
-    return render_template('CE_recherche.html',CE=CE,user=user,LCE=LCE,CEselectionne=CEselectionne,listeRef=listeRef,listeAll=listeAll)
+        if dateMin=="" or dateMin==None  or dateMin=="None":
+            session['user']['filtreDateMin']='-1'
+            sansDateMini=True
+            dateMin=""
+        else:
+            session['user']['filtreDateMin']=dateMin
 
-@app.route('/searchCE', methods=['GET', 'POST'])
-def searchCE():
+    if session['user']['filtreDateMax']!='-1':
+        if dateMax=="" or dateMax==None  or dateMax=="None":
+            dateMax=session['user']['filtreDateMax']
+        else:
+            session['user']['filtreDateMax']=dateMax
+    else:
+        sansDateMax=False
+        if dateMax=="" or dateMax==None  or dateMax=="None":
+            session['user']['filtredateMax']='-1'
+            sansDateMax=True
+            dateMax=""
+        else:
+            session['user']['filtreDateMax']=dateMax
+
+    if session['user']['filtreID']!='-1' :
+        if idCmd=="" or idCmd=="None" :
+            idCmd=session['user']['filtreID']
+        else:
+            session['user']['filtreID']=idCmd
+    else:
+        if idCmd=="" or idCmd=="None":
+            session['user']['filtreID']='-1'
+            idCmd=""
+        else:
+            session['user']['filtreID']=idCmd
+
+    if session['user']['filtreCE']!='-1':
+        if idCE=="" or idCE=="None":
+            idCE=session['user']['filtreCE']
+        else:
+            session['user']['filtreCE']=idCE
+    else:
+        if idCE=="" or idCE=="None":
+            session['user']['filtreCE']='-1'
+            idCE=""
+        else:
+            session['user']['filtreCE']=idCE
+
+    if session['user']['filtreNom']!='-1':
+        if client=="" or client=="None" or client==None:
+            client=session['user']['filtreNom']
+        else:
+            session['user']['filtreNom']=client  
+    else:
+        if client=="" or client=="None" or client==None:
+            session['user']['filtreNom']='-1'
+            client=""
+        else:
+            session['user']['filtreNom']=client
+
+    if session['user']['filtreEtat']!='-1':
+        if etat==None or etat=="None":
+            etat=session['user']['filtreEtat']
+        else:
+            session['user']['filtreEtat']=etat
+    else:
+        if etat==None or etat=='None':
+            etat=""
+        session['user']['filtreEtat']=etat
+
+    
+    if session['user']['filtreMail']!='-1':
+        if mail=="" or mail=="None" or mail==None:
+            mail=session['user']['filtreMail']
+        else:
+            session['user']['filtreMail']=mail  
+    else:
+        if mail=="" or mail=="None" or mail==None:
+            session['user']['filtreMail']='-1'
+            mail=""
+        else:
+            session['user']['filtreMail']=mail
+
+    if ref=="None":
+        ref1=""
+    else:
+        ref1=ref
+
+    if sansDateMini:
+        if sansDateMax:
+            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%','%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+            Lclients=lecture_BDD(req)
+        else:
+            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date<= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+            Lclients=lecture_BDD(req)
+    elif sansDateMax:
+        req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date>= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+        Lclients=lecture_BDD(req)
+    else:
+        req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date >= (?) and date <= (?) and etatCmd LIKE ? and client.referente LIKE ? and mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+        Lclients=lecture_BDD(req)
+        
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
+    listeRef=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
+    listeAll=lecture_BDD(req)
+    insertHistorique('normal','suivi','general',"filtre",None)
+    return render_template('suivi_general.html',user=user,Lclients=Lclients,dateMin=dateMin,dateMax=dateMax,idCmd=idCmd,idCE=idCE,client=client,etat=etat,ref=ref,mail=mail,listeRef=listeRef,listeAll=listeAll)
+    
+@app.route('/suprCmd', methods=['GET', 'POST'])
+def suprCmd():
     try :
         session['user']
     except:
         return(index())
-    CEselectionne=request.form.get("CEselectionne")
+    user=session['user']['id']
+    idCmd=request.form.get('idCmd')
+    req=["UPDATE commande set corbeille=1,deletedBy=? where id_commande=?",(user,idCmd)]
+    ecriture_BDD(req)
+    insertHistorique('normal','suivi','general',"suppresion idcmd",idCmd)
+    return jsonify()
+
+@app.route('/annuleCmd', methods=['GET', 'POST'])
+def annuleCmd():
+    try :
+        session['user']
+    except:
+        return(index())
+    user=session['user']['id']
+    idCmd=request.form.get('idCmd')
+    answer=request.form.get('answer')
+    req=["UPDATE commande set justification=?,deletedBy=?,etatCmd=99 where id_commande=?",(answer,user,idCmd)]
+    ecriture_BDD(req)
+    #annuler tous les produits
+    req=["SELECT * FROM facturation WHERE idCmd=?",(idCmd,)]
+    listePdt=lecture_BDD(req)
+    for produit in listePdt:
+        try:
+            qte=int(produit['qte'])
+        except:
+            qte==1
+        idProd=produit['idProd']
+        if qte==0 or qte==1:
+            texte="4"
+        else:
+            texte=(qte-1)*"4;"+"4"
+        req=["UPDATE facturation SET etatProd=? where idProd=?",(texte,idProd)]
+        ecriture_BDD(req)
+    #annule les paiements associés
+    req=["UPDATE paiement SET etat=2 where idCd=?",(idCmd,)]
+    ecriture_BDD(req)
+    insertHistorique('normal','suivi','general',"annulation idCmd",idCmd)
+    return '', 204
+
+# Details #
+@app.route('/detailsCmd/<user>', methods=['GET', 'POST'])
+def detailsCmd(user):
+    try :
+        session['user']
+    except:
+        return(index())
+    idDetailCmd=session['user']['idDetailCmd']
     try:
-        CE=CEselectionne.split(" - ")[0]
-        req=["SELECT listingCE.id,referente,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 AND idCE=?",(CE,)]
-        L=lecture_BDD(req)[0]
-        Linfo=[L["idCE"],L["entreprise"],L["referente"],L["intermediaire"],L["mail"],L["tel"],L["mailCl"],L["mailInterPrep"],L["mailInterFact"],L["mailInterRelFact"],L["mailInterRel"],L["mailInterRupt"],L["qteFact"],L["sac"],L["retraitMag"],L["colisIndiv"],L["colisCol"],L["colisExpe"],L["catalogue"],L["promotion"],L["commentaires"],L["adresse"],L["id"]]
+        idDetailCmd=int(request.form.get('idCmd'))
+        session['user']['idDetailCmd']=idDetailCmd
+    except:
+        pass
+    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='lien' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
+    paiementLien=lecture_BDD(req)
+    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='rib' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
+    paiementRib=lecture_BDD(req)
+    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='espece' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
+    paiementEspece=lecture_BDD(req)
+    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeR' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
+    paiementChequeR=lecture_BDD(req)
+    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeAV' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
+    paiementChequeAV=lecture_BDD(req)
+    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeAP' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
+    paiementChequeAP=lecture_BDD(req)
+    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='autre' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
+    paiementAutre=lecture_BDD(req)
+    previousPage=request.form.get("previousPage")
+    if previousPage==None:
+        previousPage="suivi"
+    req=["SELECT * from client join commande on idclient=idclientCmd left join livraison on livraison.idlivraison=commande.idlivraison where id_commande=?",(idDetailCmd,)]
+    client=lecture_BDD(req)
+    LidUser=[client[0]['extractedBy'],client[0]['createdBy'],client[0]['modifiedBy'],client[0]['preparedBy'],client[0]['facturedBy'],client[0]['deliveredBy']]
+    Luser=[]
+    for x in LidUser:
+        if x==None:
+            Luser.append('null')
+        else:
+            req=["SELECT prenom FROM utilisateur WHERE id=?",(str(x),)]
+            try :
+                prenom=lecture_BDD(req)[0]['prenom']
+                Luser.append(prenom)
+            except:
+                Luser.append('null')
+    Ltitle=["Extrait par","Créé par","Modifié par","Préparé par","Facturé par","Livré par"]
+    req=["SELECT * from facturation where idCmd=? and (etatProd like '%0%' or etatProd LIKE '%1%' or etatProd LIKE '%2%' or etatProd LIKE '%3%' or etatProd LIKE '%5%')",(idDetailCmd,)]
+    Lcmd=lecture_BDD(req)
+    req=["SELECT * from facturation where idCmd=? and etatProd like '%4%'",(idDetailCmd,)]
+    LcmdAnnule=lecture_BDD(req)
+    if client[0]['idclientHW']==1:
+        template="suivi_detailsHW.html"
+    else:
+        template="suivi_details.html"
+    insertHistorique('normal','suivi','detailCde',"visualisationidcmd",idDetailCmd)
+    listeLien=["Lien CB",paiementLien,"Lien"]
+    listeRIB=["RIB",paiementRib,"Rib"]
+    listeChequeR=["Cheque reçu",paiementChequeR,"ChequeR"]
+    listeChequeAV=["Cheque avant envoi",paiementChequeAV,"ChequeAV"]
+    listeChequeAP=["Cheque apres reception",paiementChequeAP,"ChequeAP"]
+    listeEspece=["Especes",paiementEspece,"Espece"]
+    listeAutre=["Autres",paiementAutre,"Autre"]
+    typePaiement=[listeLien,listeRIB,listeChequeR,listeChequeAV,listeChequeAP,listeEspece,listeAutre]
+    #Liste des factures
+    listePDF=[]
+    nomPDF=[]
+    qte=0
+    for facture in os.listdir(app.config['FACTURE_FOLDER']) :
+        if facture.startswith(str(idDetailCmd)+"-"):
+            qte+=1
+            splitFact=facture.split("-")
+            year=splitFact[1]
+            month=splitFact[2]
+            day=splitFact[3]
+            time=splitFact[4].split("_")
+            h=time[0]
+            min=time[1]
+            sec=time[2].split(".")[0]
+            nomPDF.append("Facture du "+day+"/"+month+"/"+year+" à "+h+":"+min+":"+sec)
+            listePDF.append(app.config['FACTURE_FOLDER']+"/"+facture)
+    return render_template(template,user=user,client=client,Lcmd=Lcmd,previousPage=previousPage,LcmdAnnule=LcmdAnnule,typePaiement=typePaiement,Luser=Luser,Ltitle=Ltitle,idDetailCmd=idDetailCmd,nomPDF=nomPDF,qte=qte)
+
+
+@app.route('/actionFromDetails/<user>', methods=['GET', 'POST'])
+def actionFromDetails(user):
+    try :
+        session['user']
+    except:
+        return(index())
+    action=request.form.get("action")
+    idCmd=request.form.get("idCmd")
+    idCE=request.form.get("idCE")
+    total=request.form.get("total")
+    date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+    date=date1.split('_')[0]
+    heure=date1.split('_')[1]
+    sendMail=False
+    if action=="0":
+        #Voir PDF
+        for image in os.listdir(targetFile):
+            if image.startswith(idCmd):
+                return send_file(targetFile+"/"+image, as_attachment=True) 
+        insertHistorique('normal','suivi','detailCde',"visualisation bon de commande idCmd",idCmd)
+    elif action=="1":
+        #Exporter colissimo   
+        req=["SELECT * from client where idclient in (SELECT idclientCmd from commande where id_commande=?)",(idCmd,)]
+        client=lecture_BDD(req)[0]
+        nom_prenom=majusca(client["client"])
+        nom=nom_prenom.split(" ")[0]
+        prenom=nom_prenom.replace(nom,"")
+        mail=client["mail"]
+        tel=client["tel"]
+        adresse=client["adresse"]
+        Lnombre,Llettre,_,_=listeA(adresse)
+        LcodePossible=CodePossible(Lnombre)
+        Lville,LCP=codepostal(LcodePossible)
+        ville,CP=getVille(Lville,Llettre,LCP)
+        rue1=adresse.replace(ville,"")
+        rue=majusca(rue1.replace(CP,""))
+        if len(tel)>0:
+            fixe,mobile=fixoumobile(tel)
+        else:
+            fixe=""
+            mobile=""
+        insertHistorique('normal','suivi','detailCde',"colissimo",idCmd)
+        return render_template("suivi_details_colissimo.html",user=user,ville=ville,CP=CP,rue=rue,nom=nom,prenom=prenom,mail=mail,fixe=fixe,mobile=mobile)
+    
+    elif action=="2":
+        #Enregistrer les modifications
+        societe=request.form.get("societe")
+        client=majusca(request.form.get("client"))
+        mail=request.form.get("mail")
+        tel=request.form.get("tel")
+        adresse=majusca(request.form.get("adresse"))
+        commentaire=request.form.get("commentaire")
+        req=["UPDATE client set idCEclient=?,societe=?,client=?,mail=?,tel=?,adresse=?,commentaire=? where idclient=(SELECT idclientCmd from commande where id_commande=?)",(idCE,societe,client,mail,tel,adresse,commentaire,idCmd)]
+        ecriture_BDD(req)
+
+        req=["UPDATE commande set idCE=?,total=?,modifiedBy=? where id_commande=?",(idCE,total,user,idCmd)]
+        ecriture_BDD(req)
+
+        code=request.form.getlist("code")
+        ean=request.form.getlist("ean")
+        libW=request.form.getlist("libW")
+        lib=request.form.getlist("lib")
+        prix=request.form.getlist("prix")
+        qte=request.form.getlist("qte")
+        ato=request.form.getlist("ato")
+        LidProd=request.form.getlist("idProd")
+
+        for i in range(len(code)):
+            if qte[i]!="":
+                etatProd="0;"*(int(qte[i])-1)+"0"
+            else:
+                etatProd="0"
+            if LidProd[i] in ato:
+                if LidProd[i][0]=="n":
+                    req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,code[i],ean[i],libW[i],libW[i],prix[i],qte[i],"oui",0,-1,etatProd,0,0)]
+                else:
+                    req=["UPDATE facturation set code=?,lib=?,prix=?,qte=?,ato='oui',ean=?,libW=?,etatProd=? where idProd=?",(code[i],lib[i],prix[i],qte[i],ean[i],libW[i],etatProd,LidProd[i])]
+            else:
+                if LidProd[i][0]=="n":
+                    req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,code[i],ean[i],libW[i],lib[i],prix[i],qte[i],"non",0,-1,etatProd,0,0)]
+                else:
+                    req=["UPDATE facturation set code=?,lib=?,prix=?,qte=?,ato='non',ean=?,libW=?,etatProd=? where idProd=?",(code[i],lib[i],prix[i],qte[i],ean[i],libW[i],etatProd,LidProd[i])]  
+            ecriture_BDD(req)
+        insertHistorique('normal','suivi','detailCde',"enregistrement modification idCmd",idCmd)
+    elif action=="3":
+        #Afficher les factures
+        listePDF=[]
+        qte=0
+        for facture in os.listdir(app.config['FACTURE_FOLDER']) :
+            if facture.startswith(idCmd+"-"):
+                qte+=1
+                listePDF.append(app.config['FACTURE_FOLDER']+"/"+facture)
+        if qte>0:
+            return send_file(fusionnerPDF(listePDF,idCmd), as_attachment=True)
+        #cas aucun facture
+        insertHistorique('normal','suivi','detailCde',"visualisation facture idCmd",idCmd)
+    elif action=="4":
+        #duplique la commande
+        req=["SELECT idclientCmd FROM commande WHERE id_commande=?",(idCmd,)]
+        idClient=lecture_BDD(req)[0]["idclientCmd"]
+        req=["SELECT UPPER(idCEclient),UPPER(societe),UPPER(client),UPPER(mail),UPPER(tel),UPPER(adresse) FROM client WHERE idclient=?",(idClient,)]
+        client=lecture_BDD(req)[0]
+        req=["SELECT * FROM facturation WHERE idCmd=?",(idCmd,)]
+        Lcode=lecture_BDD(req)
+        #duplique le client
+        req=["INSERT INTO client (idCEclient,societe,client,mail,tel,adresse) values (?,?,?,?,?,?)",(client["UPPER(idCEclient)"],client["UPPER(societe)"],client["UPPER(client)"],client["UPPER(mail)"],client["UPPER(tel)"],client["UPPER(adresse)"])]
+        ecriture_BDD(req)
+        #recupère id client
+        req=["SELECT MAX(idclient) FROM client WHERE upper(idCEclient)=? AND upper(societe)=? AND upper(client)=? AND upper(mail)=? AND upper(tel)=? AND upper(adresse)=?",(client["UPPER(idCEclient)"],client["UPPER(societe)"],client["UPPER(client)"],client["UPPER(mail)"],client["UPPER(tel)"],client["UPPER(adresse)"])]
+        idClient=lecture_BDD(req)[0]["MAX(idclient)"]
+        #création de la commande avec l'id client
+        req=["insert into commande (idclientCmd,idCE,total,idclientHW,etatCmd,date,corbeille,createdBy) values(?,?,?,?,?,?,0,?)",(idClient,idCE,total,-1,0,date,user)]
+        ecriture_BDD(req)
+        req=["SELECT MAX(id_commande) FROM commande",()]
+        newIdCmd=lecture_BDD(req)[0]["MAX(id_commande)"]
+        #ajout des produits dans le tableau facturation
+        for i in range(len(Lcode)):
+            req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(newIdCmd,Lcode[i]["code"],Lcode[i]["ean"],Lcode[i]["libW"],Lcode[i]["lib"],Lcode[i]["prix"],Lcode[i]["qte"],Lcode[i]["ato"],0,-1,0,0,0)]
+            ecriture_BDD(req)
+        req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),newIdCmd)]
+        ecriture_BDD(req)
+        session['user']['idDetailCmd']=newIdCmd
+        insertHistorique('normal','suivi','detailCde',"duplication idCmd",idCmd)
+        return (suiviCmd(user))
+    elif action=="5":
+        #Voir infos CE
+        insertHistorique('normal','suivi','detailCde',"visualisation info CE de la commande",idCmd)
+        session['user']['page']="detailCommande"
+        return facturationInfo(user)
+
+    elif action=="factures":        
+        req=["SELECT id_commande,mail,client,idCE from commande join client on idclientcmd=idclient WHERE id_commande=?",(idCmd,)]
+        cmd=lecture_BDD(req)
+        Linfo=[cmd[0]["mail"],cmd[0]["client"],str(cmd[0]["id_commande"]),99]
+        Lfiles=request.files.getlist("file")
+        i=0
+        LidFact=[]
+        for file in Lfiles:
+            if file.filename!='':
+                ext=file.filename.split(".")[1]
+                file.save(os.path.join(app.config['FACTURE_FOLDER'],str(cmd[0]["id_commande"])+"-"+date+"-"+heure+"."+ext))
+                LidFact.append(cmd[0]["id_commande"])
+            i=i+1
+        Lfact=[]
+        if cmd[0]["id_commande"] in LidFact:
+            for facture in os.listdir(app.config['FACTURE_FOLDER']) :
+                if facture.startswith(str(cmd[0]['id_commande'])+"-"):
+                    Lfact.append(app.config['FACTURE_FOLDER']+"/"+facture)
+        send_email(Linfo,Lfact,[])
+        
+    elif "relance" in action:
+        Particule=action.split('relance')[1]
+        particule=""
+        if Particule=="ChequeR":
+            particule="chequeR"
+        elif Particule=="ChequeAV":
+            particule="chequeAV"
+        elif Particule=="ChequeAP":
+            particule="chequeAP"
+        elif Particule=="Lien":
+            particule="lien"
+        elif Particule=="Rib":
+            particule="rib"
+        elif Particule=="Espece":
+            particule="espece"
+        else:
+            particule="autre"
+        idPaiement=request.form.get("idPaiement"+Particule)
+        relance=request.form.get("idRelance"+Particule)
+        montant=request.form.get("idMontant"+Particule)
+        idUnique=request.form.get("idUnique"+Particule)
+        #Montant avec 2 décimales
+        montant='%.2f'%float(montant)
+        #Annuler les paiements précédents et enlever le lastOne
+        req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idUnique=?",(idUnique,)]
+        ecriture_BDD(req)
+        #Créer la nouvelle demande de paiement et du lastOne
+        relance=int(relance)+1
+        req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,particule,date,heure,0,montant,relance,idPaiement,1)]
+        ecriture_BDD(req)
+        action2=particule
+        sendMail=True
+        insertHistorique('normal','suivi','detailCde',"relance "+particule+" idCmd",idCmd)
+
+
+    elif "annule" in action:
+        Particule=action.split('annule')[1]
+        particule=""
+        if Particule=="ChequeR":
+            particule="chequeR"
+        elif Particule=="ChequeAV":
+            particule="chequeAV"
+        elif Particule=="ChequeAP":
+            particule="chequeAP"
+        elif Particule=="Lien":
+            particule="lien"
+        elif Particule=="Rib":
+            particule="rib"
+        elif Particule=="Espece":
+            particule="espece"
+        else:
+            particule="autre"
+        idPaiement=request.form.get("idPaiement"+Particule)
+        relance=request.form.get("idRelance"+Particule)
+        montant=request.form.get("idMontant"+Particule)
+        idUnique=request.form.get("idUnique"+Particule)
+        #Annule la demande de paiement
+        req=["UPDATE paiement SET etat=2 WHERE idUnique=?",(idUnique,)]
+        ecriture_BDD(req)
+        insertHistorique('normal','suivi','detailCde',"annulation "+particule+" idCmd",idCmd)
+        return (detailsCmd(user))
+
+    else:
+        montant1=request.form.get("montant")
+        if montant1=="" or montant1=="0":
+            return '', 204
+        else:
+            montant1.replace(",",".")
+            montant=str("%.2f" % float(montant1))
+            
+            etat="0"
+            relance=0
+            action2=action
+            req=["SELECT MAX(idPaiement) FROM paiement WHERE idCd=? and type=?",(idCmd,action)]
+            idP=lecture_BDD(req)[0]['MAX(idPaiement)']
+            if idP!=None:
+                idPaiement=int(idP)+1
+            else:
+                idPaiement=1
+            req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,action,date,heure,etat,montant,relance,idPaiement,1)]
+            ecriture_BDD(req)
+            sendMail=True
+            insertHistorique('normal','suivi','detailCde',"demande de paiement idCmd",idCmd)
+
+            
+    if sendMail:
+        req=["SELECT SUM(qte),idclientCmd,idCE,adresse,mail,client FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCmd,)]
+        liste=lecture_BDD(req)
+        nbrPdt=liste[0]["SUM(qte)"]
+        idClient=liste[0]["idclientCmd"]
+        idCE=liste[0]["idCE"]
+        adresse=str(liste[0]["adresse"])
+        mail=liste[0]["mail"]
+        client=liste[0]["client"]
+        idCdMail=str(idCmd)+'-'+str(idPaiement)+'-'+str(relance)
+        send_email([str(mail),str(client),str(idCmd),action2,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE)],[],[])
+        return (detailsCmd(user))
+    else:
+        return '',204
+    
+
+@app.route('/extractColissimo/<user>', methods=['GET','POST'])
+def extractColissimo(user):
+    try :
+        session['user']
+    except:
+        return(index())
+    bouton=request.form.get("bouton")
+    if bouton=="0":
+        Linfo=[request.form.get("nom"),request.form.get("prenom"),request.form.get("fixe"),request.form.get("mobile"),request.form.get("mail"),request.form.get("rue"),request.form.get("CP"),request.form.get("ville"),request.form.get("res"),request.form.get("couls")]
+        nom=Linfo[0]
+        prenom=Linfo[1]
+        fixe=Linfo[2]
+        mobile=Linfo[3]
+        mail=Linfo[4]
+        rue=Linfo[5]
+        CP=Linfo[6]
+        ville=Linfo[7]
+        res=Linfo[8]
+        couls=Linfo[9]
+        with open(exportFold+"/"+nom+prenom+"_extractor.csv","w") as csvfile:
+            csvfile.write('Référence;;Raison sociale;Service;Prénom;Nom;Etage couloir escalier;Entrée bâtiment;N° et voie;Lieu dit;Code postal;Commune;Code ISO du pays;Téléphone fixe;Téléphone portable;Email;Code porte1;Code porte2;Interphone;Instructions de livraison;Nom commercial chargeur\n')
+            csvfile.write(';;;;'+prenom+';'+nom+';'+couls+';'+res+';'+rue+';;'+CP+';'+ville+';FR;'+fixe+';'+mobile+';'+mail+';;;;;;')
+    insertHistorique('normal','suivi','detailCde_colissimo',"extraction colissimo",None)
+    
+    return detailsCmd(user)
+    
+
+@app.route('/annuler', methods=['GET', 'POST'])
+def annuler():
+    try :
+        session['user']
+    except:
+        return(index())
+    idcmd=request.form.get("id")
+    req=["UPDATE facturation set etatProd=4,etatMin=4,etatMax=4 where idProd=?",(idcmd,)]
+    ecriture_BDD(req)
+    insertHistorique('normal','suivi','detailCde',"annulation produit idcmd",idcmd)
+    return jsonify()
+    
+@app.route('/addCmd/<user>', methods=['GET', 'POST'])
+def addCmd(user):
+    try :
+        session['user']
+    except:
+        return(index())
+    req=["SELECT idclient,client,idCEclient from client",()]
+    Lclients=lecture_BDD(req)
+    req=["SELECT idCE from listingCE where corbeille=0 order by idCE",()]
+    LCE=lecture_BDD(req)
+    Lcode=getLcode()
+    insertHistorique('normal','suivi','detailCde',"ajout d'une commande",None)
+    return render_template('suivi_addCmd.html',user=user,Lclients=Lclients,LCE=LCE,Lcode=Lcode)
+    
+
+@app.route('/addProd', methods=['GET', 'POST'])
+def addProd():
+    try :
+        session['user']
+    except:
+        return(index())
+    code=request.form.get("code")
+    ato=request.form.get("ato")
+    errone,code,ean,lib=checkCode(code)
+    prix=0
+    date=""
+    if errone==0:
+        prix=getPrix(code)
+        dateLim=datetime.datetime.today()+datetime.timedelta(delaiRupt)
+        req=["SELECT date from rupture where rupt_code=? and date>?",(code,dateLim)]
+        l=lecture_BDD(req)
+        if len(l)>0:
+            date=l[0]["date"]
+            errone=-1
+    insertHistorique('normal','suivi','addCde',"ajout de produit code:",code)
+    return jsonify(lib=lib,prix=prix,ato=ato,ean=ean,errone=errone,date=date)
+    
+
+@app.route('/valinuler/<user>', methods=['GET', 'POST'])
+def valinuler(user):
+    try :
+        session['user']
+    except:
+        return(index())
+    mode=request.form.get("mode")
+    if mode!="0":
+        idCE=request.form.get("idCE")
+        societe=request.form.get("societe")
+        client=majusca(request.form.get("client"))
+        mail=request.form.get("mail")
+        tel=request.form.get("tel")
+        adresse=majusca(request.form.get("adresse"))
+        total=request.form.get("total")
+        commentaire=request.form.get("commentaire")
+        date=datetime.datetime.today().strftime('%Y-%m-%d')
+
+        req=["insert into client (idCEclient,societe,client,mail,tel,adresse,commentaire) values(?,?,?,?,?,?,?)",(idCE,societe,client,mail,tel,adresse,commentaire)]
+        ecriture_BDD(req)
+        req=["SELECT max(idclient) from client",()]
+        idclient=lecture_BDD(req)[0]["max(idclient)"]
+        req=["insert into commande (idclientCmd,idCE,total,idclientHW,etatCmd,date,corbeille,createdBy) values(?,?,?,?,?,?,0,?)",(idclient,idCE,total,-1,0,date,user)]
+        ecriture_BDD(req)
+
+        req=["SELECT max(id_commande) from commande",()]
+        idCmd=lecture_BDD(req)[0]['max(id_commande)']
+
+        #Récupération des produits
+        Lcode=request.form.getlist("code")
+        Llib=request.form.getlist("lib")
+        Lprix=request.form.getlist("prix")
+        Lqte=request.form.getlist("qte")
+        Lato=request.form.getlist("ato")
+        Lean=request.form.getlist("ean")
+
+        for i in range(len(Lcode)):
+            req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,Lcode[i],Lean[i],Llib[i],Llib[i],Lprix[i],Lqte[i],Lato[i],0,-1,0,0,0)]
+            ecriture_BDD(req)
+        req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),idCmd)]
+        ecriture_BDD(req)
+        if mode=="1":
+            insertHistorique('normal','suivi','addCde',"validation de la commande et ajout d'une nouvelle",None)
+            return addCmd(user)
+        else:
+            insertHistorique('normal','suivi','addCde',"validation de la commande et retour au suivi commande",None)
+            return suiviCmd(user)
+    return suiviCmd(user)
+    
+
+@app.route('/searchClient', methods=['GET', 'POST'])
+def searchClient():
+    try :
+        session['user']
+    except:
+        return(index())
+    client=request.form.get("client")
+    try:
+        idclient=client.split(" - ")[1]
+        req=["SELECT * from client where idclient=?",(idclient,)]
+        reqInfos=lecture_BDD(req)
+        Linfo=[reqInfos[0]['idCEclient'],reqInfos[0]['societe'],reqInfos[0]['client'],reqInfos[0]['mail'],reqInfos[0]['tel'],reqInfos[0]['adresse'],reqInfos[0]['commentaire']]
         taille=len(Linfo)
-        session['user']['rechercheCE']=CE
     except :
         taille=0
         Linfo=[]
-    insertHistorique('normal','CE','recherche',"filtre",CE)
-    return jsonify(Linfo=Linfo,taille=taille,CEselectionne=CEselectionne)
-
-@app.route('/modifrechercheCE', methods=['GET', 'POST'])
-def modifrechercheCE():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("ide")
-    idCE=request.form.get("idCE")
-    entreprise=request.form.get("entreprise")
-    referente=request.form.get("referente")
-    intermediaire=request.form.get("intermediaire")
-    mail=request.form.get("mail")
-    tel=request.form.get("tel")
-    mailCl=request.form.get("mailCl")
-    mailInterPrep=request.form.get("mailInterPrep")
-    mailInterFact=request.form.get("mailInterFact")
-    mailInterRelFact=request.form.get("mailInterRelFact")
-    mailInterRel=request.form.get("mailInterRel")
-    mailInterRupt=request.form.get("mailInterRupt")
-    mcl=0
-    minterPrep=0
-    minterFact=0
-    minterRelFact=0
-    minterRel=0
-    minterRupt=0
-    if mailCl=="true":
-        mcl=1
-    if mailInterPrep=="true":
-        minterPrep=1
-    if mailInterFact=="true":
-        minterFact=1
-    if mailInterRelFact=="true":
-        minterRelFact=1
-    if mailInterRel=="true":
-        minterRel=1    
-    if mailInterRupt=="true":
-        minterRupt=1 
-    qteFact=request.form.get("qteFact")
-    sac=request.form.get("sac")
-    retraitMag=request.form.get("retraitMag")
-    colisIndiv=request.form.get("colisIndiv")
-    colisCol=request.form.get("colisCol")
-    colisExpe=request.form.get("colisExpe")
-    catalogue=request.form.get("catalogue")
-    promotion=request.form.get("promotion")
-    commentaires=request.form.get("commentaires")
-    adresse=request.form.get("adresse")
-    insertHistorique('normal','pageCE','rechercheCE','modification ligne CE n°',ide)
-    req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=?,qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=?,adresse=? where id=?",(idCE,entreprise,referente,intermediaire,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse,ide)]
-    print(req)
-    ecriture_BDD(req)
-    insertHistorique('normal','pageCE','listingCE','modification ligne CE n°',ide)
-    return '',204
-
-@app.route('/CE/<user>',methods=['GET', 'POST'])
-def pageCE(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    ref=request.form.get("ref")
-    if ref!=None:
-        insertHistorique('normal','pageCE','listingCE','filtre sur la réf id:',ref)
-        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
-        ref=int(ref)
-    else:
-        insertHistorique('normal','connexion','listingCE','filtre All ref',None)
-        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
-
-    LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    return render_template('CE_general.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
+    insertHistorique('normal','suivi','general',"filtre",None)
+    
+    return jsonify(Linfo=Linfo,taille=taille)
     
 
-@app.route('/modifCE', methods=['GET', 'POST'])
-def modifCE():
+@app.route('/getSociete', methods=['GET', 'POST'])
+def getSociete(): 
     try :
         session['user']
     except:
         return(index())
-    ide=request.form.get("id")
-    nouvIdCE=request.form.get("nouvidCE")
-    entreprise=request.form.get("entreprise")
-    ref=request.form.get("ref")
-    inter=request.form.get("inter")
-    mail=request.form.get("mail")
-    tel=request.form.get("tel")
-    mailCl=request.form.get("mailCl")
-    mailInterPrep=request.form.get("mailInterPrep")
-    mailInterFact=request.form.get("mailInterFact")
-    mailInterRelFact=request.form.get("mailInterRelFact")
-    mailInterRel=request.form.get("mailInterRel")
-    mailInterRupt=request.form.get("mailInterRupt")
-    mcl=0
-    minterPrep=0
-    minterFact=0
-    minterRelFact=0
-    minterRel=0
-    minterRupt=0
-    if mailCl=="true":
-        mcl=1
-    if mailInterPrep=="true":
-        minterPrep=1
-    if mailInterFact=="true":
-        minterFact=1
-    if mailInterRelFact=="true":
-        minterRelFact=1
-    if mailInterRel=="true":
-        minterRel=1    
-    if mailInterRupt=="true":
-        minterRupt=1 
-    req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=? where id=?",(nouvIdCE,entreprise,ref,inter,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,ide)]
-    ecriture_BDD(req)
-    insertHistorique('normal','pageCE','listingCE','modification ligne CE n°',nouvIdCE)
-    return '',204
-    
+    idCE=request.form.get('idCE')
+    req=["SELECT entreprise from listingCE where idCE=? and corbeille=0",(idCE,)]
+    societe=lecture_BDD(req)[0]["entreprise"]
+    return jsonify(societe=societe)
 
-@app.route('/modifCEInfo', methods=['GET', 'POST'])
-def modifCEInfo():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("id")
-    qteFact=request.form.get("qteFact")
-    sac=request.form.get("sac")
-    retraitMag=request.form.get("retraitMag")
-    colisIndiv=request.form.get("colisIndiv")
-    colisCol=request.form.get("colisCol")
-    colisExpe=request.form.get("colisExpe")
-    catalogue=request.form.get("catalogue")
-    promotion=request.form.get("promotion")
-    commentaires=request.form.get("commentaires")
-    req=["UPDATE listingCE SET qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=? WHERE id=?",(qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,ide)]
-    ecriture_BDD(req)
-    insertHistorique('normal','pageCE','infoCE','modification ligne CE n°',ide)
-    return '',204
+#endregion
 
-@app.route('/modifCEAdresse', methods=['GET', 'POST'])
-def modifCEAdresse():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("id")
-    adresse=request.form.get("adresse")
-    req=["UPDATE listingCE SET adresse=? WHERE id=?",(adresse,ide)]
-    ecriture_BDD(req)
-    insertHistorique('normal','pageCE','adresseCE','modification ligne CE n°',ide)
-    return '',204
-
-@app.route('/suprCE', methods=['GET', 'POST'])
-def suprCE():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("id")
-    req=["UPDATE listingCE set corbeille=1 where id=?",(ide,)]
-    ecriture_BDD(req)
-    insertHistorique('normal','pageCE','listingCE','suppression CE n°',ide)
-    return jsonify()
-
-@app.route('/infoCE/<user>',methods=['GET', 'POST'])
-def pageCEinfo(user): 
-    try :
-        session['user']
-    except:
-        return(index())
-    ref=request.form.get("ref")
-    if ref==None or ref==0 or ref=='0':
-        insertHistorique('normal','pageCE','infoCE','filtre All ref',None)
-        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
-    else:
-        insertHistorique('normal','pageCE','infoCE','filtre ref',ref)
-        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
-        ref=int(ref)
-    LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    return render_template('CE_infos.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
-
-@app.route('/adresseCE/<user>',methods=['GET', 'POST'])
-def pageCEadresse(user): 
-    try :
-        session['user']
-    except:
-        return(index())
-    ref=request.form.get("ref")
-    if ref==0 or ref==None or ref=='0':
-        insertHistorique('normal','pageCE','adresseCE','filtre All ref',None)
-        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
-        
-    else:
-        insertHistorique('normal','pageCE','adresseCE','filtre ref',ref)
-        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
-        ref=int(ref)
-    LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    return render_template('CE_adresses.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
-    
-
-############ 2-Monde Traitement des données################
+####################### 0-Monde Traitement des données - OngletTraitement ###############
+#region
 @app.route('/start/<user>')
 def start(user):
     try :
@@ -765,8 +1126,10 @@ def suprExtract():
     return jsonify()
     
 
-###################################################################
-############ Monde cmde à préparer ################
+#endregion
+
+####################### 1-Monde préparer - OngletPréparer ###############################
+#region
 @app.route('/choixCE/<user>', methods=['GET', 'POST'])
 def choixCE(user):
     try :
@@ -1038,8 +1401,10 @@ def creerlot(user):
     insertHistorique('normal','préparer','listeProduit',"formation lot n°:",lot)
     return bonPrep(user)
     
-    
-############################# RELIQUATS ######################
+#endregion   
+
+####################### 2-Monde des reliquats - OngletReliquat ##########################
+#region
 @app.route('/reliquats/<user>', methods=['GET', 'POST'])
 def reliquats(user):
     try :
@@ -1482,8 +1847,10 @@ def changeDatePrev():
     
     return jsonify()
     
+#endregion
 
-############################# Cmde à facturer ######################
+####################### 3-Monde facturer - OngletFacturer ###############################
+#region
 @app.route('/choixLot/<user>', methods=['GET', 'POST'])
 def choixLot(user):
     try :
@@ -2053,8 +2420,10 @@ def modifClientRupt():
 
     return jsonify()
     
+#endregion
 
-################ Monde Paiements ####################
+####################### 4-Monde des paiements - OngletPaiements #########################
+#region
 
 @app.route('/paiements/<user>',methods=['GET', 'POST'])
 def paiements(user):
@@ -2699,8 +3068,10 @@ def actionFromPaiementPaye(user):
         ecriture_BDD(req)
         insertHistorique('normal','paiement','paiements',"annulation paiement payé idcmd",idCmd)
     return paiementsPaye(user)
+#endregion
 
-################ Monde Livraison ####################
+####################### 5-Monde des livraisons- OngletLivraison #########################
+#region
 @app.route('/livraison/<user>', methods=['GET', 'POST'])
 def choixCELivre(user):
     try :
@@ -2819,795 +3190,360 @@ def histLivraison(user):
     listLivraison=lecture_BDD(req)
     insertHistorique('normal','livraison','historique',"visualisation",None)
     return render_template('livraison_hist.html',user=user,listLivraison=listLivraison)
-    
+#endregion    
 
-################ Monde Suivi de Cmde ################
-@app.route('/suivi/<user>',methods=['GET', 'POST'])
-def suiviCmd(user):
+####################### Monde des CE - OngletCE #########################################
+#region
+@app.route('/ajoutCE/<user>', methods=['GET', 'POST'])
+def ajoutCE(user):
     try :
         session['user']
     except:
         return(index())
-    action=request.form.get('filtre')
-    #réactulisation du filtre 
-    if action=='filtre':
-        session['user']['filtreDateMin']="-1"
-        session['user']['filtreDateMax']="-1"
-        session['user']['filtreID']="-1"
-        session['user']['filtreCE']="-1"
-        session['user']['filtreNom']="-1"
-        session['user']['filtreEtat']="-1"
-    #vérification de la sauvegarde des filtres
-    if (session['user']['filtreDateMin']!='-1' or session['user']['filtreDateMax']!='-1' or session['user']['filtreID']!='-1' or session['user']['filtreCE']!='-1' or session['user']['filtreNom']!='-1' or session['user']['filtreEtat']!='-1'):
-        return(searchSuivi(user))
-    ref=request.form.get("ref")
-    if ref!=None:
-        req=["SELECT id_commande,idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd where commande.corbeille=0 and idCE in (SELECT idCE from listingCE where listingCE.referente=? and corbeille=0) order by id_commande DESC LIMIT 1000",(ref,)]
-        ref=int(ref)
-        insertHistorique('normal','suivi','general',"visualisation ref",ref)
-    else:
-        insertHistorique('normal','suivi','general',"visualisation all ref",None)
-        req=["SELECT id_commande,idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd where commande.corbeille=0  order by id_commande DESC LIMIT 1000",()]
-
-    Lclients=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    insertHistorique('normal','suivi','general',"visualisation ref",ref)
-    return render_template('suivi_general.html',Lclients=Lclients,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
-
-@app.route('/searchSuivi/<user>',methods=['GET', 'POST'])
-def searchSuivi(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    dateMin=str(request.form.get("dateMin"))
-    dateMax=str(request.form.get("dateMax"))
-    idCmd=str(request.form.get("idCmd"))
-    idCE=str(request.form.get("idCE"))
-    client=request.form.get("client")
-    etat=str(request.form.get("etat"))
-    ref=str(request.form.get("ref"))
-    mail=str(request.form.get("mail"))
-    sansDateMini=False
-    sansDateMax=False
-    #Clés du filtre par session
-    if session['user']['filtreDateMin']!='-1':
-        if dateMin=="" or dateMin==None or dateMin=="None":
-            dateMin=session['user']['filtreDateMin']
-        else:
-            session['user']['filtreDateMin']=dateMin
-    else:
-        if dateMin=="" or dateMin==None  or dateMin=="None":
-            session['user']['filtreDateMin']='-1'
-            sansDateMini=True
-            dateMin=""
-        else:
-            session['user']['filtreDateMin']=dateMin
-
-    if session['user']['filtreDateMax']!='-1':
-        if dateMax=="" or dateMax==None  or dateMax=="None":
-            dateMax=session['user']['filtreDateMax']
-        else:
-            session['user']['filtreDateMax']=dateMax
-    else:
-        sansDateMax=False
-        if dateMax=="" or dateMax==None  or dateMax=="None":
-            session['user']['filtredateMax']='-1'
-            sansDateMax=True
-            dateMax=""
-        else:
-            session['user']['filtreDateMax']=dateMax
-
-    if session['user']['filtreID']!='-1' :
-        if idCmd=="" or idCmd=="None" :
-            idCmd=session['user']['filtreID']
-        else:
-            session['user']['filtreID']=idCmd
-    else:
-        if idCmd=="" or idCmd=="None":
-            session['user']['filtreID']='-1'
-            idCmd=""
-        else:
-            session['user']['filtreID']=idCmd
-
-    if session['user']['filtreCE']!='-1':
-        if idCE=="" or idCE=="None":
-            idCE=session['user']['filtreCE']
-        else:
-            session['user']['filtreCE']=idCE
-    else:
-        if idCE=="" or idCE=="None":
-            session['user']['filtreCE']='-1'
-            idCE=""
-        else:
-            session['user']['filtreCE']=idCE
-
-    if session['user']['filtreNom']!='-1':
-        if client=="" or client=="None" or client==None:
-            client=session['user']['filtreNom']
-        else:
-            session['user']['filtreNom']=client  
-    else:
-        if client=="" or client=="None" or client==None:
-            session['user']['filtreNom']='-1'
-            client=""
-        else:
-            session['user']['filtreNom']=client
-
-    if session['user']['filtreEtat']!='-1':
-        if etat==None or etat=="None":
-            etat=session['user']['filtreEtat']
-        else:
-            session['user']['filtreEtat']=etat
-    else:
-        if etat==None or etat=='None':
-            etat=""
-        session['user']['filtreEtat']=etat
-
-    
-    if session['user']['filtreMail']!='-1':
-        if mail=="" or mail=="None" or mail==None:
-            mail=session['user']['filtreMail']
-        else:
-            session['user']['filtreMail']=mail  
-    else:
-        if mail=="" or mail=="None" or mail==None:
-            session['user']['filtreMail']='-1'
-            mail=""
-        else:
-            session['user']['filtreMail']=mail
-
-    if ref=="None":
-        ref1=""
-    else:
-        ref1=ref
-
-    if sansDateMini:
-        if sansDateMax:
-            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%','%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
-            Lclients=lecture_BDD(req)
-        else:
-            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date<= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
-            Lclients=lecture_BDD(req)
-    elif sansDateMax:
-        req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date>= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
-        Lclients=lecture_BDD(req)
-    else:
-        req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date >= (?) and date <= (?) and etatCmd LIKE ? and client.referente LIKE ? and mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
-        Lclients=lecture_BDD(req)
-        
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    insertHistorique('normal','suivi','general',"filtre",None)
-    return render_template('suivi_general.html',user=user,Lclients=Lclients,dateMin=dateMin,dateMax=dateMax,idCmd=idCmd,idCE=idCE,client=client,etat=etat,ref=ref,mail=mail,listeRef=listeRef,listeAll=listeAll)
-    
-@app.route('/suprCmd', methods=['GET', 'POST'])
-def suprCmd():
-    try :
-        session['user']
-    except:
-        return(index())
-    user=session['user']['id']
-    idCmd=request.form.get('idCmd')
-    req=["UPDATE commande set corbeille=1,deletedBy=? where id_commande=?",(user,idCmd)]
-    ecriture_BDD(req)
-    insertHistorique('normal','suivi','general',"suppresion idcmd",idCmd)
-    return jsonify()
-
-@app.route('/annuleCmd', methods=['GET', 'POST'])
-def annuleCmd():
-    try :
-        session['user']
-    except:
-        return(index())
-    user=session['user']['id']
-    idCmd=request.form.get('idCmd')
-    answer=request.form.get('answer')
-    req=["UPDATE commande set justification=?,deletedBy=?,etatCmd=99 where id_commande=?",(answer,user,idCmd)]
-    ecriture_BDD(req)
-    #annuler tous les produits
-    req=["SELECT * FROM facturation WHERE idCmd=?",(idCmd,)]
-    listePdt=lecture_BDD(req)
-    for produit in listePdt:
-        try:
-            qte=int(produit['qte'])
-        except:
-            qte==1
-        idProd=produit['idProd']
-        if qte==0 or qte==1:
-            texte="4"
-        else:
-            texte=(qte-1)*"4;"+"4"
-        req=["UPDATE facturation SET etatProd=? where idProd=?",(texte,idProd)]
-        ecriture_BDD(req)
-    #annule les paiements associés
-    req=["UPDATE paiement SET etat=2 where idCd=?",(idCmd,)]
-    ecriture_BDD(req)
-    insertHistorique('normal','suivi','general',"annulation idCmd",idCmd)
-    return '', 204
-
-################### Details ##############
-@app.route('/detailsCmd/<user>', methods=['GET', 'POST'])
-def detailsCmd(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    idDetailCmd=session['user']['idDetailCmd']
-    try:
-        idDetailCmd=int(request.form.get('idCmd'))
-        session['user']['idDetailCmd']=idDetailCmd
-    except:
-        pass
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='lien' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementLien=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='rib' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementRib=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='espece' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementEspece=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeR' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementChequeR=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeAV' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementChequeAV=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeAP' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementChequeAP=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='autre' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementAutre=lecture_BDD(req)
-    previousPage=request.form.get("previousPage")
-    if previousPage==None:
-        previousPage="suivi"
-    req=["SELECT * from client join commande on idclient=idclientCmd left join livraison on livraison.idlivraison=commande.idlivraison where id_commande=?",(idDetailCmd,)]
-    client=lecture_BDD(req)
-    LidUser=[client[0]['extractedBy'],client[0]['createdBy'],client[0]['modifiedBy'],client[0]['preparedBy'],client[0]['facturedBy'],client[0]['deliveredBy']]
-    Luser=[]
-    for x in LidUser:
-        if x==None:
-            Luser.append('null')
-        else:
-            req=["SELECT prenom FROM utilisateur WHERE id=?",(str(x),)]
-            try :
-                prenom=lecture_BDD(req)[0]['prenom']
-                Luser.append(prenom)
-            except:
-                Luser.append('null')
-    Ltitle=["Extrait par","Créé par","Modifié par","Préparé par","Facturé par","Livré par"]
-    req=["SELECT * from facturation where idCmd=? and (etatProd like '%0%' or etatProd LIKE '%1%' or etatProd LIKE '%2%' or etatProd LIKE '%3%' or etatProd LIKE '%5%')",(idDetailCmd,)]
-    Lcmd=lecture_BDD(req)
-    req=["SELECT * from facturation where idCmd=? and etatProd like '%4%'",(idDetailCmd,)]
-    LcmdAnnule=lecture_BDD(req)
-    if client[0]['idclientHW']==1:
-        template="suivi_detailsHW.html"
-    else:
-        template="suivi_details.html"
-    insertHistorique('normal','suivi','detailCde',"visualisationidcmd",idDetailCmd)
-    listeLien=["Lien CB",paiementLien,"Lien"]
-    listeRIB=["RIB",paiementRib,"Rib"]
-    listeChequeR=["Cheque reçu",paiementChequeR,"ChequeR"]
-    listeChequeAV=["Cheque avant envoi",paiementChequeAV,"ChequeAV"]
-    listeChequeAP=["Cheque apres reception",paiementChequeAP,"ChequeAP"]
-    listeEspece=["Especes",paiementEspece,"Espece"]
-    listeAutre=["Autres",paiementAutre,"Autre"]
-    typePaiement=[listeLien,listeRIB,listeChequeR,listeChequeAV,listeChequeAP,listeEspece,listeAutre]
-    #Liste des factures
-    listePDF=[]
-    nomPDF=[]
-    qte=0
-    for facture in os.listdir(app.config['FACTURE_FOLDER']) :
-        if facture.startswith(str(idDetailCmd)+"-"):
-            qte+=1
-            splitFact=facture.split("-")
-            year=splitFact[1]
-            month=splitFact[2]
-            day=splitFact[3]
-            time=splitFact[4].split("_")
-            h=time[0]
-            min=time[1]
-            sec=time[2].split(".")[0]
-            nomPDF.append("Facture du "+day+"/"+month+"/"+year+" à "+h+":"+min+":"+sec)
-            listePDF.append(app.config['FACTURE_FOLDER']+"/"+facture)
-    return render_template(template,user=user,client=client,Lcmd=Lcmd,previousPage=previousPage,LcmdAnnule=LcmdAnnule,typePaiement=typePaiement,Luser=Luser,Ltitle=Ltitle,idDetailCmd=idDetailCmd,nomPDF=nomPDF,qte=qte)
-
-
-@app.route('/actionFromDetails/<user>', methods=['GET', 'POST'])
-def actionFromDetails(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get("action")
-    idCmd=request.form.get("idCmd")
-    idCE=request.form.get("idCE")
-    total=request.form.get("total")
-    date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
-    date=date1.split('_')[0]
-    heure=date1.split('_')[1]
-    sendMail=False
-    if action=="0":
-        #Voir PDF
-        for image in os.listdir(targetFile):
-            if image.startswith(idCmd):
-                return send_file(targetFile+"/"+image, as_attachment=True) 
-        insertHistorique('normal','suivi','detailCde',"visualisation bon de commande idCmd",idCmd)
-    elif action=="1":
-        #Exporter colissimo   
-        req=["SELECT * from client where idclient in (SELECT idclientCmd from commande where id_commande=?)",(idCmd,)]
-        client=lecture_BDD(req)[0]
-        nom_prenom=majusca(client["client"])
-        nom=nom_prenom.split(" ")[0]
-        prenom=nom_prenom.replace(nom,"")
-        mail=client["mail"]
-        tel=client["tel"]
-        adresse=client["adresse"]
-        Lnombre,Llettre,_,_=listeA(adresse)
-        LcodePossible=CodePossible(Lnombre)
-        Lville,LCP=codepostal(LcodePossible)
-        ville,CP=getVille(Lville,Llettre,LCP)
-        rue1=adresse.replace(ville,"")
-        rue=majusca(rue1.replace(CP,""))
-        if len(tel)>0:
-            fixe,mobile=fixoumobile(tel)
-        else:
-            fixe=""
-            mobile=""
-        insertHistorique('normal','suivi','detailCde',"colissimo",idCmd)
-        return render_template("suivi_details_colissimo.html",user=user,ville=ville,CP=CP,rue=rue,nom=nom,prenom=prenom,mail=mail,fixe=fixe,mobile=mobile)
-    
-    elif action=="2":
-        #Enregistrer les modifications
-        societe=request.form.get("societe")
-        client=majusca(request.form.get("client"))
-        mail=request.form.get("mail")
-        tel=request.form.get("tel")
-        adresse=majusca(request.form.get("adresse"))
-        commentaire=request.form.get("commentaire")
-        req=["UPDATE client set idCEclient=?,societe=?,client=?,mail=?,tel=?,adresse=?,commentaire=? where idclient=(SELECT idclientCmd from commande where id_commande=?)",(idCE,societe,client,mail,tel,adresse,commentaire,idCmd)]
-        ecriture_BDD(req)
-
-        req=["UPDATE commande set idCE=?,total=?,modifiedBy=? where id_commande=?",(idCE,total,user,idCmd)]
-        ecriture_BDD(req)
-
-        code=request.form.getlist("code")
-        ean=request.form.getlist("ean")
-        libW=request.form.getlist("libW")
-        lib=request.form.getlist("lib")
-        prix=request.form.getlist("prix")
-        qte=request.form.getlist("qte")
-        ato=request.form.getlist("ato")
-        LidProd=request.form.getlist("idProd")
-
-        for i in range(len(code)):
-            if qte[i]!="":
-                etatProd="0;"*(int(qte[i])-1)+"0"
-            else:
-                etatProd="0"
-            if LidProd[i] in ato:
-                if LidProd[i][0]=="n":
-                    req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,code[i],ean[i],libW[i],libW[i],prix[i],qte[i],"oui",0,-1,etatProd,0,0)]
-                else:
-                    req=["UPDATE facturation set code=?,lib=?,prix=?,qte=?,ato='oui',ean=?,libW=?,etatProd=? where idProd=?",(code[i],lib[i],prix[i],qte[i],ean[i],libW[i],etatProd,LidProd[i])]
-            else:
-                if LidProd[i][0]=="n":
-                    req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,code[i],ean[i],libW[i],lib[i],prix[i],qte[i],"non",0,-1,etatProd,0,0)]
-                else:
-                    req=["UPDATE facturation set code=?,lib=?,prix=?,qte=?,ato='non',ean=?,libW=?,etatProd=? where idProd=?",(code[i],lib[i],prix[i],qte[i],ean[i],libW[i],etatProd,LidProd[i])]  
-            ecriture_BDD(req)
-        insertHistorique('normal','suivi','detailCde',"enregistrement modification idCmd",idCmd)
-    elif action=="3":
-        #Afficher les factures
-        listePDF=[]
-        qte=0
-        for facture in os.listdir(app.config['FACTURE_FOLDER']) :
-            if facture.startswith(idCmd+"-"):
-                qte+=1
-                listePDF.append(app.config['FACTURE_FOLDER']+"/"+facture)
-        if qte>0:
-            return send_file(fusionnerPDF(listePDF,idCmd), as_attachment=True)
-        #cas aucun facture
-        insertHistorique('normal','suivi','detailCde',"visualisation facture idCmd",idCmd)
-    elif action=="4":
-        #duplique la commande
-        req=["SELECT idclientCmd FROM commande WHERE id_commande=?",(idCmd,)]
-        idClient=lecture_BDD(req)[0]["idclientCmd"]
-        req=["SELECT UPPER(idCEclient),UPPER(societe),UPPER(client),UPPER(mail),UPPER(tel),UPPER(adresse) FROM client WHERE idclient=?",(idClient,)]
-        client=lecture_BDD(req)[0]
-        req=["SELECT * FROM facturation WHERE idCmd=?",(idCmd,)]
-        Lcode=lecture_BDD(req)
-        #duplique le client
-        req=["INSERT INTO client (idCEclient,societe,client,mail,tel,adresse) values (?,?,?,?,?,?)",(client["UPPER(idCEclient)"],client["UPPER(societe)"],client["UPPER(client)"],client["UPPER(mail)"],client["UPPER(tel)"],client["UPPER(adresse)"])]
-        ecriture_BDD(req)
-        #recupère id client
-        req=["SELECT MAX(idclient) FROM client WHERE upper(idCEclient)=? AND upper(societe)=? AND upper(client)=? AND upper(mail)=? AND upper(tel)=? AND upper(adresse)=?",(client["UPPER(idCEclient)"],client["UPPER(societe)"],client["UPPER(client)"],client["UPPER(mail)"],client["UPPER(tel)"],client["UPPER(adresse)"])]
-        idClient=lecture_BDD(req)[0]["MAX(idclient)"]
-        #création de la commande avec l'id client
-        req=["insert into commande (idclientCmd,idCE,total,idclientHW,etatCmd,date,corbeille,createdBy) values(?,?,?,?,?,?,0,?)",(idClient,idCE,total,-1,0,date,user)]
-        ecriture_BDD(req)
-        req=["SELECT MAX(id_commande) FROM commande",()]
-        newIdCmd=lecture_BDD(req)[0]["MAX(id_commande)"]
-        #ajout des produits dans le tableau facturation
-        for i in range(len(Lcode)):
-            req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(newIdCmd,Lcode[i]["code"],Lcode[i]["ean"],Lcode[i]["libW"],Lcode[i]["lib"],Lcode[i]["prix"],Lcode[i]["qte"],Lcode[i]["ato"],0,-1,0,0,0)]
-            ecriture_BDD(req)
-        req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),newIdCmd)]
-        ecriture_BDD(req)
-        session['user']['idDetailCmd']=newIdCmd
-        insertHistorique('normal','suivi','detailCde',"duplication idCmd",idCmd)
-        return (suiviCmd(user))
-    elif action=="5":
-        #Voir infos CE
-        insertHistorique('normal','suivi','detailCde',"visualisation info CE de la commande",idCmd)
-        session['user']['page']="detailCommande"
-        return facturationInfo(user)
-    
-    # elif action=="relanceLien":
-    #     idPaiement=request.form.get("idPaiementLien")
-    #     relance=request.form.get("idRelanceLien")
-    #     montant=request.form.get("idMontantLien")
-    #     #Annuler les paiements précédents et enlever le lastOne
-    #     req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idCd=? AND type=? AND idPaiement=? ",(idCmd,'lien',idPaiement)]
-    #     ecriture_BDD(req)
-    #     #Créer la nouvelle demande de paiement et du lastOne
-    #     relance=int(relance)+1  
-    #     req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,'lien',date,heure,0,montant,relance,idPaiement,1)]
-    #     ecriture_BDD(req)
-    #     action2='lien'
-    #     sendMail=True
-    #     insertHistorique('normal','suivi','detailCde',"relance lien idCmd",idCmd)
-
-    # elif action=="relanceRib":
-    #     idPaiement=request.form.get("idPaiementRib")
-    #     relance=request.form.get("idRelanceRib")
-    #     montant=request.form.get("idMontantRib")
-    #     #Annuler les paiements précédents et enlever le lastOne
-    #     req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idCd=? AND type=? AND idPaiement=? ",(idCmd,'rib',idPaiement)]
-    #     ecriture_BDD(req)
-    #     #Créer la nouvelle demande de paiement et du lastOne
-    #     relance=int(relance)+1
-    #     req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,'rib',date,heure,0,montant,relance,idPaiement,1)]
-    #     ecriture_BDD(req)
-    #     action2='rib'
-    #     sendMail=True
-    #     insertHistorique('normal','suivi','detailCde',"relance rib idCmd",idCmd)
-
-
-    # elif action=="annuleLien":
-    #     print("annuleLien")
-    #     idPaiement=request.form.get("idPaiementLien")
-    #     relance=request.form.get("idRelanceLien")
-    #     montant=request.form.get("idMontantLien")
-    #     #Annule la demande de paiement
-    #     req=["UPDATE paiement SET etat=2 WHERE idCd=? AND type=? AND idPaiement=? AND relance=?",(idCmd,'lien',idPaiement,relance)]
-    #     ecriture_BDD(req)
-    #     insertHistorique('normal','suivi','detailCde',"annulation lien idCmd",idCmd)
-    #     return (detailsCmd(user))
-        
-    # elif action=="annuleRib":
-    #     idPaiement=request.form.get("idPaiementRib")
-    #     relance=request.form.get("idRelanceRib")
-    #     montant=request.form.get("idMontantRib")
-    #     #Annule la demande de paiement
-    #     req=["UPDATE paiement SET etat=2 WHERE idCd=? AND type=? AND idPaiement=? AND relance=?",(idCmd,'rib',idPaiement,relance)]
-    #     ecriture_BDD(req)
-    #     insertHistorique('normal','suivi','detailCde',"annulation rib idCmd",idCmd)
-    #     return (detailsCmd(user))
-
-    # elif action=="relanceEspece":
-    #     idPaiement=request.form.get("idPaiementEspece")
-    #     relance=request.form.get("idRelanceEspece")
-    #     montant=request.form.get("idMontantEspece")
-    #     #Annuler les paiements précédents et enlever le lastOne
-    #     req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idCd=? AND type=? AND idPaiement=? ",(idCmd,'espece',idPaiement)]
-    #     ecriture_BDD(req)
-    #     #Créer la nouvelle demande de paiement et du lastOne
-    #     relance=int(relance)+1  
-    #     req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,'espece',date,heure,0,montant,relance,idPaiement,1)]
-    #     ecriture_BDD(req)
-    #     action2='espece'
-    #     sendMail=True
-    #     insertHistorique('normal','suivi','detailCde',"relance espece idCmd",idCmd)
-
-    # elif action=="relanceCheque":
-        # idPaiement=request.form.get("idPaiementCheque")
-        # relance=request.form.get("idRelanceCheque")
-        # montant=request.form.get("idMontantCheque")
-        # #Annuler les paiements précédents et enlever le lastOne
-        # req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idCd=? AND type=? AND idPaiement=? ",(idCmd,'cheque',idPaiement)]
-        # ecriture_BDD(req)
-        # #Créer la nouvelle demande de paiement et du lastOne
-        # relance=int(relance)+1
-        # req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,'cheque',date,heure,0,montant,relance,idPaiement,1)]
-        # ecriture_BDD(req)
-        # action2='cheque'
-        # sendMail=True
-        # insertHistorique('normal','suivi','detailCde',"relance cheque idCmd",idCmd)
-    elif action=="factures":        
-        req=["SELECT id_commande,mail,client,idCE from commande join client on idclientcmd=idclient WHERE id_commande=?",(idCmd,)]
-        cmd=lecture_BDD(req)
-        Linfo=[cmd[0]["mail"],cmd[0]["client"],str(cmd[0]["id_commande"]),99]
-        Lfiles=request.files.getlist("file")
-        i=0
-        LidFact=[]
-        for file in Lfiles:
-            if file.filename!='':
-                ext=file.filename.split(".")[1]
-                file.save(os.path.join(app.config['FACTURE_FOLDER'],str(cmd[0]["id_commande"])+"-"+date+"-"+heure+"."+ext))
-                LidFact.append(cmd[0]["id_commande"])
-            i=i+1
-        Lfact=[]
-        if cmd[0]["id_commande"] in LidFact:
-            for facture in os.listdir(app.config['FACTURE_FOLDER']) :
-                if facture.startswith(str(cmd[0]['id_commande'])+"-"):
-                    Lfact.append(app.config['FACTURE_FOLDER']+"/"+facture)
-        send_email(Linfo,Lfact,[])
-        
-    elif "relance" in action:
-        Particule=action.split('relance')[1]
-        particule=""
-        if Particule=="ChequeR":
-            particule="chequeR"
-        elif Particule=="ChequeAV":
-            particule="chequeAV"
-        elif Particule=="ChequeAP":
-            particule="chequeAP"
-        elif Particule=="Lien":
-            particule="lien"
-        elif Particule=="Rib":
-            particule="rib"
-        elif Particule=="Espece":
-            particule="espece"
-        else:
-            particule="autre"
-        idPaiement=request.form.get("idPaiement"+Particule)
-        relance=request.form.get("idRelance"+Particule)
-        montant=request.form.get("idMontant"+Particule)
-        idUnique=request.form.get("idUnique"+Particule)
-        #Montant avec 2 décimales
-        montant='%.2f'%float(montant)
-        #Annuler les paiements précédents et enlever le lastOne
-        req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idUnique=?",(idUnique,)]
-        ecriture_BDD(req)
-        #Créer la nouvelle demande de paiement et du lastOne
-        relance=int(relance)+1
-        req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,particule,date,heure,0,montant,relance,idPaiement,1)]
-        ecriture_BDD(req)
-        action2=particule
-        sendMail=True
-        insertHistorique('normal','suivi','detailCde',"relance "+particule+" idCmd",idCmd)
-
-
-    elif "annule" in action:
-        Particule=action.split('annule')[1]
-        particule=""
-        if Particule=="ChequeR":
-            particule="chequeR"
-        elif Particule=="ChequeAV":
-            particule="chequeAV"
-        elif Particule=="ChequeAP":
-            particule="chequeAP"
-        elif Particule=="Lien":
-            particule="lien"
-        elif Particule=="Rib":
-            particule="rib"
-        elif Particule=="Espece":
-            particule="espece"
-        else:
-            particule="autre"
-        idPaiement=request.form.get("idPaiement"+Particule)
-        relance=request.form.get("idRelance"+Particule)
-        montant=request.form.get("idMontant"+Particule)
-        idUnique=request.form.get("idUnique"+Particule)
-        #Annule la demande de paiement
-        req=["UPDATE paiement SET etat=2 WHERE idUnique=?",(idUnique,)]
-        ecriture_BDD(req)
-        insertHistorique('normal','suivi','detailCde',"annulation "+particule+" idCmd",idCmd)
-        return (detailsCmd(user))
-
-    else:
-        montant1=request.form.get("montant")
-        if montant1=="" or montant1=="0":
-            return '', 204
-        else:
-            montant1.replace(",",".")
-            montant=str("%.2f" % float(montant1))
-            
-            etat="0"
-            relance=0
-            action2=action
-            req=["SELECT MAX(idPaiement) FROM paiement WHERE idCd=? and type=?",(idCmd,action)]
-            idP=lecture_BDD(req)[0]['MAX(idPaiement)']
-            if idP!=None:
-                idPaiement=int(idP)+1
-            else:
-                idPaiement=1
-            req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,action,date,heure,etat,montant,relance,idPaiement,1)]
-            ecriture_BDD(req)
-            sendMail=True
-            insertHistorique('normal','suivi','detailCde',"demande de paiement idCmd",idCmd)
-
-            
-    if sendMail:
-        req=["SELECT SUM(qte),idclientCmd,idCE,adresse,mail,client FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCmd,)]
-        liste=lecture_BDD(req)
-        nbrPdt=liste[0]["SUM(qte)"]
-        idClient=liste[0]["idclientCmd"]
-        idCE=liste[0]["idCE"]
-        adresse=str(liste[0]["adresse"])
-        mail=liste[0]["mail"]
-        client=liste[0]["client"]
-        idCdMail=str(idCmd)+'-'+str(idPaiement)+'-'+str(relance)
-        send_email([str(mail),str(client),str(idCmd),action2,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE)],[],[])
-        return (detailsCmd(user))
-    else:
-        return '',204
-    
-
-@app.route('/extractColissimo/<user>', methods=['GET','POST'])
-def extractColissimo(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    bouton=request.form.get("bouton")
-    if bouton=="0":
-        Linfo=[request.form.get("nom"),request.form.get("prenom"),request.form.get("fixe"),request.form.get("mobile"),request.form.get("mail"),request.form.get("rue"),request.form.get("CP"),request.form.get("ville"),request.form.get("res"),request.form.get("couls")]
-        nom=Linfo[0]
-        prenom=Linfo[1]
-        fixe=Linfo[2]
-        mobile=Linfo[3]
-        mail=Linfo[4]
-        rue=Linfo[5]
-        CP=Linfo[6]
-        ville=Linfo[7]
-        res=Linfo[8]
-        couls=Linfo[9]
-        with open(exportFold+"/"+nom+prenom+"_extractor.csv","w") as csvfile:
-            csvfile.write('Référence;;Raison sociale;Service;Prénom;Nom;Etage couloir escalier;Entrée bâtiment;N° et voie;Lieu dit;Code postal;Commune;Code ISO du pays;Téléphone fixe;Téléphone portable;Email;Code porte1;Code porte2;Interphone;Instructions de livraison;Nom commercial chargeur\n')
-            csvfile.write(';;;;'+prenom+';'+nom+';'+couls+';'+res+';'+rue+';;'+CP+';'+ville+';FR;'+fixe+';'+mobile+';'+mail+';;;;;;')
-    insertHistorique('normal','suivi','detailCde_colissimo',"extraction colissimo",None)
-    
-    return detailsCmd(user)
-    
-
-@app.route('/annuler', methods=['GET', 'POST'])
-def annuler():
-    try :
-        session['user']
-    except:
-        return(index())
-    idcmd=request.form.get("id")
-    req=["UPDATE facturation set etatProd=4,etatMin=4,etatMax=4 where idProd=?",(idcmd,)]
-    ecriture_BDD(req)
-    insertHistorique('normal','suivi','detailCde',"annulation produit idcmd",idcmd)
-    return jsonify()
-    
-
-################### addCmd ##############
-@app.route('/addCmd/<user>', methods=['GET', 'POST'])
-def addCmd(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    req=["SELECT idclient,client,idCEclient from client",()]
-    Lclients=lecture_BDD(req)
-    req=["SELECT idCE from listingCE where corbeille=0 order by idCE",()]
+    req=["SELECT max(idCE) FROM listingCE WHERE idCE<999000 and corbeille=0;",()]
+    idCE=int(lecture_BDD(req)[0]['max(idCE)'])+1
+    CE={"prenom":"","idCE":idCE,"entreprise":"","intermediaire":"","mail":"","tel":"","mailCl":"0","mailInterPrep":"0","mailInterFact":"0","mailInterRelFact":"0","mailInterRel":"0","mailInterRupt":"0","qteFact":"1","sac":"Papier","retraitMag":"NON","colisIndiv":"NON","colisCol":"NON","colisExpe":"Aucun","catalogue":"1","promotion":"1","commentaires":"","adresse":""}
+    req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
     LCE=lecture_BDD(req)
-    Lcode=getLcode()
-    insertHistorique('normal','suivi','detailCde',"ajout d'une commande",None)
-    return render_template('suivi_addCmd.html',user=user,Lclients=Lclients,LCE=LCE,Lcode=Lcode)
-    
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
+    listeRef=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
+    listeAll=lecture_BDD(req)
+    return render_template('CE_ajout.html',CE=CE,user=user,LCE=LCE,listeRef=listeRef,listeAll=listeAll)
 
-@app.route('/addProd', methods=['GET', 'POST'])
-def addProd():
+@app.route('/addCE', methods=['GET', 'POST'])
+def addCE():
     try :
         session['user']
     except:
         return(index())
-    code=request.form.get("code")
-    ato=request.form.get("ato")
-    errone,code,ean,lib=checkCode(code)
-    prix=0
-    date=""
-    if errone==0:
-        prix=getPrix(code)
-        dateLim=datetime.datetime.today()+datetime.timedelta(delaiRupt)
-        req=["SELECT date from rupture where rupt_code=? and date>?",(code,dateLim)]
-        l=lecture_BDD(req)
-        if len(l)>0:
-            date=l[0]["date"]
-            errone=-1
-    insertHistorique('normal','suivi','addCde',"ajout de produit code:",code)
-    return jsonify(lib=lib,prix=prix,ato=ato,ean=ean,errone=errone,date=date)
-    
+    print("je suis la")
+    idCE=request.form.get("idCE")
+    entreprise=request.form.get("entreprise")
+    referente=request.form.get("referente")
+    intermediaire=request.form.get("intermediaire")
+    mail=request.form.get("mail")
+    tel=request.form.get("tel")
+    mailCl=request.form.get("mailCl")
+    mailInterPrep=request.form.get("mailInterPrep")
+    mailInterFact=request.form.get("mailInterFact")
+    mailInterRelFact=request.form.get("mailInterRelFact")
+    mailInterRel=request.form.get("mailInterRel")
+    mailInterRupt=request.form.get("mailInterRupt")
+    mcl=0
+    minterPrep=0
+    minterFact=0
+    minterRelFact=0
+    minterRel=0
+    minterRupt=0
+    print("je suis la 2")
+    if mailCl=="true":
+        mcl=1
+    if mailInterPrep=="true":
+        minterPrep=1
+    if mailInterFact=="true":
+        minterFact=1
+    if mailInterRelFact=="true":
+        minterRelFact=1
+    if mailInterRel=="true":
+        minterRel=1    
+    if mailInterRupt=="true":
+        minterRupt=1 
+    qteFact=request.form.get("qteFact")
+    sac=request.form.get("sac")
+    retraitMag=request.form.get("retraitMag")
+    colisIndiv=request.form.get("colisIndiv")
+    colisCol=request.form.get("colisCol")
+    colisExpe=request.form.get("colisExpe")
+    catalogue=request.form.get("catalogue")
+    promotion=request.form.get("promotion")
+    commentaires=request.form.get("commentaires")
+    adresse=request.form.get("adresse")
+    print("je suis la 3")
+    req=["SELECT max(idCE) FROM listingCE WHERE idCE<999000 and corbeille=0;",()]
+    idCE=int(lecture_BDD(req)[0]['max(idCE)'])+1
+    CE={"prenom":"","idCE":idCE,"entreprise":"","intermediaire":"","mail":"","tel":"","mailCl":"0","mailInterPrep":"0","mailInterFact":"0","mailInterRelFact":"0","mailInterRel":"0","mailInterRupt":"0","qteFact":"1","sac":"Papier","retraitMag":"NON","colisIndiv":"NON","colisCol":"NON","colisExpe":"Aucun","catalogue":"1","promotion":"1","commentaires":"","adresse":""}
+    req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
+    LCE=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
+    listeRef=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
+    listeAll=lecture_BDD(req)
 
-@app.route('/valinuler/<user>', methods=['GET', 'POST'])
-def valinuler(user):
+    req=["INSERT INTO listingCE (referente,idCE,entreprise,intermediaire,mail,tel,corbeille,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(referente,idCE,entreprise,intermediaire,mail,tel,0,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse)]
+    ecriture_BDD(req)
+    print(req)
+    insertHistorique('normal','pageCE','ajoutCE','ajout CE n°',idCE)
+    return '',204
+
+@app.route('/rechercheCE/<user>',methods=['GET', 'POST'])
+def rechercheCE(user):
     try :
         session['user']
     except:
         return(index())
-    mode=request.form.get("mode")
-    if mode!="0":
-        idCE=request.form.get("idCE")
-        societe=request.form.get("societe")
-        client=majusca(request.form.get("client"))
-        mail=request.form.get("mail")
-        tel=request.form.get("tel")
-        adresse=majusca(request.form.get("adresse"))
-        total=request.form.get("total")
-        commentaire=request.form.get("commentaire")
-        date=datetime.datetime.today().strftime('%Y-%m-%d')
-
-        req=["insert into client (idCEclient,societe,client,mail,tel,adresse,commentaire) values(?,?,?,?,?,?,?)",(idCE,societe,client,mail,tel,adresse,commentaire)]
-        ecriture_BDD(req)
-        req=["SELECT max(idclient) from client",()]
-        idclient=lecture_BDD(req)[0]["max(idclient)"]
-        req=["insert into commande (idclientCmd,idCE,total,idclientHW,etatCmd,date,corbeille,createdBy) values(?,?,?,?,?,?,0,?)",(idclient,idCE,total,-1,0,date,user)]
-        ecriture_BDD(req)
-
-        req=["SELECT max(id_commande) from commande",()]
-        idCmd=lecture_BDD(req)[0]['max(id_commande)']
-
-        #Récupération des produits
-        Lcode=request.form.getlist("code")
-        Llib=request.form.getlist("lib")
-        Lprix=request.form.getlist("prix")
-        Lqte=request.form.getlist("qte")
-        Lato=request.form.getlist("ato")
-        Lean=request.form.getlist("ean")
-
-        for i in range(len(Lcode)):
-            req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,Lcode[i],Lean[i],Llib[i],Llib[i],Lprix[i],Lqte[i],Lato[i],0,-1,0,0,0)]
-            ecriture_BDD(req)
-        req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),idCmd)]
-        ecriture_BDD(req)
-        if mode=="1":
-            insertHistorique('normal','suivi','addCde',"validation de la commande et ajout d'une nouvelle",None)
-            return addCmd(user)
+    CEselectionne=request.form.get("CEselectionne")
+    if CEselectionne is NoneType or CEselectionne=="" or CEselectionne is None:
+        idCEselec=""
+    else:
+        idCEselec=int(CEselectionne.split(" - ")[0])
+    insertHistorique('normal','connexion','listingCE','filtre All ref',None)
+    req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
+    LCE=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
+    listeRef=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
+    listeAll=lecture_BDD(req)
+    if idCEselec is None or idCEselec=="":
+        if session['user']['rechercheCE']=='-1':
+            req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
+            CE=lecture_BDD(req)[0]
         else:
-            insertHistorique('normal','suivi','addCde',"validation de la commande et retour au suivi commande",None)
-            return suiviCmd(user)
-    return suiviCmd(user)
-    
+            try:
+                req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 AND idCE=?",(session['user']['rechercheCE'],)]
+                CE=lecture_BDD(req)[0]
+            except:
+                req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
+                CE=lecture_BDD(req)[0]
 
-@app.route('/searchClient', methods=['GET', 'POST'])
-def searchClient():
+    else:
+        session['user']['rechercheCE']=idCEselec
+        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 AND idCE=?",(idCEselec,)]
+        CE=lecture_BDD(req)[0]
+    return render_template('CE_recherche.html',CE=CE,user=user,LCE=LCE,CEselectionne=CEselectionne,listeRef=listeRef,listeAll=listeAll)
+
+@app.route('/searchCE', methods=['GET', 'POST'])
+def searchCE():
     try :
         session['user']
     except:
         return(index())
-    client=request.form.get("client")
+    CEselectionne=request.form.get("CEselectionne")
     try:
-        idclient=client.split(" - ")[1]
-        req=["SELECT * from client where idclient=?",(idclient,)]
-        reqInfos=lecture_BDD(req)
-        Linfo=[reqInfos[0]['idCEclient'],reqInfos[0]['societe'],reqInfos[0]['client'],reqInfos[0]['mail'],reqInfos[0]['tel'],reqInfos[0]['adresse'],reqInfos[0]['commentaire']]
+        CE=CEselectionne.split(" - ")[0]
+        req=["SELECT listingCE.id,referente,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 AND idCE=?",(CE,)]
+        L=lecture_BDD(req)[0]
+        Linfo=[L["idCE"],L["entreprise"],L["referente"],L["intermediaire"],L["mail"],L["tel"],L["mailCl"],L["mailInterPrep"],L["mailInterFact"],L["mailInterRelFact"],L["mailInterRel"],L["mailInterRupt"],L["qteFact"],L["sac"],L["retraitMag"],L["colisIndiv"],L["colisCol"],L["colisExpe"],L["catalogue"],L["promotion"],L["commentaires"],L["adresse"],L["id"]]
         taille=len(Linfo)
+        session['user']['rechercheCE']=CE
     except :
         taille=0
         Linfo=[]
-    insertHistorique('normal','suivi','general',"filtre",None)
-    
-    return jsonify(Linfo=Linfo,taille=taille)
-    
+    insertHistorique('normal','CE','recherche',"filtre",CE)
+    return jsonify(Linfo=Linfo,taille=taille,CEselectionne=CEselectionne)
 
-@app.route('/getSociete', methods=['GET', 'POST'])
-def getSociete(): 
+@app.route('/modifrechercheCE', methods=['GET', 'POST'])
+def modifrechercheCE():
     try :
         session['user']
     except:
         return(index())
-    idCE=request.form.get('idCE')
-    req=["SELECT entreprise from listingCE where idCE=? and corbeille=0",(idCE,)]
-    societe=lecture_BDD(req)[0]["entreprise"]
-    return jsonify(societe=societe)
+    ide=request.form.get("ide")
+    idCE=request.form.get("idCE")
+    entreprise=request.form.get("entreprise")
+    referente=request.form.get("referente")
+    intermediaire=request.form.get("intermediaire")
+    mail=request.form.get("mail")
+    tel=request.form.get("tel")
+    mailCl=request.form.get("mailCl")
+    mailInterPrep=request.form.get("mailInterPrep")
+    mailInterFact=request.form.get("mailInterFact")
+    mailInterRelFact=request.form.get("mailInterRelFact")
+    mailInterRel=request.form.get("mailInterRel")
+    mailInterRupt=request.form.get("mailInterRupt")
+    mcl=0
+    minterPrep=0
+    minterFact=0
+    minterRelFact=0
+    minterRel=0
+    minterRupt=0
+    if mailCl=="true":
+        mcl=1
+    if mailInterPrep=="true":
+        minterPrep=1
+    if mailInterFact=="true":
+        minterFact=1
+    if mailInterRelFact=="true":
+        minterRelFact=1
+    if mailInterRel=="true":
+        minterRel=1    
+    if mailInterRupt=="true":
+        minterRupt=1 
+    qteFact=request.form.get("qteFact")
+    sac=request.form.get("sac")
+    retraitMag=request.form.get("retraitMag")
+    colisIndiv=request.form.get("colisIndiv")
+    colisCol=request.form.get("colisCol")
+    colisExpe=request.form.get("colisExpe")
+    catalogue=request.form.get("catalogue")
+    promotion=request.form.get("promotion")
+    commentaires=request.form.get("commentaires")
+    adresse=request.form.get("adresse")
+    insertHistorique('normal','pageCE','rechercheCE','modification ligne CE n°',ide)
+    req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=?,qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=?,adresse=? where id=?",(idCE,entreprise,referente,intermediaire,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse,ide)]
+    print(req)
+    ecriture_BDD(req)
+    insertHistorique('normal','pageCE','listingCE','modification ligne CE n°',ide)
+    return '',204
+
+@app.route('/CE/<user>',methods=['GET', 'POST'])
+def pageCE(user):
+    try :
+        session['user']
+    except:
+        return(index())
+    ref=request.form.get("ref")
+    if ref!=None:
+        insertHistorique('normal','pageCE','listingCE','filtre sur la réf id:',ref)
+        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
+        ref=int(ref)
+    else:
+        insertHistorique('normal','connexion','listingCE','filtre All ref',None)
+        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
+
+    LCE=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
+    listeRef=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
+    listeAll=lecture_BDD(req)
+    return render_template('CE_general.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
     
 
-##################### Dark World ####################
+@app.route('/modifCE', methods=['GET', 'POST'])
+def modifCE():
+    try :
+        session['user']
+    except:
+        return(index())
+    ide=request.form.get("id")
+    nouvIdCE=request.form.get("nouvidCE")
+    entreprise=request.form.get("entreprise")
+    ref=request.form.get("ref")
+    inter=request.form.get("inter")
+    mail=request.form.get("mail")
+    tel=request.form.get("tel")
+    mailCl=request.form.get("mailCl")
+    mailInterPrep=request.form.get("mailInterPrep")
+    mailInterFact=request.form.get("mailInterFact")
+    mailInterRelFact=request.form.get("mailInterRelFact")
+    mailInterRel=request.form.get("mailInterRel")
+    mailInterRupt=request.form.get("mailInterRupt")
+    mcl=0
+    minterPrep=0
+    minterFact=0
+    minterRelFact=0
+    minterRel=0
+    minterRupt=0
+    if mailCl=="true":
+        mcl=1
+    if mailInterPrep=="true":
+        minterPrep=1
+    if mailInterFact=="true":
+        minterFact=1
+    if mailInterRelFact=="true":
+        minterRelFact=1
+    if mailInterRel=="true":
+        minterRel=1    
+    if mailInterRupt=="true":
+        minterRupt=1 
+    req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=? where id=?",(nouvIdCE,entreprise,ref,inter,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,ide)]
+    ecriture_BDD(req)
+    insertHistorique('normal','pageCE','listingCE','modification ligne CE n°',nouvIdCE)
+    return '',204
+    
+
+@app.route('/modifCEInfo', methods=['GET', 'POST'])
+def modifCEInfo():
+    try :
+        session['user']
+    except:
+        return(index())
+    ide=request.form.get("id")
+    qteFact=request.form.get("qteFact")
+    sac=request.form.get("sac")
+    retraitMag=request.form.get("retraitMag")
+    colisIndiv=request.form.get("colisIndiv")
+    colisCol=request.form.get("colisCol")
+    colisExpe=request.form.get("colisExpe")
+    catalogue=request.form.get("catalogue")
+    promotion=request.form.get("promotion")
+    commentaires=request.form.get("commentaires")
+    req=["UPDATE listingCE SET qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=? WHERE id=?",(qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,ide)]
+    ecriture_BDD(req)
+    insertHistorique('normal','pageCE','infoCE','modification ligne CE n°',ide)
+    return '',204
+
+@app.route('/modifCEAdresse', methods=['GET', 'POST'])
+def modifCEAdresse():
+    try :
+        session['user']
+    except:
+        return(index())
+    ide=request.form.get("id")
+    adresse=request.form.get("adresse")
+    req=["UPDATE listingCE SET adresse=? WHERE id=?",(adresse,ide)]
+    ecriture_BDD(req)
+    insertHistorique('normal','pageCE','adresseCE','modification ligne CE n°',ide)
+    return '',204
+
+@app.route('/suprCE', methods=['GET', 'POST'])
+def suprCE():
+    try :
+        session['user']
+    except:
+        return(index())
+    ide=request.form.get("id")
+    req=["UPDATE listingCE set corbeille=1 where id=?",(ide,)]
+    ecriture_BDD(req)
+    insertHistorique('normal','pageCE','listingCE','suppression CE n°',ide)
+    return jsonify()
+
+@app.route('/infoCE/<user>',methods=['GET', 'POST'])
+def pageCEinfo(user): 
+    try :
+        session['user']
+    except:
+        return(index())
+    ref=request.form.get("ref")
+    if ref==None or ref==0 or ref=='0':
+        insertHistorique('normal','pageCE','infoCE','filtre All ref',None)
+        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
+    else:
+        insertHistorique('normal','pageCE','infoCE','filtre ref',ref)
+        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
+        ref=int(ref)
+    LCE=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
+    listeRef=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
+    listeAll=lecture_BDD(req)
+    return render_template('CE_infos.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
+
+@app.route('/adresseCE/<user>',methods=['GET', 'POST'])
+def pageCEadresse(user): 
+    try :
+        session['user']
+    except:
+        return(index())
+    ref=request.form.get("ref")
+    if ref==0 or ref==None or ref=='0':
+        insertHistorique('normal','pageCE','adresseCE','filtre All ref',None)
+        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
+        
+    else:
+        insertHistorique('normal','pageCE','adresseCE','filtre ref',ref)
+        req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
+        ref=int(ref)
+    LCE=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
+    listeRef=lecture_BDD(req)
+    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
+    listeAll=lecture_BDD(req)
+    return render_template('CE_adresses.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
+#endregion
+
+####################### Dark World ######################################################
+#region
 @app.route('/connexion',methods=['GET', 'POST'])
 def connexion():
     try :
@@ -4575,8 +4511,6 @@ def actionClient():
     return '',204
 
 
-##################### FIN DES MONDES ####################
-
 #Traitement des données (CODE QTE OUI) et Calcul
 def extraction(txt,cb,user):
     try :
@@ -4767,7 +4701,7 @@ def separation_des_pages(repertoire):
             #         i+=1
             #     os.remove(repertoire+"/"+nom)
         n+=1
-    
+#endregion   
 
 getXML()
 
