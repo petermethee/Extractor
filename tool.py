@@ -153,16 +153,16 @@ def find_id_art(mq,ct,prod,marque,categorie,produit):
     return(-1)
 
 def find_id_art_v2(mq,ct,prod,mag,marque,categorie,produit,magasin):
-    print("Je recherche l'article :"+str(mq)+"."+str(ct)+"."+str(prod)+"dans le magasin"+str(mag))
+    #print("Je recherche l'article :"+str(mq)+"."+str(ct)+"."+str(prod)+"dans le magasin"+str(mag))
     for a in range (longueur_ART):
         if mq==marque[a].text:
             if ct==categorie[a].text:
                 if prod==produit[a].text:
                     if mag==magasin[a].text:
                         ligne=7+8*a
-                        print("Je suis à la ligne :" +str(ligne))
+                        #print("Je suis à la ligne :" +str(ligne))
                         return a
-    print('je ne suis pas dans le XML')
+    #print('je ne suis pas dans le XML')
     return(-1)
 
 def getLcode():

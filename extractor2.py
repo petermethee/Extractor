@@ -754,8 +754,9 @@ def actionFromDetails(user):
         adresse=str(liste[0]["adresse"])
         mail=liste[0]["mail"]
         client=liste[0]["client"]
-        idCdMail=str(idCmd)+'-'+str(idPaiement)+'-'+str(relance)
-        send_email([str(mail),str(client),str(idCmd),action2,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE)],[],[])
+        if mail!="" or mail!=None:
+            idCdMail=str(idCmd)+'-'+str(idPaiement)+'-'+str(relance)
+            send_email([str(mail),str(client),str(idCmd),action2,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE)],[],[])
         return (detailsCmd(user))
     else:
         return '',204

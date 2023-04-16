@@ -285,7 +285,7 @@
                 <tr class="trinfoClient">
                     <td class="tdinfoClient2">Mail</td>
                     <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient"
-                            value="{{client[0]['mail']}}" name="mail"></td>
+                            value="{{client[0]['mail']}}" name="mail" id="mail"></td>
                 </tr>
                 <tr class="trinfoClient">
                     <td class="tdinfoClient2">Tel</td>
@@ -672,12 +672,17 @@
     function clickFactures(){
         alert("Facture(s) envoyée(s) !")
     }
+    
     function clickPaiement(t) {
         var type = t.id.split("-")[1];
         var montant = document.getElementById(t.id.split("-")[0] + "-montant").value;
         var x = document.getElementById(t.id + "Texte");
+        var email= document.getElementById("mail").value;
         if (montant == "" || montant == "0") {
             alert("Montant non renseigné");
+        }
+        else if (email == "") {
+            alert("L'adresse mail est vide. Veuillez la renseigner puis enregistrer afin de pouvoir effectuer une demande de paiement");
         }
         else {
             if (type == "Lien") {
@@ -706,7 +711,11 @@
 
     function clickRelance(t) {
         var type = t.id.split("-")[1];
-        if (type == "Lien") {
+        var email= document.getElementById("mail").value;
+        if (email == "") {
+            alert("L'adresse mail est vide. Veuillez la renseigner puis enregistrer afin de pouvoir relancer une demande de paiement");
+        }
+        else if (type == "Lien") {
             alert("Relance du lien CB envoyée");
         }
         else if (type == "Espece") {
