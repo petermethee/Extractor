@@ -3,7 +3,7 @@ from json import tool
 import re
 from time import time
 from tkinter import ON
-import types
+from types import NoneType
 import PyPDF2 as pypdf
 from pdf2image import convert_from_path
 import os
@@ -2700,7 +2700,7 @@ def extractImpayes():
         return(index())
     action=request.form.get("action")
     if action=="0":
-        req=["SELECT idUnique,idCd,type,paiement.date,heure, montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE WHERE lastOne=1 AND etat=0",()]
+        req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE WHERE lastOne=1 AND etat=0",()]
         Linfo=lecture_BDD(req)
         with open(exportFold+"/Impayes.csv","w", encoding="utf-8") as csvfile:
             csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;\n")

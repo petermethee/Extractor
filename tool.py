@@ -126,17 +126,18 @@ def getXML():
     mag_MAG=treeARTMAG.xpath("/HF_DOCUMENT/Data/CMAG")
     qte=treeARTMAG.xpath("/HF_DOCUMENT/Data/QTESTK")
     prix=treeARTMAG.xpath("/HF_DOCUMENT/Data/PVAR")
+    longueur_MAG=len(marque_MAG)
 
     indiceD=4*longueur_ART
     indiceF=5*longueur_ART
-    print("indiceD")
-    print(indiceD)
-    print("indiceF")
-    print(indiceF)
     #prix=prix[indiceD:indiceF]
     #marque_MAG=marque_MAG[:longueur_ART]
     #categorie_MAG=categorie_MAG[:longueur_ART]
     #produit_MAG=produit_MAG[:longueur_ART]
+    print('len(mag_MAG)')
+    print(len(mag_MAG))
+    print('len(marque_MAG)')
+    print(len(marque_MAG))
 
     for i in range (longueur_ART):
         code=marque_MAG[i].text+categorie_MAG[i].text+produit_MAG[i].text
@@ -154,12 +155,13 @@ def find_id_art(mq,ct,prod,marque,categorie,produit):
 
 def find_id_art_v2(mq,ct,prod,mag,marque,categorie,produit,magasin):
     #print("Je recherche l'article :"+str(mq)+"."+str(ct)+"."+str(prod)+"dans le magasin"+str(mag))
-    for a in range (longueur_ART):
+    for a in range (longueur_MAG):
         if mq==marque[a].text:
             if ct==categorie[a].text:
                 if prod==produit[a].text:
+                    #print(magasin[a].text)
                     if mag==magasin[a].text:
-                        ligne=7+8*a
+                        #ligne=7+8*a
                         #print("Je suis à la ligne :" +str(ligne))
                         return a
     #print('je ne suis pas dans le XML')
