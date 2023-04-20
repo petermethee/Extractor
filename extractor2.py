@@ -683,16 +683,21 @@ def actionFromDetails(user):
         idUnique=request.form.get("idUnique"+Particule)
         #Montant avec 2 décimales
         montant='%.2f'%float(montant)
-        #Annuler les paiements précédents et enlever le lastOne
-        req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idUnique=?",(idUnique,)]
-        ecriture_BDD(req)
-        #Créer la nouvelle demande de paiement et du lastOne
-        relance=int(relance)+1
-        req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,particule,date,heure,0,montant,relance,idPaiement,1)]
-        ecriture_BDD(req)
-        action2=particule
-        sendMail=True
-        insertHistorique('normal','suivi','detailCde',"relance "+particule+" idCmd",idCmd)
+        req=["SELECT mail FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCmd,)]
+        mail=lecture_BDD(req)[0]["mail"]
+        if mail=="" or mail is None:
+            sendMail=False
+        else:
+            #Annuler les paiements précédents et enlever le lastOne
+            req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idUnique=?",(idUnique,)]
+            ecriture_BDD(req)
+            #Créer la nouvelle demande de paiement et du lastOne
+            relance=int(relance)+1
+            req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,particule,date,heure,0,montant,relance,idPaiement,1)]
+            ecriture_BDD(req)
+            action2=particule
+            sendMail=True
+            insertHistorique('normal','suivi','detailCde',"relance "+particule+" idCmd",idCmd)
 
 
     elif "annule" in action:
@@ -739,10 +744,15 @@ def actionFromDetails(user):
                 idPaiement=int(idP)+1
             else:
                 idPaiement=1
-            req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,action,date,heure,etat,montant,relance,idPaiement,1)]
-            ecriture_BDD(req)
-            sendMail=True
-            insertHistorique('normal','suivi','detailCde',"demande de paiement idCmd",idCmd)
+            req=["SELECT mail FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCmd,)]
+            mail=lecture_BDD(req)[0]["mail"]
+            if mail=="" or mail is None:
+                sendMail=False
+            else:
+                req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,action,date,heure,etat,montant,relance,idPaiement,1)]
+                ecriture_BDD(req)
+                sendMail=True
+                insertHistorique('normal','suivi','detailCde',"demande de paiement idCmd",idCmd)
 
             
     if sendMail:
