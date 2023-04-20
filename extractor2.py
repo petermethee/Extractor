@@ -4530,8 +4530,8 @@ def extraction(txt,cb,user):
     tel=txt['zone '+"4"]
     adresse=txt['zone '+"5"]
     total=txt['zone '+"38"]
-    if nCE=="":
-        if idCSE=="":
+    if nCE=="" or nCE is None:
+        if idCSE=="" or idCSE is None:
             req=["SELECT entreprise from listingCE where corbeille=0",()]
             listingCE=lecture_BDD(req)
             societeMax,ratio=getSocietor(societe,listingCE)
