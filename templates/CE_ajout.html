@@ -261,12 +261,14 @@
                 if (entreprise==="" || referente==="" ||mail==="" ||intermediaire===""){
                     alert("Remplissez les champs obligatoires : Nom du CE, Mail, Intermédiaire.");
                 }
+                else{
                 req = jQuery.ajax({
                     url: '/addCE',
                     type: 'POST',
                     data: { idCE: idCE, entreprise: entreprise, mail: mail, referente: referente, intermediaire: intermediaire, tel: tel, mailCl: mailCl, mailInterPrep: mailInterPrep,mailInterFact:mailInterFact,mailInterRelFact:mailInterRelFact,mailInterRel:mailInterRel,mailInterRupt:mailInterRupt,qteFact: qteFact, sac: sac, retraitMag: retraitMag, colisIndiv: colisIndiv, colisCol: colisCol, colisExpe: colisExpe,catalogue:catalogue,promotion:promotion, commentaires: commentaires,adresse:adresse}
                 });
                 alert("Changement(s) pris en compte");
+                }
             }
             else{
                 alert("Vérifiez que ce CE n'existe pas :-)");
@@ -297,6 +299,7 @@
             if (entreprise==="" || referente==="" ||mail==="" ||intermediaire===""){
                 alert("Remplissez les champs obligatoires : Nom du CE, Mail, Intermédiaire.");
             }
+            else{
             req = jQuery.ajax({
                 url: '/addCE',
                 type: 'POST',
@@ -304,7 +307,8 @@
             });
             alert("Changement(s) pris en compte");
             }
-        }          
+        }  
+    }        
 
     function attente() {
         var element = document.getElementById("html");
