@@ -1,57 +1,112 @@
 <!DOCTYPE html>
 <html lang="fr">
-	<div id="html" class=""></div>
-	<head> <title>Parfumerie Mireille</title> </head>
-	<link rel='stylesheet' type='text/css' href='{{url_for("static",filename="cssLoadPage.css")}}'>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css" />
-    <body>
-		<table class="label" align="center">
-            <tr>
-                <td><img class="im" src='{{url_for("static",filename="pb.jpg")}}'></td>
-                <td>Bienvenue sur Extractor<p>CSE Parfums</p></td> 
-                <td><img class="im" src='{{url_for("static",filename="jpcorp2.png")}}'></td>
-            </tr>
-        </table>
+  <div id="html" class=""></div>
+  <head>
+    <title>Parfumerie Mireille</title>
+  </head>
+  <link
+    rel="stylesheet"
+    type="text/css"
+    href='{{url_for("static",filename="cssLoadPage.css")}}'
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.css"
+  />
+  <body>
+    <table class="label" align="center">
+      <tr>
+        <td>
+          <img class="im" src='{{url_for("static",filename="pb.jpg")}}' />
+        </td>
+        <td>
+          Bienvenue sur Extractor
+          <p>CSE Parfums</p>
+        </td>
+        <td>
+          <img class="im" src='{{url_for("static",filename="jpcorp2.png")}}' />
+        </td>
+      </tr>
+    </table>
 
-<form action="/login" method="post">
-	<div align="center">
-	<table  class="table" >
-		<tr><td class="bienvenue">Bonjour {{ session['user']['username'] if session['user'] else ''}}, veuillez vous connecter avec votre adresse mail et votre mot de passe</td></tr>
-		<tr><td class="td-input"><span><i class="fas fa-user span"></i></span>
-			
-			<input type="text" class="input" name="mail" id="mail" placeholder="Utilisateur"/>	</td></tr>
-		<tr><td class="td-input">
-			<div>
-				<span><i class="fas fa-unlock span"></i></span>
-				<input type="password" class="input" name="mdp"  id="mdp" placeholder="Mot de passe"/>
-			</div>
-		</td></tr>
-		<tr><td align="center"><input type="submit" class="btFiltre1" onclick="loadOn();attente()" value="Se connecter"/></td></tr>
-	</table>
-</div>
-<div name="load" class="lds-ring" style="display:none;"><div></div><div></div><div></div><div></div></div>
-</form>
-{% with messages= get_flashed_messages() %}
-		{% if messages %}
-		<ul class="flashes">
-			{% for message in messages%}
-			<li class="txt">{{message}}</li>
-			{%endfor%}
-		</ul>
-		{%endif%}
-		{%endwith%}
-</body>
+    <form action="/login" method="post">
+      <div align="center">
+        <table class="table">
+          <tr>
+            <td class="bienvenue">
+              Bonjour {{ session['user']['username'] if session['user'] else
+              ''}}, veuillez vous connecter avec votre adresse mail et votre mot
+              de passe
+            </td>
+          </tr>
+          <tr>
+            <td class="td-input">
+              <span><i class="fas fa-user span"></i></span>
+
+              <input
+                type="text"
+                class="input"
+                name="mail"
+                id="mail"
+                placeholder="Utilisateur"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td class="td-input">
+              <div>
+                <span><i class="fas fa-unlock span"></i></span>
+                <input
+                  type="password"
+                  class="input"
+                  name="mdp"
+                  id="mdp"
+                  placeholder="Mot de passe"
+                />
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">
+              <input
+                type="submit"
+                class="btFiltre1"
+                onclick="loadOn();attente()"
+                value="Se connecter"
+              />
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div name="load" class="lds-ring" style="display: none">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </form>
+    {% with messages= get_flashed_messages() %} {% if messages %}
+    <ul class="flashes">
+      {% for message in messages%}
+      <li class="txt">{{message}}</li>
+      {%endfor%}
+    </ul>
+    {%endif%} {%endwith%}
+  </body>
+  <div class="bienvenue">
+    ----- Version : 5 ----- Mis à jour le : 30/04/2023 -----
+  </div>
 </html>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-	<script>
-		function loadOn(){
-			var load = document.getElementByName("load");
-			load.style.display='block';
-		}
-	
-		function attente(){
-            var element=document.getElementById("html");
-            element.className="attente";
-        }
-	</script>
+<script>
+  function loadOn() {
+    var load = document.getElementByName("load");
+    load.style.display = "block";
+  }
+
+  function attente() {
+    var element = document.getElementById("html");
+    element.className = "attente";
+  }
+</script>

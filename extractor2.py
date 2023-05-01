@@ -2,7 +2,6 @@
 from json import tool
 import re
 from time import time
-from tkinter import ON
 from types import NoneType
 import PyPDF2 as pypdf
 from pdf2image import convert_from_path
@@ -4639,7 +4638,7 @@ def initTraitement(nCE,user,repertoire,erreurFile):
             try:
                 pdfobject.close()
                 name, file_extension = os.path.splitext(nom)
-                
+
                 if file_extension==".pdf" or file_extension==".PDF":
                     pages = convert_from_path(repertoire+"/"+nom,500)
                     pages[0].save(repertoire+"/"+name+'.jpg', 'JPEG')
@@ -4654,6 +4653,7 @@ def initTraitement(nCE,user,repertoire,erreurFile):
                 else:
                     idclient=extractHandwrite(repertoire+"/"+nom,idExtraction,nCE)
                 os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+file_extension)
+
                 
             except Exception as e:
                 print(str(e))

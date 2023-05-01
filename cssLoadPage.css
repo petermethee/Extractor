@@ -1,0 +1,243 @@
+body {
+  background: #3e2a29;
+  text-align: center;
+  color: rgb(0, 0, 0);
+  font-family: system-ui, sans-serif;
+}
+.attente{
+  cursor: wait;
+  height: 100%; 
+  width: 100%;
+  top:0px;
+  position: fixed;
+  z-index: 99;
+}
+/* Module de chargement */
+
+.lds-ring {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid #fff;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #fff transparent transparent transparent;
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Autres */
+
+h1 {
+  font-size: 42px;
+  font-weight: 600;
+  margin: 0 0 30px;
+}
+
+.label {
+  font-size: 25px;
+  font-family: 'Georgia';
+  background-color: #c66c63;
+  border: 7px solid #77443e;
+  color:#ffffff;
+  width: 95%;
+}
+.bienvenue{
+  color:white;
+  size:large;
+  padding: 50px;
+}
+
+.centrer{
+  text-align: center;
+  height: 100px;
+  line-height: 50px;
+  margin-bottom:100px ;
+}
+.table{
+  color:white;
+  size:large;
+  table-layout: fixed;
+  border-spacing: 20px;
+  
+}
+.td-input{
+  background-color: white;
+  border-radius: 20px;
+  border:1px solid white;
+}
+.span{
+  color:#3e2a29;
+  margin-left: 20px;
+}
+.input{
+  padding: 10px;
+  font-size: large;
+  width: 80%;
+  margin-left: 10px;
+  cursor: pointer;
+  border:1px solid white;
+}
+
+.input:focus{
+  outline: none;
+}
+
+.txt{
+  display: inline-block;
+  font-family:math;
+  font-size:15px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.im{
+  padding-left: 50px;
+  padding-right: 50px;
+  height : 120px;
+}
+.top{
+  margin-top: 15px;
+}
+.centrer2{
+  text-align: center;
+  height: 10px;
+  line-height: 10px;
+  margin-bottom:50px ;
+}
+
+.btFiltre1{
+  width: 100px;
+  height:50px;
+  margin-bottom:25px;
+  border-radius: 15px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+  cursor: pointer;
+  background-color: #6477e0; 
+  border: 2px solid #6477e0;
+}
+.btFiltre1:hover{
+  background-color:#ffffff;
+  color:#6477e0; 
+}
+
+.btValider{
+  width: 100px;
+  height:50px;
+  margin-bottom:25px;
+  border-radius: 15px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+  cursor: pointer;
+  background-color: #11c93f; 
+  border: 2px solid #11c93f;
+}
+.btValider:hover{
+  background-color:#ffffff;
+  color:#11c93f; 
+}
+
+.ref{
+  height: 150px;
+  width: 150px;
+  border :2px solid #ffffff;
+  border-radius: 50%;
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.2s;
+  cursor: pointer;
+}
+.ref:hover{
+  transform:scale(1.1,1.1);
+}
+.refmin{
+  height: 70px;
+  width: 70px;
+  border :2px solid #ffffff;
+  border-radius: 50%;
+  -webkit-transition-duration: 0.4s;
+  transition-duration: 0.2s;
+  cursor: pointer;
+}
+.refmin:hover{
+  transform:scale(1.1,1.1);
+}
+.ref1:hover{
+  box-shadow: 0px 0px 18px #f11111;
+}
+.ref2:hover{
+  box-shadow: 0px 0px 18px #f1a311;
+}
+.ref3:hover{
+  box-shadow: 0px 0px 18px #36f111;
+}
+.ref4:hover{
+  box-shadow: 0px 0px 18px #1127f1;
+}
+.ref5:hover{
+  box-shadow: 0px 0px 18px #fafafc;
+}
+.ref6:hover{
+  box-shadow: 0px 0px 18px #7211f1;
+}
+.ref7:hover{
+  box-shadow: 0px 0px 18px #8a8989;
+}
+.ref8:hover{
+  box-shadow: 0px 0px 18px #ff63f7;
+}
+.ref9:hover{
+  box-shadow: 0px 0px 18px #f78809;
+}
+.ref10:hover{
+  box-shadow: 0px 0px 18px #f709c3;
+}
+.ref11:hover{
+  box-shadow: 0px 0px 18px #00a2ff;
+}
+.espace{
+  padding-left: 30px;
+  padding-right: 30px;
+}
+.espace1{
+  padding-left: 40px;
+  padding-right: 40px;
+}
+.decal{
+  color: #ffffff;
+  font-size: 15px;
+  font-weight:bold ;
+}
+.saut{
+  padding-bottom: 20px;
+}

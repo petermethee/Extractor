@@ -1,8 +1,6 @@
 from difflib import SequenceMatcher
 import email
 from time import time
-from turtle import ht
-from types import NoneType
 import unicodedata
 import sqlite3 as lite
 from lxml import etree
