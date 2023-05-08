@@ -233,8 +233,9 @@ def suiviCmd(user):
         session['user']['filtreCE']="-1"
         session['user']['filtreNom']="-1"
         session['user']['filtreEtat']="-1"
+        session['user']['filtreMail']="-1"
     #vérification de la sauvegarde des filtres
-    if (session['user']['filtreDateMin']!='-1' or session['user']['filtreDateMax']!='-1' or session['user']['filtreID']!='-1' or session['user']['filtreCE']!='-1' or session['user']['filtreNom']!='-1' or session['user']['filtreEtat']!='-1'):
+    if (session['user']['filtreDateMin']!='-1' or session['user']['filtreDateMax']!='-1' or session['user']['filtreID']!='-1' or session['user']['filtreCE']!='-1' or session['user']['filtreNom']!='-1' or session['user']['filtreEtat']!='-1' or session['user']['filtreMail']!='-1'):
         return(searchSuivi(user))
     ref=request.form.get("ref")
     if ref!=None:
