@@ -3877,7 +3877,7 @@ def action_export_de_donnees():
             dateMin=str(datetime.date(2021,1,1))
         maxD=datetime.datetime.strptime(dateMax,'%Y-%m-%d')
         minD=datetime.datetime.strptime(dateMin,'%Y-%m-%d')
-    if action=="0" or action=="5":
+    if action=="0" or action=="99":
         #suppression doublons
         req=["SELECT idclient,mail,client FROM client GROUP BY mail,client HAVING COUNT(*) > 1",()]
         Lmail=lecture_BDD(req)
@@ -3891,7 +3891,7 @@ def action_export_de_donnees():
                 req=["delete from client where idclient<>? and mail=? and client=?",(mail["idclient"],mail["mail"],mail["client"])]
                 ecriture_BDD(req)
         insertHistorique('DW','export_de_donnees','general',"suppression des doublons",None)
-    if action=="1" or action=="5":
+    if action=="1" or action=="99":
         #Export des mails
         req=["SELECT client,mail FROM client",()]
         Lmail=lecture_BDD(req)
@@ -3900,7 +3900,7 @@ def action_export_de_donnees():
             for row in Lmail:
                 csvfile.write(';'.join(str(r) for r in row) + '\n')
         insertHistorique('DW','export_de_donnees','general',"exportation des mails clients",None)
-    if action=="2" or action=="5":
+    if action=="2" or action=="99":
         #Export des infos CE
         req=["SELECT idCE,entreprise,referente,intermediaire,mail,tel,adresse,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,commentaires FROM listingCE",()]
         Lmail=lecture_BDD(req)
@@ -3909,7 +3909,7 @@ def action_export_de_donnees():
             for row in Lmail:
                 csvfile.write(';'.join(str(r) for r in row) + '\n')
         insertHistorique('DW','export_de_donnees','general',"exportation des infos CE",None)
-    if action=="3" or action=="5":
+    if action=="3" or action=="99":
         #Export des commandes
         req=["SELECT * FROM commande WHERE date<=? and date>=? ",(maxD,minD)]
         Lcmd=lecture_BDD(req)
@@ -3918,15 +3918,43 @@ def action_export_de_donnees():
             for row in Lcmd:
                 csvfile.write(';'.join(str(r) for r in row) + '\n')
         insertHistorique('DW','export_de_donnees','general',"exportation des commandes",None)
-        if action=="4" or action=="5":
-            #Export des paiements
-            req=["SELECT * FROM paiement WHERE date<=? and date>=?",(maxD,minD)]
-            Lcmd=lecture_BDD(req)
-            with open(exportFold+"/Paiements.csv","w") as csvfile:
-                csvfile.write("ID Unique;ID Commande;Type;Date;Etat;Heure;Relance;IDpaiement;LastOne\n")
-                for row in Lcmd:
-                    csvfile.write(';'.join(str(r) for r in row) + '\n')
-            insertHistorique('DW','export_de_donnees','general',"exportation des paiements",None)
+    if action=="4" or action=="99":
+        #Export des paiements
+        req=["SELECT * FROM paiement WHERE date<=? and date>=?",(maxD,minD)]
+        Lcmd=lecture_BDD(req)
+        with open(exportFold+"/Paiements.csv","w") as csvfile:
+            csvfile.write("ID Unique;ID Commande;Type;Date;Etat;Heure;Relance;IDpaiement;LastOne\n")
+            for row in Lcmd:
+                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        insertHistorique('DW','export_de_donnees','general',"exportation des paiements",None)
+    if action=="5" or action=="99":
+        #Export des impayés listing
+        req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE WHERE lastOne=1 AND etat=0",()]
+        Linfo=lecture_BDD(req)
+        with open(exportFold+"/Impayes.csv","w", encoding="utf-8") as csvfile:
+            csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;\n")
+            for row in Linfo:
+                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        insertHistorique('DW','export_de_donnees','general',"exportation du listing des impayés",None)
+    if action=="6" or action=="99":
+        #Export des impayés par CE
+        req=["SELECT listingCE.idCE,entreprise,utilisateur.prenom,SUM(montant) from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0 GROUP BY listingCE.idCE ORDER BY listingCE.idCE",()]
+        Linfo=lecture_BDD(req)
+        with open(exportFold+"/Impayes_Synthese_CE.csv","w", encoding="utf-8") as csvfile:
+            csvfile.write("ID CE;Nom du CE;Referente;Montant total estime\n")
+            for row in Linfo:
+                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        insertHistorique('DW','export_de_donnees','general',"exportation synthèse des impayés par CE",None)
+    if action=="7" or action=="99":
+        #Export des impayés par référente
+        req=["SELECT utilisateur.prenom,SUM(montant) from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0 GROUP BY utilisateur.prenom ORDER BY utilisateur.prenom",()]
+        Linfo=lecture_BDD(req)
+        with open(exportFold+"/Impayes_Synthese_Referente.csv","w", encoding="utf-8") as csvfile:
+            csvfile.write("Referente;Montant total estime\n")
+            for row in Linfo:
+                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        insertHistorique('DW','export_de_donnees','general',"exportation synthèse des impayés par référente",None)
+    
     return '',204
 
 
