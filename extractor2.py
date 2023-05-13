@@ -2580,7 +2580,7 @@ def searchImpaye(user):
         session['user']['paiementLot']=lot
 
     
-    if ref=="None" or ref is NoneType or ref is None:
+    if ref=="None" or ref is None:
         ref1=""
     else:
         ref1=ref
@@ -3310,7 +3310,7 @@ def rechercheCE(user):
     except:
         return(index())
     CEselectionne=request.form.get("CEselectionne")
-    if CEselectionne is NoneType or CEselectionne=="" or CEselectionne is None:
+    if CEselectionne=="" or CEselectionne is None:
         idCEselec=""
     else:
         idCEselec=int(CEselectionne.split(" - ")[0])
