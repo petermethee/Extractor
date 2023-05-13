@@ -2716,8 +2716,26 @@ def extractImpayes():
             csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;\n")
             for row in Linfo:
                 csvfile.write(';'.join(str(r) for r in row) + '\n')
-        insertHistorique('DW','client','general',"exportation des données clients",None)
+        insertHistorique('normal','paiement','impayés',"exportation du listing des impayés",None)
+    elif action=="1":
+        req=["SELECT listingCE.idCE,entreprise,utilisateur.prenom,SUM(montant) from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0 GROUP BY listingCE.idCE ORDER BY listingCE.idCE",()]
+        Linfo=lecture_BDD(req)
+        with open(exportFold+"/Impayes_Synthese_CE.csv","w", encoding="utf-8") as csvfile:
+            csvfile.write("ID CE;Nom du CE;Referente;Montant total estime\n")
+            for row in Linfo:
+                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        insertHistorique('normal','paiement','impayés',"exportation synthèse des impayés par CE",None)
+    elif action=="2":
+        req=["SELECT utilisateur.prenom,SUM(montant) from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0 GROUP BY utilisateur.prenom ORDER BY utilisateur.prenom",()]
+        Linfo=lecture_BDD(req)
+        with open(exportFold+"/Impayes_Synthese_Referente.csv","w", encoding="utf-8") as csvfile:
+            csvfile.write("Referente;Montant total estime\n")
+            for row in Linfo:
+                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        insertHistorique('normal','paiement','impayés',"exportation synthèse des impayés par référente",None)
+    
     return paiements(user) 
+
   
 @app.route('/relanceGroupe/<user>',methods=['GET', 'POST'])
 def relanceGroupe(user):

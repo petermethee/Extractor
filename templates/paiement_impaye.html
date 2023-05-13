@@ -36,7 +36,13 @@
     <div class="center">
         <form action="/extractImpayes" method="POST">
         <button class="generateBt" name="action" value="0" onclick="attente();extraction()">
-          Extraire les infos en Excel
+          Export listing impayés
+        </button>
+        <button class="generateBt" name="action" value="1" onclick="attente();extraction1()">
+          Export impayés/CE
+        </button>
+        <button class="generateBt" name="action" value="2" onclick="attente();extraction2()">
+          Export impayés/Référente
         </button>
       </form>
     </div>
@@ -177,7 +183,13 @@
             }
         }
         function extraction(){
-            alert("L'extraction se trouvera dans le dossier 'Extraction' nommé 'Impayés.csv'. Tous les impayés sont renseigner dans ce fichier.")
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés.csv'. Tous les impayés sont renseigner dans ce fichier.")
+        }
+        function extraction1(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_CE.csv'. La somme des impayés par CE est renseignée dans ce fichier.")
+        } 
+        function extraction2(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_Referente.csv'. La somme des impayés par référente est renseignée dans ce fichier.")
         }
         function relancer(t) {
             const id = t.id;
