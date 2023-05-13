@@ -2,7 +2,6 @@
 from json import tool
 import re
 from time import time
-from types import NoneType
 import PyPDF2 as pypdf
 from pdf2image import convert_from_path
 import os
@@ -14,7 +13,6 @@ from detectHandwrite4 import extractHandwrite
 from tool import lecture_BDD,ecriture_BDD,majusca,getSocietor,getXML,getLcode,checkCode,checkPrix,getPrix,getStockAutres,getStockSorgues,listeA,CodePossible,codepostal,getVille,fixoumobile,send_email,fusionnerPDF,crypter,decrypter
 import json
 from datetime import timedelta
-from simplecrypt import encrypt, decrypt
 
 #Constantes
 staticDir="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static"
