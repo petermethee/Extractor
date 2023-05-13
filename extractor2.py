@@ -891,10 +891,10 @@ def valinuler(user):
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),idCmd)]
         ecriture_BDD(req)
         if mode=="1":
-            insertHistorique('normal','suivi','addCde',"validation de la commande et ajout d'une nouvelle",None)
+            insertHistorique('normal','suivi','addCde',"validation de la commande et ajout d'une nouvelle",idCmd)
             return addCmd(user)
         else:
-            insertHistorique('normal','suivi','addCde',"validation de la commande et retour au suivi commande",None)
+            insertHistorique('normal','suivi','addCde',"validation de la commande et retour au suivi commande",idCmd)
             return suiviCmd(user)
     return suiviCmd(user)
     
@@ -943,7 +943,7 @@ def start(user):
         return(index())
     req=["SELECT idCE from listingCE where corbeille=0",()]
     LidCE=lecture_BDD(req)
-    req=["SELECT id,numPC from postes",()]
+    req=["SELECT id,numPC from postes ORDER BY numPC",()]
     Lpc=lecture_BDD(req)
     insertHistorique('normal','traitement','extraction','visualisation',None)
     #Commandes à préparer/facturer
