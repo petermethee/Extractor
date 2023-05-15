@@ -18,8 +18,8 @@
                 <button name="mode" value=0 class="annulBt" onclick="attente()">ANNULER</button>
             </form>
             <form action="/valinuler/{{user}}" method="POST" id="form">
-                <button type="submit" name="mode" value=1 class="saveNewCmd">ENREGISTRER ET CONTINUER</button>
-                <button type="submit" name="mode" value=2 class="saveNewCmd">ENREGISTRER ET QUITTER</button>
+                <button type="submit" name="mode" value=1 class="saveNewCmd" onclick="attente()">ENREGISTRER ET CONTINUER</button>
+                <button type="submit" name="mode" value=2 class="saveNewCmd" onclick="attente()">ENREGISTRER ET QUITTER</button>
         </div>
         <div class="selectClient">
             <input type="text" list="Lclients" class="inputSearch" onchange="search()"
