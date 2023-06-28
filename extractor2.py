@@ -754,7 +754,7 @@ def actionFromDetails(user):
 
             
     if sendMail:
-        req=["SELECT SUM(qte),idclientCmd,idCE,adresse,mail,client FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCmd,)]
+        req=["SELECT SUM(qte),idclientCmd,commande.idCE,client.adresse,client.mail,client,referente FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient JOIN listingCE ON listingCE.idCE=commande.idCE where idCmd=?",(idCmd,)]
         liste=lecture_BDD(req)
         nbrPdt=liste[0]["SUM(qte)"]
         idClient=liste[0]["idclientCmd"]
@@ -762,9 +762,11 @@ def actionFromDetails(user):
         adresse=str(liste[0]["adresse"])
         mail=liste[0]["mail"]
         client=liste[0]["client"]
+        idRef=liste[0]["referente"]
+        #todo jeanne 18/06
         if mail!="" or mail!=None:
             idCdMail=str(idCmd)+'-'+str(idPaiement)+'-'+str(relance)
-            send_email([str(mail),str(client),str(idCmd),action2,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE)],[],[])
+            send_email([str(mail),str(client),str(idCmd),action2,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE),str(idRef)],[],[])
         return (detailsCmd(user))
     else:
         return '',204
@@ -2230,7 +2232,7 @@ def nextStep(user):
 
             req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,action,date,heure,etat,montant,1,idPaiement,1)]
             ecriture_BDD(req)
-            req=["SELECT SUM(qte),idclientCmd,idCE,adresse,mail,client FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCmd,)]
+            req=["SELECT SUM(qte),idclientCmd,commande.idCE,client.adresse,client.mail,client,referente FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient JOIN listingCE ON listingCE.idCE=commande.idCE where idCmd=?",(idCmd,)]
             liste=lecture_BDD(req)
             nbrPdt=liste[0]["SUM(qte)"]
             idClient=liste[0]["idclientCmd"]
@@ -2238,7 +2240,8 @@ def nextStep(user):
             adresse=str(liste[0]["adresse"])
             mail=liste[0]["mail"]
             client=liste[0]["client"]
-            send_email([str(mail),str(client),str(idCmd),action,montant,str(nbrPdt),adresse,idCmd,str(idClient),str(idCE)],[],[])
+            idRef=liste[0]["referente"]
+            send_email([str(mail),str(client),str(idCmd),action,montant,str(nbrPdt),adresse,idCmd,str(idClient),str(idCE),str(idRef)],[],[])
             insertHistorique('normal','facturer','fiche synthèse',"demande de paiement idcmd",idCmd)
             return '', 204    
     return fact(user)
@@ -2633,7 +2636,7 @@ def relance():
     relance=int(idRelance)+1  
     req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,type,date,heure,0,montant,relance,idPaiement,1)]
     ecriture_BDD(req)
-    req=["SELECT SUM(qte),idclientCmd,idCE,adresse,mail,client,lot FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCmd,)]
+    req=["SELECT SUM(qte),idclientCmd,commande.idCE,client.adresse,client.mail,client,lot,referente FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient JOIN listingCE ON listingCE.idCE=commande.idCE WHERE idCmd=?",(idCmd,)]
     liste=lecture_BDD(req)
     nbrPdt=liste[0]["SUM(qte)"]
     idClient=liste[0]["idclientCmd"]
@@ -2642,10 +2645,11 @@ def relance():
     mail=liste[0]["mail"]
     client=liste[0]["client"]
     lot=liste[0]["lot"]
+    idRef=liste[0]["referente"]
     idCdMail=str(idCmd)+'-'+str(idPaiement)+'-'+str(relance)
     L=[date,heure,idCmd,idCE,lot,client,type,montant,relance,idPaiement]
     try:
-        send_email([str(mail),str(client),str(idCmd),type,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE)],[],[])
+        send_email([str(mail),str(client),str(idCmd),type,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE),str(idRef)],[],[])
         message="Mail envoyé au client"
     except:
         message="Erreur lors de l'envoie du mail"
@@ -2779,7 +2783,7 @@ def relanceGroupe(user):
             relance=int(relance)+1  
             req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCd,type,date,heure,0,montant,relance,idPaiement,1)]
             ecriture_BDD(req)
-            req=["SELECT SUM(qte),idclientCmd,idCE,adresse,mail,client FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCd,)]
+            req=["SELECT SUM(qte),idclientCmd,commande.idCE,client.adresse,client. mail,client,referente FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient JOIN listingCE ON listingCE.idCE=commande.idCE WHERE idCmd=?",(idCd,)]
             liste=lecture_BDD(req)
             nbrPdt=liste[0]["SUM(qte)"]
             idClient=liste[0]["idclientCmd"]
@@ -2788,7 +2792,8 @@ def relanceGroupe(user):
             mail=liste[0]["mail"]
             client=liste[0]["client"]
             idCdMail=str(idCd)+'-'+str(idPaiement)+'-'+str(relance)
-            send_email([str(mail),str(client),str(idCd),type,str(montant),str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE)],[],[])
+            idRef=liste[0]["referente"]
+            send_email([str(mail),str(client),str(idCd),type,str(montant),str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE),str(idRef)],[],[])
         session['user']['listeRelance']=[]
         insertHistorique('normal','paiement','relance groupe',"relance liste paiement",None)
         return render_template('paiement_relanceGroupe.html',LPaiement=LPaiement,user=user,listeRelance=listeRelance,btEnlever=btEnlever)
@@ -3408,8 +3413,6 @@ def modifrechercheCE():
     adresse=request.form.get("adresse")
     insertHistorique('normal','pageCE','rechercheCE','modification ligne CE n°',ide)
     req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=?,qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=?,adresse=? where id=?",(idCE,entreprise,referente,intermediaire,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse,ide)]
-    print(req)
-    ecriture_BDD(req)
     insertHistorique('normal','pageCE','listingCE','modification ligne CE n°',ide)
     return '',204
 

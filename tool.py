@@ -429,6 +429,7 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         idCmd=etats[4]
         idClient=etats[5]
         idCE=etats[6]
+        idRef=etats[7]
     else:
         adr=""
     HTML="""\
@@ -545,7 +546,8 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         """
     #Paiement Lien
     elif etat=="lien":
-        ref="Commande_"+idCmd+"_Client"+idClient+"_CE"+idCE
+        #ICI
+        ref="Ref_"+idRef+"_Commande_"+idCmd+"_Client"+idClient+"_CE"+idCE
         n_commande=n_cde.split('-')[0]
     
         liste=prenom.split(" ")
