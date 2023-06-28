@@ -2625,6 +2625,11 @@ def relance():
     idPaiement=id.split('-')[1]
     idRelance=id.split('-')[2]
     montant=id.split('-')[3]
+    print("montant avant")
+    print(montant)
+    montant='%.2f'%float(montant)
+    print("montant apres")
+    print(montant)
     type=id.split('-')[4]
     #Annuler les paiements précédents et enlever le lastOne
     req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idCd=? AND type=? AND idPaiement=? ",(idCmd,type,idPaiement)]
@@ -2772,6 +2777,11 @@ def relanceGroupe(user):
             #Récuperer données manquantes
             req=["SELECT montant FROM paiement WHERE idCd=? AND idPaiement=? AND relance=? AND type=?",(idCd,idPaiement,relance,type)]
             montant=lecture_BDD(req)[0]['montant']
+            print("montant avant")
+            print(montant)
+            montant='%.2f'%float(montant)
+            print("montant apres")
+            print(montant)
             #Annuler les paiements précédents et enlever le lastOne
             req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idCd=? AND type=? AND idPaiement=? ",(idCd,type,idPaiement)]
             ecriture_BDD(req)
