@@ -1023,7 +1023,7 @@ def infos_dans_csv(chemin,nom,idExtraction):
     adresse=liste[1][2]
     tel=liste[1][3]
     idCE=int(liste[1][4])
-    total=liste[1][5]
+    total=liste[1][9]
     req=["SELECT entreprise FROM listingCE where idCE=?",(idCE,)]
     try:
         societe=lecture_BDD(req)[0]['entreprise']
@@ -3289,10 +3289,10 @@ def ajoutCE(user):
         session['user']
     except:
         return(index())
-    req=["SELECT max(idCE) FROM listingCE WHERE idCE<900900 and corbeille=0;",()]
+    req=["SELECT max(idCE) FROM listingCE WHERE idCE<900900 and corbeille=0",()]
     idCE=int(lecture_BDD(req)[0]['max(idCE)'])+1
     if idCE==900900:
-        req=["SELECT max(idCE) FROM listingCE WHERE idCE<999000 and corbeille=0;",()]
+        req=["SELECT max(idCE) FROM listingCE WHERE idCE<999000 and corbeille=0",()]
         idCE=int(lecture_BDD(req)[0]['max(idCE)'])+1
     CE={"prenom":"","idCE":idCE,"entreprise":"","intermediaire":"","mail":"","tel":"","mailCl":"0","mailInterPrep":"0","mailInterFact":"0","mailInterRelFact":"0","mailInterRel":"0","mailInterRupt":"0","qteFact":"1","sac":"Papier","retraitMag":"NON","colisIndiv":"NON","colisCol":"NON","colisExpe":"Aucun","catalogue":"1","promotion":"1","commentaires":"","adresse":""}
     req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]

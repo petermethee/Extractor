@@ -10,7 +10,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 import PyPDF2
 from flask import send_file
-from simplecrypt import encrypt, decrypt
+#from simplecrypt import encrypt, decrypt
 import datetime
 
 
