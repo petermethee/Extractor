@@ -169,7 +169,10 @@ def getLcode():
     return Lcode
 
 def checkCode(strCode):
+    Lparariste=[".","-",",","_","/"]
     if len(strCode)>=8:
+        for parasite in Lparariste:
+            strCode=strCode.replace(parasite,"")
         strCode=strCode[:8]
         mq=strCode[:3]
         ct=strCode[3:5]

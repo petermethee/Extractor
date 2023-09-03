@@ -13,6 +13,7 @@ from detectHandwrite4 import extractHandwrite
 from tool import lecture_BDD,ecriture_BDD,majusca,getSocietor,getXML,getLcode,checkCode,checkPrix,getPrix,getStockAutres,getStockSorgues,listeA,CodePossible,codepostal,getVille,fixoumobile,send_email,fusionnerPDF,crypter,decrypter
 import json
 from datetime import timedelta
+import csv
 
 #Constantes
 staticDir="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static"
@@ -1006,7 +1007,58 @@ def generer(user):
         req=['DELETE FROM extractions where idExtraction=?',(idExtraction,)]
         ecriture_BDD(req)
         return '',204
-    
+
+def infos_dans_csv(chemin,nom,idExtraction):
+    #nom='names.csv'
+    with open(chemin+nom, newline='') as csvfile:
+        lecture=csv.reader(csvfile, delimiter=';')
+        liste=[]
+        for row in lecture:
+            liste.append(row)
+            #print(row)
+    n=len(liste)
+    #Infos client
+    client=liste[1][0]
+    mail=liste[1][1]
+    adresse=liste[1][2]
+    tel=liste[1][3]
+    idCE=int(liste[1][4])
+    total=liste[1][5]
+    req=["SELECT entreprise FROM listingCE where idCE=?",(idCE,)]
+    try:
+        societe=lecture_BDD(req)[0]['entreprise']
+    except:
+        idCE="900900"
+        societe="Société non existante dans Extractor"
+    req=["insert into client(idExtraction,client,mail,tel,adresse,societe,idCEclient) values (?,?,?,?,?,?,?)",(idExtraction,client,mail,tel,adresse,societe,idCE)]
+    ecriture_BDD(req)
+    req=["SELECT max(idclient) from client",()]
+    idclient=lecture_BDD(req)[0]['max(idclient)']
+    date=datetime.datetime.today().strftime('%Y-%m-%d')
+    user=session['user']['id']
+    req=["insert into commande(idclientCmd,idExtractionCmd,total,idCE,idclientHW,etatCmd,date,corbeille,extractedBy,total) values (?,?,?,?,?,?,?,0,?,?)",(idclient,idExtraction,total,idCE,-1,0,date,user,total)]
+    ecriture_BDD(req)
+    req=["SELECT max(id_commande) from commande",()]
+    idCmd=lecture_BDD(req)[0]['max(id_commande)']
+    n=len(liste)
+    #infos produit
+    for i in range (2,n):
+        strCode=str(liste[i][5])
+        txtlib=liste[i][6]
+        strQte=liste[i][7]
+        rupture=liste[i][8]
+        total=liste[i][9]
+        if rupture =="OUI":
+            ato="oui"
+        else:
+            ato="non"
+        errone,strCode,ean,libW=checkCode(strCode)
+        prix=getPrix(strCode)
+        E=0
+        req=["insert into facturation(idCmd,code,ean,lib,libW,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,strCode,ean,txtlib,libW,prix,strQte,ato,errone,-1,E,E,E)]
+        ecriture_BDD(req)
+
+    return(liste,idclient)  
 
 @app.route('/assoClientCE/<user>',methods=['GET', 'POST'])
 def assoClientCE(user,nbError=0):
@@ -4678,47 +4730,63 @@ def initTraitement(nCE,user,repertoire,erreurFile):
     separation_des_pages(repertoire)
     for nom in os.listdir(repertoire) :
         nbFichier+=1
-        try :
-            pdfobject=open(repertoire+"/"+nom,'rb')
-            pdf=pypdf.PdfFileReader(pdfobject)
-            txt=pdf.getFormTextFields()
-            cb=pdf.getFields()
-            pdfobject.close()
-            idclient=extraction(txt,cb,user)
-            os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+".pdf")
-
-        except Exception as e:
-            print(str(e))
-            print("error 1 : "+nom)
+        extension=nom.split('.')[-1]
+        if extension=='csv' or extension=='CSV':
             try:
-                pdfobject.close()
-                name, file_extension = os.path.splitext(nom)
-
-                if file_extension==".pdf" or file_extension==".PDF":
-                    pages = convert_from_path(repertoire+"/"+nom,500)
-                    pages[0].save(repertoire+"/"+name+'.jpg', 'JPEG')
-                    try:
-                        idclient=extractHandwrite(repertoire+"/"+name+".jpg",idExtraction,nCE)
-                        os.remove(repertoire+"/"+name+'.jpg')
-                    except Exception as e:
-                        print(str(e))
-                        print("Erreur PDF en Image extractHW")
-                        os.remove(repertoire+"/"+name+'.jpg')
-                        raise TypeError
-                else:
-                    idclient=extractHandwrite(repertoire+"/"+nom,idExtraction,nCE)
-                os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+file_extension)
-
-                
+                chemin=repertoire+"/"
+                liste,idclient=infos_dans_csv(chemin,nom,idExtraction)
+                os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+".csv")
             except Exception as e:
                 print(str(e))
-                print("error 2 : "+nom)
+                print("error csv 1 :"+nom)
                 nbError+=1
                 try:
                     shutil.move(repertoire+"/"+nom,erreurFile)
                 except Exception as e:
                     print("Already exists")
                     os.remove(repertoire+"/"+nom)
+        else:
+            try :
+                pdfobject=open(repertoire+"/"+nom,'rb')
+                pdf=pypdf.PdfFileReader(pdfobject)
+                txt=pdf.getFormTextFields()
+                cb=pdf.getFields()
+                pdfobject.close()
+                idclient=extraction(txt,cb,user)
+                os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+".pdf")
+
+            except Exception as e:
+                print(str(e))
+                print("error 1 : "+nom)
+                try:
+                    pdfobject.close()
+                    name, file_extension = os.path.splitext(nom)
+
+                    if file_extension==".pdf" or file_extension==".PDF":
+                        pages = convert_from_path(repertoire+"/"+nom,500)
+                        pages[0].save(repertoire+"/"+name+'.jpg', 'JPEG')
+                        try:
+                            idclient=extractHandwrite(repertoire+"/"+name+".jpg",idExtraction,nCE)
+                            os.remove(repertoire+"/"+name+'.jpg')
+                        except Exception as e:
+                            print(str(e))
+                            print("Erreur PDF en Image extractHW")
+                            os.remove(repertoire+"/"+name+'.jpg')
+                            raise TypeError
+                    else:
+                        idclient=extractHandwrite(repertoire+"/"+nom,idExtraction,nCE)
+                    os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+file_extension)
+
+                    
+                except Exception as e:
+                    print(str(e))
+                    print("error 2 : "+nom)
+                    nbError+=1
+                    try:
+                        shutil.move(repertoire+"/"+nom,erreurFile)
+                    except Exception as e:
+                        print("Already exists")
+                        os.remove(repertoire+"/"+nom)
     return nbError,nbFichier
 
 
