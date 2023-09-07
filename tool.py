@@ -275,10 +275,12 @@ def listeA(adr):
 def CodePossible(nombre):
     LcodePossible=[]
     taille=int(len(nombre))
+    print("nombre")
+    print(nombre)
     for i in range (taille):
         j=0
         a=str(nombre[i])
-        while len(a)<4 and i+j<taille:
+        while len(a)<4 and i+j<taille and i<taille-1:
             j=j+1
             a=a+str(nombre[i+j])
         if len(a)==5:
@@ -557,13 +559,19 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         if len(liste)>1:
             for i in range (1,len(liste),1):
                 nom+=str(liste[i])
+        #Evol -> Ne plus avoir d'adresse dans le lien
         adresse,codePostal,ville=decompAdresse(adr)
-        
+        # HTML+="""  
+        # <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
+        # <h2> Voici le lien :</h2>
+        # <a href='https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="""+montant+"""&Ref="""+ref+"""&Mail="""+mail+"""&NbreProd="""+nbrPdt+"""&Prenom="""+prenom1+"""&Nom="""+nom+"""&Adr1="""+adresse+"""&Adr2=&CP="""+codePostal+"""&Ville="""+ville+"""'> Lien paiement</a>
+        # """
         HTML+="""  
         <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         <h2> Voici le lien :</h2>
-        <a href='https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="""+montant+"""&Ref="""+ref+"""&Mail="""+mail+"""&NbreProd="""+nbrPdt+"""&Prenom="""+prenom1+"""&Nom="""+nom+"""&Adr1="""+adresse+"""&Adr2=&CP="""+codePostal+"""&Ville="""+ville+"""'> Lien paiement</a>
+        <a href='https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="""+montant+"""&Ref="""+ref+"""&Mail="""+mail+"""&NbreProd="""+nbrPdt+"""&Prenom="""+prenom1+"""&Nom="""+nom+"""&Adr1="""+""+"""&Adr2=&CP="""+""+"""&Ville="""+""+"""'> Lien paiement</a>
         """
+
     #Paiement par espèces
     elif etat=="espece":
         n_commande=n_cde.split('-')[0]
