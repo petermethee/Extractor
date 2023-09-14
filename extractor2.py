@@ -1044,7 +1044,7 @@ def infos_dans_csv(chemin,nom,idExtraction):
     idCmd=lecture_BDD(req)[0]['max(id_commande)']
     n=len(liste)
     #infos produit
-    for i in range (2,n):
+    for i in range (1,n):
         strCode=str(liste[i][5])
         txtlib=liste[i][6]
         strQte=liste[i][7]
