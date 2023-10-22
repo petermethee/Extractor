@@ -53,7 +53,7 @@
 				<td>
 					<select name="idPoste" id="idPoste" type="input" style="cursor:pointer" onchange="changePC(this)">
 						{% for pc in Lpc %}
-						<option  value="{{pc['id']}}" {%if session['user']['PC']==pc['numPC'] %} selected {%endif%} >{{pc['numPC']}}</option>
+						<option  value="{{pc['id']}}" {%if session['user']['idPC']==pc['numPC'] %} selected {%endif%} >{{pc['numPC']}}</option>
 						{%endfor%}
 
 					</select>

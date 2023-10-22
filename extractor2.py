@@ -158,7 +158,8 @@ def login():
                 "firstCo":'-1',
                 "dwDateMin":'-1',
                 "dwDateMax":'-1',
-                "rechercheCE":'-1'
+                "rechercheCE":'-1',
+                "idPC":-1
             }
             session.permanent = True    
             app.permanent_session_lifetime = timedelta(minutes=660)
@@ -942,10 +943,17 @@ def start(user):
         session['user']
     except:
         return(index())
+    idPC=-1
     req=["SELECT idCE from listingCE where corbeille=0",()]
     LidCE=lecture_BDD(req)
     req=["SELECT id,numPC from postes ORDER BY numPC",()]
     Lpc=lecture_BDD(req)
+    if session['user']['idPC']!="-1" and session['user']['idPC'] in Lpc:
+        idPC=session['user']['idPC'] 
+    else:
+        idPC=Lpc[0]
+    print("idpc")
+    print(idPC)
     insertHistorique('normal','traitement','extraction','visualisation',None)
     #Commandes à préparer/facturer
     req=["SELECT count(id_commande) FROM commande WHERE etatCmd=1 and corbeille=0",()]
@@ -962,7 +970,7 @@ def start(user):
         req=["SELECT count(id_commande) FROM commande WHERE dateFact=?",(date,)]
         Lenfant.append(lecture_BDD(req)[0]["count(id_commande)"])
         Ldate.append(Lenfant)
-    return render_template('traitementDonnees_synthetiser.html',LidCE=LidCE,user=user,Lpc=Lpc,Ldate=Ldate,encours=encours)
+    return render_template('traitementDonnees_synthetiser.html',LidCE=LidCE,user=user,Lpc=Lpc,Ldate=Ldate,encours=encours,idPC=idPC)
     
 @app.route('/changePC', methods=['GET', 'POST'])
 def changePC():
@@ -970,8 +978,9 @@ def changePC():
         session['user']
     except:
         return(index())
-    pc=request.form.get("idPC")
-    insertHistorique('normal','traitement','extraction','modificaiton PC',pc)
+    idPC=request.form.get("idPC")
+    session['user']['idPC']=idPC
+    insertHistorique('normal','traitement','extraction','modification PC',idPC)
     return '',204
 
 @app.route('/generer/<user>', methods=['GET', 'POST'])
