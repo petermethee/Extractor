@@ -562,16 +562,16 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
                 nom+=str(liste[i])
         #Evol -> Ne plus avoir d'adresse dans le lien
         adresse,codePostal,ville=decompAdresse(adr)
-        # HTML+="""  
-        # <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
-        # <h2> Voici le lien :</h2>
-        # <a href='https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="""+montant+"""&Ref="""+ref+"""&Mail="""+mail+"""&NbreProd="""+nbrPdt+"""&Prenom="""+prenom1+"""&Nom="""+nom+"""&Adr1="""+adresse+"""&Adr2=&CP="""+codePostal+"""&Ville="""+ville+"""'> Lien paiement</a>
-        # """
         HTML+="""  
         <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         <h2> Voici le lien :</h2>
-        <a href='https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="""+montant+"""&Ref="""+ref+"""&Mail="""+mail+"""&NbreProd="""+nbrPdt+"""&Prenom="""+prenom1+"""&Nom="""+nom+"""&Adr1="""+""+"""&Adr2=&CP="""+""+"""&Ville="""+""+"""'> Lien paiement</a>
+        <a href='https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="""+montant+"""&Ref="""+ref+"""&Mail="""+mail+"""&NbreProd="""+nbrPdt+"""&Prenom="""+prenom1+"""&Nom="""+nom+"""&Adr1="""+adresse+"""&Adr2=&CP="""+codePostal+"""&Ville="""+ville+"""'> Lien paiement</a>
         """
+        # HTML+="""  
+        # <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
+        # <h2> Voici le lien :</h2>
+        # <a href='https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="""+montant+"""&Ref="""+ref+"""&Mail="""+mail+"""&NbreProd="""+nbrPdt+"""&Prenom="""+prenom1+"""&Nom="""+nom+"""&Adr1="""+""+"""&Adr2=&CP="""+""+"""&Ville="""+""+"""'> Lien paiement</a>
+        # """
 
     #Paiement par espèces
     elif etat=="espece":
