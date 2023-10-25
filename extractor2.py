@@ -2781,7 +2781,7 @@ def extractImpayes():
         req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0",()]
         Linfo=lecture_BDD(req)
         with open(exportFold+"/Impayes.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;Referente\n")
+            csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;Referente;\n")
             for row in Linfo:
                 csvfile.write(';'.join(str(r) for r in row) + '\n')
         insertHistorique('normal','paiement','impayés',"exportation du listing des impayés",None)
@@ -4003,7 +4003,7 @@ def action_export_de_donnees():
         insertHistorique('DW','export_de_donnees','general',"exportation des paiements",None)
     if action=="5" or action=="99":
         #Export des impayés listing
-        req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE WHERE lastOne=1 AND paiement.etat=0",()]
+        req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur.id=listingCE.utilisateur WHERE lastOne=1 AND paiement.etat=0",()]
         Linfo=lecture_BDD(req)
         with open(exportFold+"/Impayes.csv","w", encoding="utf-8") as csvfile:
             csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;\n")

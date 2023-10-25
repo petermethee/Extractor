@@ -562,6 +562,12 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
                 nom+=str(liste[i])
         #Evol -> Ne plus avoir d'adresse dans le lien
         adresse,codePostal,ville=decompAdresse(adr)
+        if adresse=="":
+            adresse="Rue de la joie"
+        if codePostal=="":
+            codePostal="84700"
+        if ville=="":
+            ville="Sorgues"
         HTML+="""  
         <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         <h2> Voici le lien :</h2>
