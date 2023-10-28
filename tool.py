@@ -560,6 +560,8 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         if len(liste)>1:
             for i in range (1,len(liste),1):
                 nom+=str(liste[i])
+        else:
+            nom="COMMANDE SANS NOM"
         #Evol -> Ne plus avoir d'adresse dans le lien
         adresse,codePostal,ville=decompAdresse(adr)
         if adresse=="":
