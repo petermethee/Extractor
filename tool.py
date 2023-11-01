@@ -570,10 +570,12 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
             codePostal="84700"
         if ville=="":
             ville="Sorgues"
-        HTML+="""  
+        lien="https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="+montant+"&Ref="+ref+"&Mail="+mail+"&NbreProd="+nbrPdt+"&Prenom="+prenom1+"&Nom="+nom+"&Adr1="+adresse+"&Adr2=&CP="+codePostal+"&Ville="+ville
+        lien_sans_apostrophe=lien.replace("'","")
+        HTML+="""
         <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         <h2> Voici le lien :</h2>
-        <a href='https://www.parfumerie-en-ligne.com/testjdf/formulaire_CSE_HMAC.php?Mt="""+montant+"""&Ref="""+ref+"""&Mail="""+mail+"""&NbreProd="""+nbrPdt+"""&Prenom="""+prenom1+"""&Nom="""+nom+"""&Adr1="""+adresse+"""&Adr2=&CP="""+codePostal+"""&Ville="""+ville+"""'> Lien paiement</a>
+        <a href='"""+lien_sans_apostrophe+"""'>Lien paiement</a>
         """
         # HTML+="""  
         # <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
