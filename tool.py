@@ -576,7 +576,17 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         <h2> Voici le lien :</h2>
         <a href='"""+lien_sans_apostrophe+"""'>Lien paiement</a>
-        """
+        <br>
+        <h3>Il est possible que votre paiement ne puisse pas aboutir, cela dépend du type de carte que vous utilisez.</h3>
+        <h3>Dans ce cas nous vous proposons de régler soit :</h3>
+        <br><h3>- Par virement :</h3>
+        <h3>Code Banque : 11306</h3>
+        <h3>Code Guichet : 00084</h3>
+        <h3>Numéro de compte : 92523692050</h3>
+        <h3>Clé RIB : 37</h3>
+        <h3>IBAN : FR76 1130 6000 8492 5236 9205 037</h3>
+        <h3>Code BIC : AGRIFRPP813</h2>
+        <br><h3>- Par téléphone : 04 88 60 23 05</h3>"""
         # HTML+="""  
         # <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         # <h2> Voici le lien :</h2>
@@ -616,6 +626,7 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
 
     #Pour tous les mails
     HTML+="""<br><br>
+        <h1>Merci pour votre confiance,</h1>
         <h1>Bonne réception,</h1>
         <br>
         <h1>Votre Equipe CSE Parfums / Parfumerie MPB</h1>

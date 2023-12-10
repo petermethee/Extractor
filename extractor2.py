@@ -14,86 +14,44 @@ from tool import lecture_BDD,ecriture_BDD,majusca,getSocietor,getXML,getLcode,ch
 import json
 from datetime import timedelta
 import csv
-
-#Constantes
-staticDir="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static"
-# staticDir="/home/jamessou/CEPROG/bdd/static"
-app = Flask(__name__,static_folder=staticDir)
-app.secret_key = "jpcorp"
-
-app.config['FACTURE_FOLDER'] = 'C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures'
-targetFile='C:/Users/jeann/Desktop/Parfumerie/CE_V4/Succes'
-repertoireImgClient='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_client'
-repertoireImgCmd='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_cmd'
-exportFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Export"
-statFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat"
-
-#app.config['FACTURE_FOLDER'] = '/home/jamessou/CE/Factures'
-#targetFile='/home/jamessou/CE/Succes'
-#repertoireImgClient='/home/jamessou/CEPROG/bdd/static/image_client'
-#repertoireImgCmd='/home/jamessou/CEPROG/bdd/static/image_cmd'
-#exportFold="/home/jamessou/CE/Export"
-#statFold="/home/jamessou/CE/Stat"
-
-Lmag=["1-Sorgues","2-République","3-Les Halles","5-Isle","6-Vedène","Michael"]
-infoIndex=["1","2","3","4","5","14_3"]
-ligne=8
-parasites=[",",".",":",";"," ","-","_","None",'REFERENCE','Reference','Référence','reference','référence','REF','Ref','ref','Réf','réf','/']
-LparasiteQte=["l","L","i","I","|"]
-delaiRupt=8
-
-#Constantes Sessions
-app.config['SECRET_KEY']=b'a8ab364e355734de641db4e18298c74bff8625fe76c6725ce7ba25417f6a7d1a'
-
-#---------Etats Commandes
-# 0 -> Préparation
-# 1 -> Facturation
-# 2 -> Facturé
-# 3 -> Livré
-# 99 -> Annulé
-
-#---------Etats Produits
-# 0 -> Préparation
-# 1 -> Reliquat
-# 2 -> Facturé
-# 3 -> Rupture
-# 4 -> Annulé
-# 5 -> Livré
-
-#---------Etats paiement
-# 0 -> Impayé
-# 1 -> Payé
-# 2 -> Annulé
+from constantes import *
+from fonctions import *
 
 ###FONCTIONS PAGE WEB###
+
+
 def insertHistorique(monde,page,onglet,action,numero):
-    date=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+    date=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     user=session['user']['id']
     req=["INSERT INTO historique (date,idUser,monde,page,onglet,action,numero) VALUES (?,?,?,?,?,?,?)",(date,user,monde,page,onglet,action,numero)]
     ecriture_BDD(req)
 
-#Créer des logs
 
 ####################### Page Connexion Session ##########################################
 #region
 @app.route('/')	
 def index():
     return render_template('_login.html')
-   
+
+def checkUser():
+    try :
+        session['user']
+    except:
+        return(index())   
+    
 @app.route('/login' ,methods=['GET', 'POST'])
 def login():
     #formulaire
-    mail=str(request.form.get("mail"))
-    mdp=request.form.get("mdp")
+    mail=str(getValeurFormulaire("mail"))
+    mdp=getValeurFormulaire("mdp")
     etat="INEXISTANT"
     #mdp=mdp.encode()
     #bdd
     try:
         session['user']
         session.permanent = True    
-
         app.permanent_session_lifetime = timedelta(minutes=480)
-        insertHistorique('normal','connexion','','connexion',None)
+        write_log(str(session['user']['id']),"/login - Connexion avec cookie de l'utilisateur "+str(session['user']['id']))
         if session['user']['niveau']=="ADMIN":
             return render_template('dw_debutAdmin.html')
         else:
@@ -163,7 +121,7 @@ def login():
             }
             session.permanent = True    
             app.permanent_session_lifetime = timedelta(minutes=660)
-            insertHistorique('normal','connexion',None,'connexion',None)
+            write_log(str(session['user']['id']),"/login - Connexion sans cookie de l'utilisateur "+str(session['user']['id']))
             if session['user']['niveau']=="ADMIN":
                 return render_template('dw_debutAdmin.html')
             else:
@@ -189,7 +147,7 @@ def make_session_permanent():
 
 @app.route('/logout')
 def logout():
-    insertHistorique('normal','deconnexion','','deconnexion',None)
+    write_log(str(session['user']['id']),"/logout - Deconnexion de l'utilisateur "+str(session['user']['id']))
     session['user']['firstCo']='-1'
     session.clear()
     return index()
@@ -199,18 +157,15 @@ def logout():
 #region
 @app.route('/admin',methods=['GET', 'POST'])
 def admin():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     if session['user'] and session['user']['niveau']=="ADMIN": 
-        action=request.form.get("action")
+        action=getValeurFormulaire("action")
         if action=="1":
-            insertHistorique('normal','connexion','connexion admin','connexion au darkworld',None)
+            write_log(str(session['user']['id']),"/admin - Connexion admin darkword de l'utilisateur"+str(session['user']['id']))
             return connexion()
             
         else:
-            insertHistorique('normal','connexion','connexion admin','connexion au monde normal',None)
+            write_log(str(session['user']['id']),"/admin - Connexion admin classique de l'utilisateur"+str(session['user']['id']))
             return start(session['user']['id'])
     else:
         return start(session['user']['id'])
@@ -220,11 +175,8 @@ def admin():
 #region
 @app.route('/suivi/<user>',methods=['GET', 'POST'])
 def suiviCmd(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get('filtre')
+    checkUser()
+    action=getValeurFormulaire('filtre')
     #réactulisation du filtre 
     if action=='filtre':
         session['user']['filtreDateMin']="-1"
@@ -237,126 +189,41 @@ def suiviCmd(user):
     #vérification de la sauvegarde des filtres
     if (session['user']['filtreDateMin']!='-1' or session['user']['filtreDateMax']!='-1' or session['user']['filtreID']!='-1' or session['user']['filtreCE']!='-1' or session['user']['filtreNom']!='-1' or session['user']['filtreEtat']!='-1' or session['user']['filtreMail']!='-1'):
         return(searchSuivi(user))
-    ref=request.form.get("ref")
+    ref=getValeurFormulaire("ref")
     if ref!=None:
         req=["SELECT id_commande,idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd where commande.corbeille=0 and idCE in (SELECT idCE from listingCE where listingCE.referente=? and corbeille=0) order by id_commande DESC LIMIT 1000",(ref,)]
         ref=int(ref)
-        insertHistorique('normal','suivi','general',"visualisation ref",ref)
+        write_log(str(session['user']['id']),"/suivi - Filtre sur la référente "+str(ref))
     else:
-        insertHistorique('normal','suivi','general',"visualisation all ref",None)
+        write_log(str(session['user']['id']),"/suivi - Aucun fltre sur la référente")
         req=["SELECT id_commande,idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd where commande.corbeille=0  order by id_commande DESC LIMIT 1000",()]
-
     Lclients=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    insertHistorique('normal','suivi','general',"visualisation ref",ref)
+    listeRef,listeAll=getListRef()
     return render_template('suivi_general.html',Lclients=Lclients,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
+
 
 @app.route('/searchSuivi/<user>',methods=['GET', 'POST'])
 def searchSuivi(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    dateMin=str(request.form.get("dateMin"))
-    dateMax=str(request.form.get("dateMax"))
-    idCmd=str(request.form.get("idCmd"))
-    idCE=str(request.form.get("idCE"))
-    client=request.form.get("client")
-    etat=str(request.form.get("etat"))
-    ref=str(request.form.get("ref"))
-    mail=str(request.form.get("mail"))
+    checkUser()
+    dateMin=str(getValeurFormulaire("dateMin"))
+    dateMax=str(getValeurFormulaire("dateMax"))
+    idCmd=str(getValeurFormulaire("idCmd"))
+    idCE=str(getValeurFormulaire("idCE"))
+    client=getValeurFormulaire("client")
+    etat=str(getValeurFormulaire("etat"))
+    ref=str(getValeurFormulaire("ref"))
+    mail=str(getValeurFormulaire("mail"))
     sansDateMini=False
     sansDateMax=False
+    a=False
     #Clés du filtre par session
-    if session['user']['filtreDateMin']!='-1':
-        if dateMin=="" or dateMin==None or dateMin=="None":
-            dateMin=session['user']['filtreDateMin']
-        else:
-            session['user']['filtreDateMin']=dateMin
-    else:
-        if dateMin=="" or dateMin==None  or dateMin=="None":
-            session['user']['filtreDateMin']='-1'
-            sansDateMini=True
-            dateMin=""
-        else:
-            session['user']['filtreDateMin']=dateMin
-
-    if session['user']['filtreDateMax']!='-1':
-        if dateMax=="" or dateMax==None  or dateMax=="None":
-            dateMax=session['user']['filtreDateMax']
-        else:
-            session['user']['filtreDateMax']=dateMax
-    else:
-        sansDateMax=False
-        if dateMax=="" or dateMax==None  or dateMax=="None":
-            session['user']['filtredateMax']='-1'
-            sansDateMax=True
-            dateMax=""
-        else:
-            session['user']['filtreDateMax']=dateMax
-
-    if session['user']['filtreID']!='-1' :
-        if idCmd=="" or idCmd=="None" :
-            idCmd=session['user']['filtreID']
-        else:
-            session['user']['filtreID']=idCmd
-    else:
-        if idCmd=="" or idCmd=="None":
-            session['user']['filtreID']='-1'
-            idCmd=""
-        else:
-            session['user']['filtreID']=idCmd
-
-    if session['user']['filtreCE']!='-1':
-        if idCE=="" or idCE=="None":
-            idCE=session['user']['filtreCE']
-        else:
-            session['user']['filtreCE']=idCE
-    else:
-        if idCE=="" or idCE=="None":
-            session['user']['filtreCE']='-1'
-            idCE=""
-        else:
-            session['user']['filtreCE']=idCE
-
-    if session['user']['filtreNom']!='-1':
-        if client=="" or client=="None" or client==None:
-            client=session['user']['filtreNom']
-        else:
-            session['user']['filtreNom']=client  
-    else:
-        if client=="" or client=="None" or client==None:
-            session['user']['filtreNom']='-1'
-            client=""
-        else:
-            session['user']['filtreNom']=client
-
-    if session['user']['filtreEtat']!='-1':
-        if etat==None or etat=="None":
-            etat=session['user']['filtreEtat']
-        else:
-            session['user']['filtreEtat']=etat
-    else:
-        if etat==None or etat=='None':
-            etat=""
-        session['user']['filtreEtat']=etat
-
-    
-    if session['user']['filtreMail']!='-1':
-        if mail=="" or mail=="None" or mail==None:
-            mail=session['user']['filtreMail']
-        else:
-            session['user']['filtreMail']=mail  
-    else:
-        if mail=="" or mail=="None" or mail==None:
-            session['user']['filtreMail']='-1'
-            mail=""
-        else:
-            session['user']['filtreMail']=mail
-
+    session['user']['filtreDateMin'],dateMin,sansDateMini=filtre(session['user']['filtreDateMin'],dateMin)
+    session['user']['filtreDateMax'],dateMax,sansDateMax=filtre(session['user']['filtreDateMax'],dateMax)
+    session['user']['filtreID'],idCmd,a=filtre(session['user']['filtreID'],idCmd)
+    session['user']['filtreCE'],idCE,a=filtre(session['user']['filtreCE'],idCE)
+    session['user']['filtreNom'],client,a=filtre(session['user']['filtreNom'],client)
+    session['user']['filtreEtat'],etat,a=filtre(session['user']['filtreEtat'],etat)
+    session['user']['filtreMail'],mail,a=filtre(session['user']['filtreMail'],mail)
     if ref=="None":
         ref1=""
     else:
@@ -373,38 +240,28 @@ def searchSuivi(user):
         req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date>= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
         Lclients=lecture_BDD(req)
     else:
-        req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date >= (?) and date <= (?) and etatCmd LIKE ? and client.referente LIKE ? and mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+        req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date >= (?) and date <= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
         Lclients=lecture_BDD(req)
-        
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    insertHistorique('normal','suivi','general',"filtre",None)
+    listeRef,listeAll=getListRef()
+    write_log(str(session['user']['id']),"/searchSuivi - Filtre avec les valeurs suivantes DateMax : "+str(session['user']['filtreDateMin'])+" // dateMin : "+str(session['user']['filtreDateMin'])+" // id : "+str(session['user']['filtreID'])+" // ce : "+str(session['user']['filtreCE'])+" // Nom : "+str(session['user']['filtreNom'])+"// Etat : "+str(session['user']['filtreEtat'])+"// Mail :"+str(session['user']['filtreMail']))
     return render_template('suivi_general.html',user=user,Lclients=Lclients,dateMin=dateMin,dateMax=dateMax,idCmd=idCmd,idCE=idCE,client=client,etat=etat,ref=ref,mail=mail,listeRef=listeRef,listeAll=listeAll)
     
 @app.route('/suprCmd', methods=['GET', 'POST'])
 def suprCmd():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     user=session['user']['id']
-    idCmd=request.form.get('idCmd')
+    idCmd=getValeurFormulaire('idCmd')
     req=["UPDATE commande set corbeille=1,deletedBy=? where id_commande=?",(user,idCmd)]
     ecriture_BDD(req)
-    insertHistorique('normal','suivi','general',"suppresion idcmd",idCmd)
+    write_log(str(session['user']['id']),"/suprCmd - Suppression de la commande n°"+str(idCmd))
     return jsonify()
 
 @app.route('/annuleCmd', methods=['GET', 'POST'])
 def annuleCmd():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     user=session['user']['id']
-    idCmd=request.form.get('idCmd')
-    answer=request.form.get('answer')
+    idCmd=getValeurFormulaire('idCmd')
+    answer=getValeurFormulaire('answer')
     req=["UPDATE commande set justification=?,deletedBy=?,etatCmd=99 where id_commande=?",(answer,user,idCmd)]
     ecriture_BDD(req)
     #annuler tous les produits
@@ -425,37 +282,27 @@ def annuleCmd():
     #annule les paiements associés
     req=["UPDATE paiement SET etat=2 where idCd=?",(idCmd,)]
     ecriture_BDD(req)
-    insertHistorique('normal','suivi','general',"annulation idCmd",idCmd)
+    write_log(str(session['user']['id']),"/annuleCmd - Annulation de la commande n°"+str(idCmd)+" pour la raison suivante "+str(answer))
     return '', 204
 
 # Details #
 @app.route('/detailsCmd/<user>', methods=['GET', 'POST'])
 def detailsCmd(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idDetailCmd=session['user']['idDetailCmd']
     try:
-        idDetailCmd=int(request.form.get('idCmd'))
+        idDetailCmd=int(getValeurFormulaire('idCmd'))
         session['user']['idDetailCmd']=idDetailCmd
     except:
         pass
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='lien' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementLien=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='rib' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementRib=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='espece' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementEspece=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeR' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementChequeR=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeAV' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementChequeAV=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='chequeAP' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementChequeAP=lecture_BDD(req)
-    req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type='autre' ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,)]
-    paiementAutre=lecture_BDD(req)
-    previousPage=request.form.get("previousPage")
+    paiementLien=hist_paiement('lien',idDetailCmd)
+    paiementRib=hist_paiement('rib',idDetailCmd)
+    paiementEspece=hist_paiement('espece',idDetailCmd)
+    paiementChequeR=hist_paiement('chequeR',idDetailCmd)
+    paiementChequeAV=hist_paiement('chequeAV',idDetailCmd)
+    paiementChequeAP=hist_paiement('chequeAP',idDetailCmd)
+    paiementAutre=hist_paiement('autre',idDetailCmd)
+    previousPage=getValeurFormulaire("previousPage")
     if previousPage==None:
         previousPage="suivi"
     req=["SELECT * from client join commande on idclient=idclientCmd left join livraison on livraison.idlivraison=commande.idlivraison where id_commande=?",(idDetailCmd,)]
@@ -478,10 +325,11 @@ def detailsCmd(user):
     req=["SELECT * from facturation where idCmd=? and etatProd like '%4%'",(idDetailCmd,)]
     LcmdAnnule=lecture_BDD(req)
     if client[0]['idclientHW']==1:
+        write_log(str(session['user']['id']),"/detailsCmd - Visualisation HW de la commande n°"+str(idDetailCmd))
         template="suivi_detailsHW.html"
     else:
+        write_log(str(session['user']['id']),"/detailsCmd - Visualisation de la commande n°"+str(idDetailCmd))
         template="suivi_details.html"
-    insertHistorique('normal','suivi','detailCde',"visualisationidcmd",idDetailCmd)
     listeLien=["Lien CB",paiementLien,"Lien"]
     listeRIB=["RIB",paiementRib,"Rib"]
     listeChequeR=["Cheque reçu",paiementChequeR,"ChequeR"]
@@ -512,15 +360,12 @@ def detailsCmd(user):
 
 @app.route('/actionFromDetails/<user>', methods=['GET', 'POST'])
 def actionFromDetails(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get("action")
-    idCmd=request.form.get("idCmd")
-    idCE=request.form.get("idCE")
-    total=request.form.get("total")
-    date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+    checkUser()
+    action=getValeurFormulaire("action")
+    idCmd=getValeurFormulaire("idCmd")
+    idCE=getValeurFormulaire("idCE")
+    total=getValeurFormulaire("total")
+    date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
     sendMail=False
@@ -529,7 +374,8 @@ def actionFromDetails(user):
         for image in os.listdir(targetFile):
             if image.startswith(idCmd):
                 return send_file(targetFile+"/"+image, as_attachment=True) 
-        insertHistorique('normal','suivi','detailCde',"visualisation bon de commande idCmd",idCmd)
+        write_log(str(session['user']['id']),"/actionFromDetails - Visualisation du bon de commande n°"+str(idCmd))
+
     elif action=="1":
         #Exporter colissimo   
         req=["SELECT * from client where idclient in (SELECT idclientCmd from commande where id_commande=?)",(idCmd,)]
@@ -551,31 +397,31 @@ def actionFromDetails(user):
         else:
             fixe=""
             mobile=""
-        insertHistorique('normal','suivi','detailCde',"colissimo",idCmd)
+        write_log(str(session['user']['id']),"/actionFromDetails - Export colissimo de la commande n°"+str(idCmd))
         return render_template("suivi_details_colissimo.html",user=user,ville=ville,CP=CP,rue=rue,nom=nom,prenom=prenom,mail=mail,fixe=fixe,mobile=mobile)
     
     elif action=="2":
         #Enregistrer les modifications
-        societe=request.form.get("societe")
-        client=majusca(request.form.get("client"))
-        mail=request.form.get("mail")
-        tel=request.form.get("tel")
-        adresse=majusca(request.form.get("adresse"))
-        commentaire=request.form.get("commentaire")
+        societe=getValeurFormulaire("societe")
+        client=majusca(getValeurFormulaire("client"))
+        mail=getValeurFormulaire("mail")
+        tel=getValeurFormulaire("tel")
+        adresse=majusca(getValeurFormulaire("adresse"))
+        commentaire=getValeurFormulaire("commentaire")
         req=["UPDATE client set idCEclient=?,societe=?,client=?,mail=?,tel=?,adresse=?,commentaire=? where idclient=(SELECT idclientCmd from commande where id_commande=?)",(idCE,societe,client,mail,tel,adresse,commentaire,idCmd)]
         ecriture_BDD(req)
 
         req=["UPDATE commande set idCE=?,total=?,modifiedBy=? where id_commande=?",(idCE,total,user,idCmd)]
         ecriture_BDD(req)
 
-        code=request.form.getlist("code")
-        ean=request.form.getlist("ean")
-        libW=request.form.getlist("libW")
-        lib=request.form.getlist("lib")
-        prix=request.form.getlist("prix")
-        qte=request.form.getlist("qte")
-        ato=request.form.getlist("ato")
-        LidProd=request.form.getlist("idProd")
+        code=getListeForm("code")
+        ean=getListeForm("ean")
+        libW=getListeForm("libW")
+        lib=getListeForm("lib")
+        prix=getListeForm("prix")
+        qte=getListeForm("qte")
+        ato=getListeForm("ato")
+        LidProd=getListeForm("idProd")
 
         for i in range(len(code)):
             if qte[i]!="":
@@ -593,7 +439,7 @@ def actionFromDetails(user):
                 else:
                     req=["UPDATE facturation set code=?,lib=?,prix=?,qte=?,ato='non',ean=?,libW=?,etatProd=? where idProd=?",(code[i],lib[i],prix[i],qte[i],ean[i],libW[i],etatProd,LidProd[i])]  
             ecriture_BDD(req)
-        insertHistorique('normal','suivi','detailCde',"enregistrement modification idCmd",idCmd)
+        write_log(str(session['user']['id']),"/actionFromDetails - Enregistrement des modifications de la commande n°"+str(idCmd))
     elif action=="3":
         #Afficher les factures
         listePDF=[]
@@ -605,7 +451,7 @@ def actionFromDetails(user):
         if qte>0:
             return send_file(fusionnerPDF(listePDF,idCmd), as_attachment=True)
         #cas aucun facture
-        insertHistorique('normal','suivi','detailCde',"visualisation facture idCmd",idCmd)
+        write_log(str(session['user']['id']),"/actionFromDetails - Visualisation des factures de commande la n°"+str(idCmd))
     elif action=="4":
         #duplique la commande
         req=["SELECT idclientCmd FROM commande WHERE id_commande=?",(idCmd,)]
@@ -632,11 +478,11 @@ def actionFromDetails(user):
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),newIdCmd)]
         ecriture_BDD(req)
         session['user']['idDetailCmd']=newIdCmd
-        insertHistorique('normal','suivi','detailCde',"duplication idCmd",idCmd)
+        write_log(str(session['user']['id']),"/actionFromDetails - Duplication de la commande n°"+str(idCmd))
         return (suiviCmd(user))
     elif action=="5":
         #Voir infos CE
-        insertHistorique('normal','suivi','detailCde',"visualisation info CE de la commande",idCmd)
+        write_log(str(session['user']['id']),"/actionFromDetails - Visualisation des infos CE de la commande n°"+str(idCmd))
         session['user']['page']="detailCommande"
         return facturationInfo(user)
 
@@ -662,25 +508,12 @@ def actionFromDetails(user):
         
     elif "relance" in action:
         Particule=action.split('relance')[1]
-        particule=""
-        if Particule=="ChequeR":
-            particule="chequeR"
-        elif Particule=="ChequeAV":
-            particule="chequeAV"
-        elif Particule=="ChequeAP":
-            particule="chequeAP"
-        elif Particule=="Lien":
-            particule="lien"
-        elif Particule=="Rib":
-            particule="rib"
-        elif Particule=="Espece":
-            particule="espece"
-        else:
-            particule="autre"
-        idPaiement=request.form.get("idPaiement"+Particule)
-        relance=request.form.get("idRelance"+Particule)
-        montant=request.form.get("idMontant"+Particule)
-        idUnique=request.form.get("idUnique"+Particule)
+        particule=f_particule(Particule)
+        
+        idPaiement=getValeurFormulaire("idPaiement"+Particule)
+        relance=getValeurFormulaire("idRelance"+Particule)
+        montant=getValeurFormulaire("idMontant"+Particule)
+        idUnique=getValeurFormulaire("idUnique"+Particule)
         #Montant avec 2 décimales
         montant='%.2f'%float(montant)
         req=["SELECT mail FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient WHERE idCmd=?",(idCmd,)]
@@ -697,38 +530,26 @@ def actionFromDetails(user):
             ecriture_BDD(req)
             action2=particule
             sendMail=True
-            insertHistorique('normal','suivi','detailCde',"relance "+particule+" idCmd",idCmd)
+            write_log(str(session['user']['id']),"/actionFromDetails - Relance de paiement "+str(particule)+" de la commande n°"+str(idCmd))
+
 
 
     elif "annule" in action:
         Particule=action.split('annule')[1]
-        particule=""
-        if Particule=="ChequeR":
-            particule="chequeR"
-        elif Particule=="ChequeAV":
-            particule="chequeAV"
-        elif Particule=="ChequeAP":
-            particule="chequeAP"
-        elif Particule=="Lien":
-            particule="lien"
-        elif Particule=="Rib":
-            particule="rib"
-        elif Particule=="Espece":
-            particule="espece"
-        else:
-            particule="autre"
-        idPaiement=request.form.get("idPaiement"+Particule)
-        relance=request.form.get("idRelance"+Particule)
-        montant=request.form.get("idMontant"+Particule)
-        idUnique=request.form.get("idUnique"+Particule)
+        particule=f_particule(Particule)
+        idPaiement=getValeurFormulaire("idPaiement"+Particule)
+        relance=getValeurFormulaire("idRelance"+Particule)
+        montant=getValeurFormulaire("idMontant"+Particule)
+        idUnique=getValeurFormulaire("idUnique"+Particule)
         #Annule la demande de paiement
         req=["UPDATE paiement SET etat=2 WHERE idUnique=?",(idUnique,)]
         ecriture_BDD(req)
-        insertHistorique('normal','suivi','detailCde',"annulation "+particule+" idCmd",idCmd)
+        write_log(str(session['user']['id']),"/actionFromDetails - Annulation du paiement "+str(particule)+" de la commande n°"+str(idCmd))
+
         return (detailsCmd(user))
 
     else:
-        montant1=request.form.get("montant")
+        montant1=getValeurFormulaire("montant")
         if montant1=="" or montant1=="0":
             return '', 204
         else:
@@ -752,9 +573,9 @@ def actionFromDetails(user):
                 req=["INSERT INTO paiement (idCd,type,date,heure,etat,montant,relance,idPaiement,lastOne) VALUES (?,?,?,?,?,?,?,?,?)",(idCmd,action,date,heure,etat,montant,relance,idPaiement,1)]
                 ecriture_BDD(req)
                 sendMail=True
-                insertHistorique('normal','suivi','detailCde',"demande de paiement idCmd",idCmd)
+                write_log(str(session['user']['id']),"/actionFromDetails - Demande de paiement de la commande n°"+str(idCmd))
 
-            
+
     if sendMail:
         req=["SELECT SUM(qte),idclientCmd,commande.idCE,client.adresse,client.mail,client,referente FROM facturation JOIN commande ON id_commande=idCmd JOIN client ON idclientCmd=idclient JOIN listingCE ON listingCE.idCE=commande.idCE where idCmd=?",(idCmd,)]
         liste=lecture_BDD(req)
@@ -776,13 +597,10 @@ def actionFromDetails(user):
 
 @app.route('/extractColissimo/<user>', methods=['GET','POST'])
 def extractColissimo(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    bouton=request.form.get("bouton")
+    checkUser()
+    bouton=getValeurFormulaire("bouton")
     if bouton=="0":
-        Linfo=[request.form.get("nom"),request.form.get("prenom"),request.form.get("fixe"),request.form.get("mobile"),request.form.get("mail"),request.form.get("rue"),request.form.get("CP"),request.form.get("ville"),request.form.get("res"),request.form.get("couls")]
+        Linfo=[getValeurFormulaire("nom"),getValeurFormulaire("prenom"),getValeurFormulaire("fixe"),getValeurFormulaire("mobile"),getValeurFormulaire("mail"),getValeurFormulaire("rue"),getValeurFormulaire("CP"),getValeurFormulaire("ville"),getValeurFormulaire("res"),getValeurFormulaire("couls")]
         nom=Linfo[0]
         prenom=Linfo[1]
         fixe=Linfo[2]
@@ -796,78 +614,67 @@ def extractColissimo(user):
         with open(exportFold+"/"+nom+prenom+"_extractor.csv","w") as csvfile:
             csvfile.write('Référence;;Raison sociale;Service;Prénom;Nom;Etage couloir escalier;Entrée bâtiment;N° et voie;Lieu dit;Code postal;Commune;Code ISO du pays;Téléphone fixe;Téléphone portable;Email;Code porte1;Code porte2;Interphone;Instructions de livraison;Nom commercial chargeur\n')
             csvfile.write(';;;;'+prenom+';'+nom+';'+couls+';'+res+';'+rue+';;'+CP+';'+ville+';FR;'+fixe+';'+mobile+';'+mail+';;;;;;')
-    insertHistorique('normal','suivi','detailCde_colissimo',"extraction colissimo",None)
+    write_log(str(session['user']['id']),"/extractColissimo -Extraction colissimo")
+
     
     return detailsCmd(user)
     
 
 @app.route('/annuler', methods=['GET', 'POST'])
 def annuler():
-    try :
-        session['user']
-    except:
-        return(index())
-    idcmd=request.form.get("id")
+    checkUser()
+    idcmd=getValeurFormulaire("id")
     req=["UPDATE facturation set etatProd=4,etatMin=4,etatMax=4 where idProd=?",(idcmd,)]
     ecriture_BDD(req)
-    insertHistorique('normal','suivi','detailCde',"annulation produit idcmd",idcmd)
+    write_log(str(session['user']['id']),"/annuler - Annulation d'un produit de la commande n°"+str(idcmd))
     return jsonify()
     
 @app.route('/addCmd/<user>', methods=['GET', 'POST'])
 def addCmd(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT idclient,client,idCEclient from client",()]
     Lclients=lecture_BDD(req)
     req=["SELECT idCE from listingCE where corbeille=0 order by idCE",()]
     LCE=lecture_BDD(req)
     Lcode=getLcode()
-    insertHistorique('normal','suivi','detailCde',"ajout d'une commande",None)
+    write_log(str(session['user']['id']),"/addCmd - Ajout d'une commande")
     return render_template('suivi_addCmd.html',user=user,Lclients=Lclients,LCE=LCE,Lcode=Lcode)
     
 
 @app.route('/addProd', methods=['GET', 'POST'])
 def addProd():
-    try :
-        session['user']
-    except:
-        return(index())
-    code=request.form.get("code")
-    ato=request.form.get("ato")
+    checkUser()
+    code=getValeurFormulaire("code")
+    ato=getValeurFormulaire("ato")
     errone,code,ean,lib=checkCode(code)
     prix=0
     date=""
     if errone==0:
         prix=getPrix(code)
-        dateLim=datetime.datetime.today()+datetime.timedelta(delaiRupt)
+        dateLim=datetime.today()+datetime.timedelta(delaiRupt)
         req=["SELECT date from rupture where rupt_code=? and date>?",(code,dateLim)]
         l=lecture_BDD(req)
         if len(l)>0:
             date=l[0]["date"]
             errone=-1
-    insertHistorique('normal','suivi','addCde',"ajout de produit code:",code)
+    write_log(str(session['user']['id']),"/addProd - Ajout du produit : "+str(code))
     return jsonify(lib=lib,prix=prix,ato=ato,ean=ean,errone=errone,date=date)
     
 
 @app.route('/valinuler/<user>', methods=['GET', 'POST'])
 def valinuler(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    mode=request.form.get("mode")
+    checkUser()
+    mode=getValeurFormulaire("mode")
     if mode!="0":
-        idCE=request.form.get("idCE")
-        societe=request.form.get("societe")
-        client=majusca(request.form.get("client"))
-        mail=request.form.get("mail")
-        tel=request.form.get("tel")
-        adresse=majusca(request.form.get("adresse"))
-        total=request.form.get("total")
-        commentaire=request.form.get("commentaire")
-        date=datetime.datetime.today().strftime('%Y-%m-%d')
+        idCE=getValeurFormulaire("idCE")
+        societe=getValeurFormulaire("societe")
+        client=majusca(getValeurFormulaire("client"))
+        mail=getValeurFormulaire("mail")
+        tel=getValeurFormulaire("tel")
+        adresse=majusca(getValeurFormulaire("adresse"))
+        total=getValeurFormulaire("total")
+        commentaire=getValeurFormulaire("commentaire")
+        date=datetime.today().strftime('%Y-%m-%d')
 
         req=["insert into client (idCEclient,societe,client,mail,tel,adresse,commentaire) values(?,?,?,?,?,?,?)",(idCE,societe,client,mail,tel,adresse,commentaire)]
         ecriture_BDD(req)
@@ -880,12 +687,12 @@ def valinuler(user):
         idCmd=lecture_BDD(req)[0]['max(id_commande)']
 
         #Récupération des produits
-        Lcode=request.form.getlist("code")
-        Llib=request.form.getlist("lib")
-        Lprix=request.form.getlist("prix")
-        Lqte=request.form.getlist("qte")
-        Lato=request.form.getlist("ato")
-        Lean=request.form.getlist("ean")
+        Lcode=getListeForm("code")
+        Llib=getListeForm("lib")
+        Lprix=getListeForm("prix")
+        Lqte=getListeForm("qte")
+        Lato=getListeForm("ato")
+        Lean=getListeForm("ean")
 
         for i in range(len(Lcode)):
             req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,Lcode[i],Lean[i],Llib[i],Llib[i],Lprix[i],Lqte[i],Lato[i],0,-1,0,0,0)]
@@ -893,21 +700,18 @@ def valinuler(user):
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),idCmd)]
         ecriture_BDD(req)
         if mode=="1":
-            insertHistorique('normal','suivi','addCde',"validation de la commande et ajout d'une nouvelle",idCmd)
+            write_log(str(session['user']['id']),"/valinuler - Création de la commande n°"+str(idCmd)+" et ajout d'une nouvelle")
             return addCmd(user)
         else:
-            insertHistorique('normal','suivi','addCde',"validation de la commande et retour au suivi commande",idCmd)
+            write_log(str(session['user']['id']),"/valinuler - Création de la commande n°"+str(idCmd)+" et retour au suivi des commandes")
             return suiviCmd(user)
     return suiviCmd(user)
     
 
 @app.route('/searchClient', methods=['GET', 'POST'])
 def searchClient():
-    try :
-        session['user']
-    except:
-        return(index())
-    client=request.form.get("client")
+    checkUser()
+    client=getValeurFormulaire("client")
     try:
         idclient=client.split(" - ")[1]
         req=["SELECT * from client where idclient=?",(idclient,)]
@@ -917,18 +721,14 @@ def searchClient():
     except :
         taille=0
         Linfo=[]
-    insertHistorique('normal','suivi','general',"filtre",None)
-    
+    write_log(str(session['user']['id']),"/searchClient - Recherche d'un client")
     return jsonify(Linfo=Linfo,taille=taille)
     
 
 @app.route('/getSociete', methods=['GET', 'POST'])
 def getSociete(): 
-    try :
-        session['user']
-    except:
-        return(index())
-    idCE=request.form.get('idCE')
+    checkUser()
+    idCE=getValeurFormulaire('idCE')
     req=["SELECT entreprise from listingCE where idCE=? and corbeille=0",(idCE,)]
     societe=lecture_BDD(req)[0]["entreprise"]
     return jsonify(societe=societe)
@@ -939,10 +739,7 @@ def getSociete():
 #region
 @app.route('/start/<user>')
 def start(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idPC=-1
     req=["SELECT idCE from listingCE where corbeille=0",()]
     LidCE=lecture_BDD(req)
@@ -952,16 +749,13 @@ def start(user):
         idPC=session['user']['idPC'] 
     else:
         idPC=Lpc[0]
-    print("idpc")
-    print(idPC)
-    insertHistorique('normal','traitement','extraction','visualisation',None)
     #Commandes à préparer/facturer
     req=["SELECT count(id_commande) FROM commande WHERE etatCmd=1 and corbeille=0",()]
     encours=lecture_BDD(req)[0]["count(id_commande)"]
     Ldate=[]
     for i in range (0,8,1):
         Lenfant=[]
-        date=(datetime.datetime.today()-timedelta(i)).strftime('%Y-%m-%d')
+        date=(datetime.today()-timedelta(i)).strftime('%Y-%m-%d')
         Lenfant.append(date)
         #Commandes créées
         req=["SELECT count(id_commande) FROM commande WHERE date=?",(date,)]
@@ -970,37 +764,32 @@ def start(user):
         req=["SELECT count(id_commande) FROM commande WHERE dateFact=?",(date,)]
         Lenfant.append(lecture_BDD(req)[0]["count(id_commande)"])
         Ldate.append(Lenfant)
+    write_log(str(session['user']['id']),"/start - Page initiale pour extraire")
     return render_template('traitementDonnees_synthetiser.html',LidCE=LidCE,user=user,Lpc=Lpc,Ldate=Ldate,encours=encours,idPC=idPC)
     
 @app.route('/changePC', methods=['GET', 'POST'])
 def changePC():
-    try :
-        session['user']
-    except:
-        return(index())
-    idPC=request.form.get("idPC")
+    checkUser()
+    idPC=getValeurFormulaire("idPC")
     session['user']['idPC']=idPC
-    insertHistorique('normal','traitement','extraction','modification PC',idPC)
+    write_log(str(session['user']['id']),"/start - Page initiale pour extraire")
     return '',204
 
 @app.route('/generer/<user>', methods=['GET', 'POST'])
 def generer(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    nCE=request.form.get('nCE')
+    checkUser()
+    nCE=getValeurFormulaire('nCE')
     if nCE!="":
         nCE=int(nCE)
-    description=request.form.get('description')
-    createur=request.form.get('createur')
-    date=datetime.datetime.today().strftime('%Y-%m-%d')
+    description=getValeurFormulaire('description')
+    createur=getValeurFormulaire('createur')
+    date=datetime.today().strftime('%Y-%m-%d')
     req=["INSERT INTO extractions (idCE,description,date,createur) VALUES(?,?,?,?)",(nCE,description,date,createur)]
     ecriture_BDD(req)
     req=["SELECT max(idExtraction) FROM extractions",()]
     idExtraction=lecture_BDD(req)[0]['max(idExtraction)']
     session['user']['idExtraction']=str(idExtraction)
-    idPoste=request.form.get('idPoste')
+    idPoste=getValeurFormulaire('idPoste')
     req=["SELECT dossierExtract,dossierErreur FROM postes WHERE id=?",(idPoste,)]
     repertoire=lecture_BDD(req)[0]['dossierExtract']
     erreur=lecture_BDD(req)[0]['dossierErreur']
@@ -1011,72 +800,18 @@ def generer(user):
     req=["INSERT INTO stats (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'extraire',nbFichier,nbProduits,idExtraction)]
     ecriture_BDD(req)
     if nbFichier>=nbError:
-        insertHistorique('normal','traitement','extraction','extraction succès n°',idExtraction)
+        write_log(str(session['user']['id']),"/generer -Extraction avec succès n°"+str(idExtraction))
         return assoClientCE(user,nbError)
     else:
-        insertHistorique('normal','traitement','extraction','extraction échec n°',idExtraction)
+        write_log(str(session['user']['id']),"/generer -Extraction en échec n°"+str(idExtraction))
         req=['DELETE FROM extractions where idExtraction=?',(idExtraction,)]
         ecriture_BDD(req)
         return '',204
 
-def infos_dans_csv(chemin,nom,idExtraction):
-    #nom='names.csv'
-    with open(chemin+nom, newline='') as csvfile:
-        lecture=csv.reader(csvfile, delimiter=';')
-        liste=[]
-        for row in lecture:
-            liste.append(row)
-            #print(row)
-    n=len(liste)
-    #Infos client
-    client=liste[1][0]
-    mail=liste[1][1]
-    adresse=liste[1][2]
-    tel=liste[1][3]
-    idCE=int(liste[1][4])
-    total=liste[1][9]
-    req=["SELECT entreprise FROM listingCE where idCE=?",(idCE,)]
-    try:
-        societe=lecture_BDD(req)[0]['entreprise']
-    except:
-        idCE="900900"
-        societe="Société non existante dans Extractor"
-    req=["insert into client(idExtraction,client,mail,tel,adresse,societe,idCEclient) values (?,?,?,?,?,?,?)",(idExtraction,client,mail,tel,adresse,societe,idCE)]
-    ecriture_BDD(req)
-    req=["SELECT max(idclient) from client",()]
-    idclient=lecture_BDD(req)[0]['max(idclient)']
-    date=datetime.datetime.today().strftime('%Y-%m-%d')
-    user=session['user']['id']
-    req=["insert into commande(idclientCmd,idExtractionCmd,total,idCE,idclientHW,etatCmd,date,corbeille,extractedBy,total) values (?,?,?,?,?,?,?,0,?,?)",(idclient,idExtraction,total,idCE,-1,0,date,user,total)]
-    ecriture_BDD(req)
-    req=["SELECT max(id_commande) from commande",()]
-    idCmd=lecture_BDD(req)[0]['max(id_commande)']
-    n=len(liste)
-    #infos produit
-    for i in range (1,n):
-        strCode=str(liste[i][5])
-        txtlib=liste[i][6]
-        strQte=liste[i][7]
-        rupture=liste[i][8]
-        total=liste[i][9]
-        if rupture =="OUI":
-            ato="oui"
-        else:
-            ato="non"
-        errone,strCode,ean,libW=checkCode(strCode)
-        prix=getPrix(strCode)
-        E=0
-        req=["insert into facturation(idCmd,code,ean,lib,libW,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,strCode,ean,txtlib,libW,prix,strQte,ato,errone,-1,E,E,E)]
-        ecriture_BDD(req)
-
-    return(liste,idclient)  
 
 @app.route('/assoClientCE/<user>',methods=['GET', 'POST'])
 def assoClientCE(user,nbError=0):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idExtraction=int(session['user']['idExtraction'])
     req=["SELECT * from client join commande on idclient=idclientCmd where idExtraction=? and idclientHW=-1 and etatCmd=0 and commande.corbeille=0 order by societe",(idExtraction,)]
     Lclients=lecture_BDD(req)
@@ -1100,20 +835,17 @@ def assoClientCE(user,nbError=0):
         createur=Linfo["createur"]
     except:
         pass
-    insertHistorique('normal','traitement','association client/CE',"modification de l'extraction n°",idExtraction)
+    write_log(str(session['user']['id']),"/assoClientCE - Modification de l'extraction n°"+str(idExtraction))
     return render_template('traitementDonnees_associationClientCE.html',Lclients=Lclients,LclientsHW=LclientsHW,LidCE=LidCE,nCE=nCE,date=date,description=description,createur=createur,nbError=nbError,user=user)
     
 
 @app.route('/applicModif', methods=['GET', 'POST'])
 def applicModif(): 
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
 
     user=session['user']['id']
-    nouvidCE=request.form.get('nouvidCE')
-    idClient=request.form.get('idClient')
+    nouvidCE=getValeurFormulaire('nouvidCE')
+    idClient=getValeurFormulaire('idClient')
     req=["SELECT idCE from listingCE where idCE=? and corbeille=0",(nouvidCE,)]
     ListIdCE=lecture_BDD(req)
     result=0
@@ -1123,25 +855,21 @@ def applicModif():
         ecriture_BDD(req)
         req=["UPDATE commande set idCE=?,modifiedBy=? where idclientCmd=?",(nouvidCE,user,idClient)]
         ecriture_BDD(req)
-    insertHistorique('normal','traitement','association client/CE',"modification de la commande idClient n°",idClient)
-
+    write_log(str(session['user']['id']),"/applicModif - Modification de la commande du client n°"+str(idClient))
     return jsonify(result=result)
 
 
 @app.route('/applicModifHW', methods=['GET', 'POST'])
 def applicModifHW(): 
-    try :
-        session['user']
-    except:
-        return(index())
-    idCE=request.form.get('nouvidCE')
-    idClient=request.form.get('idClient')
-    societe=request.form.get('societe')
-    client=majusca(request.form.get('client'))
-    mail=request.form.get('mail')
-    tel=request.form.get('tel')
-    adresse=majusca(request.form.get('adresse'))
-    total=request.form.get('total')
+    checkUser()
+    idCE=getValeurFormulaire('nouvidCE')
+    idClient=getValeurFormulaire('idClient')
+    societe=getValeurFormulaire('societe')
+    client=majusca(getValeurFormulaire('client'))
+    mail=getValeurFormulaire('mail')
+    tel=getValeurFormulaire('tel')
+    adresse=majusca(getValeurFormulaire('adresse'))
+    total=getValeurFormulaire('total')
     user=session['user']['id']
 
     req=["SELECT idCE from listingCE where idCE=? and corbeille=0",(idCE,)]
@@ -1156,44 +884,35 @@ def applicModifHW():
         result=0
     ecriture_BDD(req)
     ecriture_BDD(req2)
-    insertHistorique('normal','traitement','association client/CE',"modification de la commande HW idClient n°",idClient)
+    write_log(str(session['user']['id']),"/applicModiHW - Modification de la commande HW du client n°"+str(idClient))
     return jsonify(result=result)
 
 
 @app.route('/historique/<user>',methods=['GET', 'POST'])
 def hist(user): 
-    try :
-        session['user']
-    except:
-        return(index())    
+    checkUser()    
     idExtraction=session['user']['idExtraction']
     req=["SELECT * from extractions where idExtraction in (SELECT distinct idExtractionCmd from commande where etatCmd=0 and corbeille=0) order by date desc LIMIT 100",()]
     listExtract=lecture_BDD(req)
-    insertHistorique('normal','traitement','historique',"visualisation générale",None)
+    write_log(str(session['user']['id']),"/historique - Visualisation généréale de l'historique")
     return render_template('traitementDonnees_hist.html',listExtract=listExtract,idExtraction=idExtraction,user=user)
     
 
 @app.route('/selectExtract/<user>', methods=['GET', 'POST'])
 def selectExtract(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    id=request.form.get('id')
+    checkUser()
+    id=getValeurFormulaire('id')
     session['user']['idExtraction']=int(id)
-    insertHistorique('normal','traitement','historique',"selection pour la visualisation extraction n°",id)
+    write_log(str(session['user']['id']),"/selectExtract - Séléection de l'extraction n°"+str(id))
     return assoClientCE(user)
     
 
 @app.route('/suprExtract', methods=['GET', 'POST'])
 def suprExtract():
-    try :
-        session['user']
-    except:
-        return(index())
-    idExtraction=request.form.get('id')
+    checkUser()
+    idExtraction=getValeurFormulaire('id')
     req=["UPDATE commande set corbeille=1 where idExtractionCmd=?",(idExtraction,)]
-    insertHistorique('normal','traitement','historique',"suppression extraction n°",id)
+    write_log(str(session['user']['id']),"/suprExtract - Suppresion de l'extraction n°"+str(id))
     ecriture_BDD(req)
     return jsonify()
     
@@ -1204,19 +923,16 @@ def suprExtract():
 #region
 @app.route('/choixCE/<user>', methods=['GET', 'POST'])
 def choixCE(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idCE=session['user']['idCE']
 
-    ref=request.form.get("ref")
+    ref=getValeurFormulaire("ref")
     if ref!=None:
-        insertHistorique('normal','préparer','choixCE',"filtre ref n°",ref)
+        write_log(str(session['user']['id']),"/choixCE - Filtre référente n°"+str(ref))
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise from commande inner join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd=0 and commande.corbeille=0 and listingCE.referente=? and listingCE.corbeille=0",(ref,)]
         ref=int(ref)
     else:
-        insertHistorique('normal','préparer','choixCE',"filtre ref All",None)
+        write_log(str(session['user']['id']),"/choixCE - Filtre sur aucune référente")
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise from commande inner join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd=0 and commande.corbeille=0 and listingCE.corbeille=0",()]
     listCE=lecture_BDD(req)
     nbClient=[]
@@ -1226,32 +942,23 @@ def choixCE(user):
         ligne=lecture_BDD(req)[0]
         nbClient.append(ligne["count(*)"])
         minDate.append(ligne["min(date)"])
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    dateLim=(datetime.datetime.today()-timedelta(days=15)).strftime('%Y-%m-%d')
+    listeRef,listeAll=getListRef()
+    dateLim=(datetime.today()-timedelta(days=15)).strftime('%Y-%m-%d')
     return render_template('preparation_selectCE.html',listCE=listCE,nbClient=nbClient,idCE=idCE,minDate=minDate,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll,dateLim=dateLim)
 
 
 @app.route('/selectCE/<user>', methods=['GET', 'POST'])
 def selectCE(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    idCE=request.form.get('idCE')
+    checkUser()
+    idCE=getValeurFormulaire('idCE')
     session['user']['idCE']=idCE
-    insertHistorique('normal','préparer','choixCE',"selection CE n°",idCE)
+    write_log(str(session['user']['id']),"/selectCE - Sélection du CE n°"+str(idCE))
     return editErreurs(user)
     
 
 @app.route('/erreurs/<user>',methods=['GET', 'POST'])
 def editErreurs(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idCE=session['user']['idCE']
     LprixSuggest=[]
     req=["SELECT idProd,idCmd,client,mail,tel,code,lib,prix,qte,ato from facturation join commande on idCmd=id_commande join client on idclient=idclientCmd where errone=1 and idCE=? and etatCmd=0 and etatProd<>4 and idHW=-1 and commande.corbeille=0",(idCE,)]
@@ -1281,34 +988,31 @@ def editErreurs(user):
     except:
         nomCE=""
         referente=""
-    insertHistorique('normal','préparer','editErreur',"visualisation des commandes du CE n°",idCE)
+    write_log(str(session['user']['id']),"/erreurs - Visualisation des commandes du CE n°"+str(idCE))
     return render_template('preparation_editErreurs.html',idCE=idCE,nomCE=nomCE,codeErreur=codeErreur,prixErreur=prixErreur,qteErreur=qteErreur,codeErreurHW=codeErreurHW,prixErreurHW=prixErreurHW,qteErreurHW=qteErreurHW,LprixSuggest=LprixSuggest,user=user,referente=referente)
 
 
 @app.route('/validerModif/<user>', methods=['GET', 'POST'])
 def validerModif(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    HWouNum=request.form.get("HWouNum")
-    idProd=request.form.get("idProd")
+    checkUser()
+    HWouNum=getValeurFormulaire("HWouNum")
+    idProd=getValeurFormulaire("idProd")
     print(idProd)
     if HWouNum=="Num":
-        erreurType=request.form.get("erreurType")
+        erreurType=getValeurFormulaire("erreurType")
         if erreurType=="code":
-            code=request.form.get("code")
+            code=getValeurFormulaire("code")
             req=["UPDATE facturation set code=? where idProd=?",(code,idProd)]
             ecriture_BDD(req)
-            insertHistorique('normal','préparer','editErreur',"modification erreur code:",code)
+            write_log(str(session['user']['id']),"/validerModif - Modification erreur Idprod/code : "+str(idProd)+"/"+str(code))
         elif erreurType=="prix":
-            code=request.form.get("code")
-            prix=request.form.get("prix")
+            code=getValeurFormulaire("code")
+            prix=getValeurFormulaire("prix")
             req=["UPDATE facturation set code=?,prix=? where idProd=?",(code,prix,idProd)]
             ecriture_BDD(req)
-            insertHistorique('normal','préparer','editErreur',"modification prix code:",code)
+            write_log(str(session['user']['id']),"/validerModif - Modification erreur idprod/code/prix : "+str(idProd)+"/"+str(code)+"/"+str(prix))
         else:
-            qte=request.form.get("qte")
+            qte=getValeurFormulaire("qte")
             try:
                 qte=int(qte)
                 if qte<0:
@@ -1317,17 +1021,18 @@ def validerModif(user):
                     message="La quantité doit être inférieure à 30 !"
                 else:
                     req=["UPDATE facturation set qte=? where idProd=?",(qte,idProd)]
-                    insertHistorique('normal','préparer','editErreur',"modification quantité:",qte)
+                    write_log(str(session['user']['id']),"/validerModif - Modification erreur idprod/quantité : "+str(idProd)+"/"+str(qte))
                     ecriture_BDD(req)
             except:
                 message="La quantité doit être un nombre !"        
     else:
-        code=request.form.get("code")
-        prix=request.form.get("prix")
-        qte=request.form.get("qte")
+        code=getValeurFormulaire("code")
+        prix=getValeurFormulaire("prix")
+        qte=getValeurFormulaire("qte")
         req=["UPDATE facturation set qte=?,code=?,prix=? where idProd=?",(qte,code,prix,idProd)]
         ecriture_BDD(req)
-        insertHistorique('normal','préparer','editErreur',"modification HW quantite,prix,code",code)
+        write_log(str(session['user']['id']),"/validerModif - Modification HW erreur idprod/qte/prix/code : "+str(idProd)+"/"+str(qte)+"/"+str(prix)+"/"+str(code))
+
     req=["SELECT prix,qte,code from facturation where idProd=?",(idProd,)]
     cmd=lecture_BDD(req)[0]
     errone,strCode,ean,libW=checkCode(cmd["code"])
@@ -1349,10 +1054,7 @@ def validerModif(user):
 
 @app.route('/listeProduits/<user>',methods=['GET', 'POST'])
 def listProd(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idCE=session['user']['idCE']
     req=["SELECT count(idProd) from facturation where errone>0 and etatProd<>4 and idCmd in (SELECT id_commande from commande where idCE=? and etatCmd=0 and corbeille=0)",(idCE,)]
     nbError=lecture_BDD(req)[0]["count(idProd)"]
@@ -1405,7 +1107,7 @@ def listProd(user):
     except:
         nomCE=""
         referente=""
-    date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+    date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
     insertHistorique('normal','préparer','listeProduit',"visualisation n°:",idCE)
@@ -1414,13 +1116,10 @@ def listProd(user):
 
 @app.route('/lot/<user>', methods=['GET', 'POST'])
 def creerlot(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idCE=session['user']['idCE']
-    date=datetime.datetime.today().strftime('%Y-%m-%d')
-    dateLim=datetime.datetime.today()+datetime.timedelta(delaiRupt)
+    date=datetime.today().strftime('%Y-%m-%d')
+    dateLim=datetime.today()+datetime.timedelta(delaiRupt)
     req=["SELECT max(lot) from commande",()]
     try:
         session['user']['lot']=lecture_BDD(req)[0]["max(lot)"]+1
@@ -1479,12 +1178,9 @@ def creerlot(user):
 #region
 @app.route('/reliquats/<user>', methods=['GET', 'POST'])
 def reliquats(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     lot=session['user']['lot']
-    ref=request.form.get("ref")
+    ref=getValeurFormulaire("ref")
     if ref!=None:
         insertHistorique('normal','reliquats','choixLot',"filtre ref n°:",ref)
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise,lot,dateLot from commande inner join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd=1 and commande.corbeille=0 and listingCE.referente=? and listingCE.corbeille=0 order by lot",(ref,)]
@@ -1495,23 +1191,17 @@ def reliquats(user):
     
     listLot=lecture_BDD(req)
     nbClient=[]
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     for client in listLot:
         req=["SELECT count(*),idCE from commande where lot=? and corbeille=0",(client["lot"],)]
         nbClient.append(lecture_BDD(req)[0]["count(*)"])
-    dateLim=(datetime.datetime.today()-timedelta(days=15)).strftime('%Y-%m-%d')
+    dateLim=(datetime.today()-timedelta(days=15)).strftime('%Y-%m-%d')
     return render_template('reliquat_selectLot.html',user=user,listLot=listLot,lot=lot,nbClient=nbClient,ref=ref,listeRef=listeRef,listeAll=listeAll,dateLim=dateLim)
     
 
 @app.route('/defReliquat/<user>',methods=['GET', 'POST'])
 def defReliquat(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     lot=session['user']['lot']
     req=["SELECT * from facturation where etatProd<>4 and idCmd in (SELECT id_commande from commande where lot=? and etatCmd=1 and corbeille=0) order by code",(lot,)]
     lignes=lecture_BDD(req)
@@ -1561,12 +1251,9 @@ def defReliquat(user):
 
 @app.route('/addReliquat', methods=['GET', 'POST'])
 def addReliquat():
-    try :
-        session['user']
-    except:
-        return(index())
-    code=request.form.get("code")
-    user=request.form.get("user")
+    checkUser()
+    code=getValeurFormulaire("code")
+    user=getValeurFormulaire("user")
     lot=session['user']['lot']
     req=["insert into reliquats (code,mag,qte,lot) values (?,?,?,?)",(code,"1-Sorgues",1,lot)]
     ecriture_BDD(req)
@@ -1578,13 +1265,10 @@ def addReliquat():
 
 @app.route('/updateReliquat', methods=['GET', 'POST'])
 def updateReliquat():
-    try :
-        session['user']
-    except:
-        return(index())
-    idReliquat=request.form.get("idReliquat")
-    mag=request.form.get("mag")
-    qte=request.form.get("qte")
+    checkUser()
+    idReliquat=getValeurFormulaire("idReliquat")
+    mag=getValeurFormulaire("mag")
+    qte=getValeurFormulaire("qte")
     req=["UPDATE reliquats set mag=?, qte=? where idReliquat=?",(mag,qte,idReliquat)]
     ecriture_BDD(req)
     insertHistorique('normal','reliquats','defReliquat_transfert',"maj demande reliquat n°",idReliquat)
@@ -1593,11 +1277,8 @@ def updateReliquat():
 
 @app.route('/delReliquat', methods=['GET', 'POST'])
 def delReliquat():
-    try :
-        session['user']
-    except:
-        return(index())
-    idReliquat=request.form.get("idReliquat")
+    checkUser()
+    idReliquat=getValeurFormulaire("idReliquat")
     req=["delete from reliquats where idReliquat=?",(idReliquat,)]
     ecriture_BDD(req)
     insertHistorique('normal','reliquats','defReliquat_transfert',"suppression demande reliquat n°",idReliquat)
@@ -1606,10 +1287,7 @@ def delReliquat():
 
 @app.route('/bonPrep/<user>',methods=['GET', 'POST'])
 def bonPrep(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     lot=session['user']['lot']
     req=["SELECT * from facturation where errone=0 and etatProd<>4 and idCmd in (SELECT id_commande from commande where lot=? and etatCmd=1 and corbeille=0) order by code",(lot,)]
     lignes=lecture_BDD(req)
@@ -1669,11 +1347,8 @@ def bonPrep(user):
 
 @app.route('/visuReliquat/<user>',methods=['GET', 'POST'])
 def visuReliquat(user,tout=0):
-    try :
-        session['user']
-    except:
-        return(index())
-    date1=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
+    checkUser()
+    date1=datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
     req=["SELECT id from lastRelik",()]
@@ -1704,12 +1379,9 @@ def visuReliquat(user,tout=0):
 
 @app.route('/changeQteDonnee', methods=['GET', 'POST'])
 def changeQteDonnee():
-    try :
-        session['user']
-    except:
-        return(index())
-    idRelik=request.form.get("idRelik")
-    qteDonnee=request.form.get("qteDonnee")
+    checkUser()
+    idRelik=getValeurFormulaire("idRelik")
+    qteDonnee=getValeurFormulaire("qteDonnee")
     req=["UPDATE reliquats set qteDonnee=? where idReliquat=?",(qteDonnee,idRelik)]
     ecriture_BDD(req)
     insertHistorique('normal','reliquats','ou_sont_les_reliquats',"ajout quantité donnée idreliquat n°:",idRelik)
@@ -1718,12 +1390,9 @@ def changeQteDonnee():
 
 @app.route('/filtreReliquat/<user>', methods=['GET', 'POST'])
 def filtreReliquat(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    idReliquat=request.form.get("idReliquat")
-    tout=request.form.get("tout")
+    checkUser()
+    idReliquat=getValeurFormulaire("idReliquat")
+    tout=getValeurFormulaire("tout")
 
     if idReliquat!="":
         req=["UPDATE lastRelik set id=?",(idReliquat,)]
@@ -1734,11 +1403,8 @@ def filtreReliquat(user):
 
 @app.route('/filtreReliquatCE/<user>', methods=['GET', 'POST'])
 def filtreReliquatCE(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    idCE=request.form.get("idCE")
+    checkUser()
+    idCE=getValeurFormulaire("idCE")
     Lrelik=[]
     req=["SELECT idCE from listingCE where corbeille=0",()]
     LidCE=lecture_BDD(req)
@@ -1768,11 +1434,8 @@ def filtreReliquatCE(user):
 
 @app.route('/rupture/<user>',methods=['GET', 'POST'])
 def rupture(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    date=datetime.datetime.today().strftime('%Y-%m-%d')
+    checkUser()
+    date=datetime.today().strftime('%Y-%m-%d')
     req=["SELECT distinct idReliquat,reliquats.code,reliquats.qte,reliquats.lot,ean,libW,idCE,rupture.date from reliquats join facturation on reliquats.code=facturation.code join commande on id_commande=facturation.idCmd left join rupture on rupt_code=reliquats.code where commande.lot=reliquats.lot and etatMin<2 and mag=? and corbeille=0 and reliquats.code not in (SELECT rupt_code from rupture where date>?) order by mag,idReliquat",(Lmag[4],date)]
     Lrelik=lecture_BDD(req)
     insertHistorique('normal','reliquats','produits_rupture',"Visualisation",None)
@@ -1781,11 +1444,8 @@ def rupture(user):
 
 @app.route('/planning/<user>',methods=['GET', 'POST'])
 def planning(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    date=datetime.datetime.today().strftime('%Y-%m-%d')
+    checkUser()
+    date=datetime.today().strftime('%Y-%m-%d')
     req=["SELECT * from rupture where date>? order by date",(date,)]
     Lrupt=lecture_BDD(req)
     L0=[]
@@ -1796,7 +1456,7 @@ def planning(user):
         Y=date.split("-")[0]
         M=date.split("-")[1]
         D=date.split("-")[2]
-        date=datetime.datetime(int(Y),int(M),int(D)).strftime('%Y-%B-%d')
+        date=datetime(int(Y),int(M),int(D)).strftime('%Y-%B-%d')
         Y=date.split("-")[0]
         M=date.split("-")[1]
         D=date.split("-")[2]
@@ -1815,11 +1475,8 @@ def planning(user):
 
 @app.route('/suprRupt', methods=['GET', 'POST'])
 def suprRupt():
-    try :
-        session['user']
-    except:
-        return(index())
-    idRupt=request.form.get('idRupt')
+    checkUser()
+    idRupt=getValeurFormulaire('idRupt')
     req=["SELECT etatProd,idProd from facturation join commande on idCmd=id_commande where code=? and etatCmd=1 and corbeille=0",(idRupt,)]
     Lprod=lecture_BDD(req)
     for prod in Lprod:
@@ -1840,14 +1497,11 @@ def suprRupt():
 
 @app.route('/validRupt/<user>', methods=['GET', 'POST'])
 def validRupt(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    Lcode=request.form.getlist("code")
-    Ldate=request.form.getlist("date")
-    Llib=request.form.getlist("lib")
-    date=datetime.datetime.today().strftime('%Y-%m-%d')
+    checkUser()
+    Lcode=getListeForm("code")
+    Ldate=getListeForm("date")
+    Llib=getListeForm("lib")
+    date=datetime.today().strftime('%Y-%m-%d')
     for i in range(len(Lcode)):
         if Ldate[i]!="" and Ldate[i]>date:
             req=["insert into rupture (date,rupt_code,lib) values (?,?,?)",(Ldate[i],Lcode[i],Llib[i])]
@@ -1855,7 +1509,7 @@ def validRupt(user):
             req=["SELECT etatProd,idProd,dateLot from facturation join commande on idCmd=id_commande where code=? and etatCmd=1",(Lcode[i],)]
             Letat=lecture_BDD(req)
             for etatID in Letat:
-                delta=datetime.datetime.strptime(Ldate[i], '%Y-%m-%d')-datetime.datetime.strptime(etatID["dateLot"], '%Y-%m-%d')
+                delta=datetime.strptime(Ldate[i], '%Y-%m-%d')-datetime.strptime(etatID["dateLot"], '%Y-%m-%d')
                 if delta.days>delaiRupt:
                     etat=etatID["etatProd"]
                     ID=etatID["idProd"]
@@ -1872,10 +1526,7 @@ def validRupt(user):
 
 @app.route('/michael/<user>')
 def michael(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT code,libW,sum(qte) from facturation where etatProd<>4 and idCmd in (SELECT id_commande from commande where etatCmd=1 and corbeille=0) group by code order by sum(qte) DESC",()] 
     lignes=lecture_BDD(req)
     Lstock=[]
@@ -1886,7 +1537,7 @@ def michael(user):
         if len(Ldate)>0:
             date=Ldate[0]["date"]
         else:
-            date=datetime.datetime.today().strftime('%d-%m-%Y')
+            date=datetime.today().strftime('%d-%m-%Y')
         stockSorgues=getStockSorgues(code)
         stockRes=stockSorgues[0]
         stockTot=int(stockSorgues[1])+int(stockSorgues[0])
@@ -1901,12 +1552,9 @@ def michael(user):
 
 @app.route('/changeDatePrev', methods=['GET', 'POST'])
 def changeDatePrev():
-    try :
-        session['user']
-    except:
-        return(index())
-    date=request.form.get("date")
-    code=request.form.get("code")
+    checkUser()
+    date=getValeurFormulaire("date")
+    code=getValeurFormulaire("code")
     req=["SELECT code from prevision where code=?",(code,)]
     l=lecture_BDD(req)
     if len(l)>0:
@@ -1925,12 +1573,9 @@ def changeDatePrev():
 #region
 @app.route('/choixLot/<user>', methods=['GET', 'POST'])
 def choixLot(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     lot=session['user']['lot']
-    ref=request.form.get("ref")
+    ref=getValeurFormulaire("ref")
     if ref!=None:
         insertHistorique('normal','facturer','choixLot',"visualisation ref:",ref)
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise,lot,dateLot from commande inner join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd=1 and commande.corbeille=0 and listingCE.referente=? and listingCE.corbeille=0 order by lot",(ref,)]
@@ -1944,23 +1589,17 @@ def choixLot(user):
     for client in listLot:
         req=["SELECT count(*),idCE from commande where lot=? and etatCmd=1 and corbeille=0",(client["lot"],)]
         nbClient.append(lecture_BDD(req)[0]["count(*)"])
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    dateLim=(datetime.datetime.today()-timedelta(days=15)).strftime('%Y-%m-%d')
+    listeRef,listeAll=getListRef()
+    dateLim=(datetime.today()-timedelta(days=15)).strftime('%Y-%m-%d')
     return render_template('facturation_selectLot.html',user=user,listLot=listLot,lot=lot,nbClient=nbClient,ref=ref,listeRef=listeRef,listeAll=listeAll,dateLim=dateLim)
     
 
 @app.route('/selectLot/<user>', methods=['GET', 'POST'])
 def selectLot(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    lot=int(request.form.get('lot'))
+    checkUser()
+    lot=int(getValeurFormulaire('lot'))
     session['user']['lot']=lot
-    mode=request.form.get('mode')
+    mode=getValeurFormulaire('mode')
     if mode=="1":
         return defReliquat(user)
     insertHistorique('normal','facturer','choixLot',"selection lot",lot)
@@ -1969,11 +1608,8 @@ def selectLot(user):
 
 @app.route('/suprLot/<user>', methods=['GET', 'POST'])
 def suprLot(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    lot=int(request.form.get('lot'))
+    checkUser()
+    lot=int(getValeurFormulaire('lot'))
     session['user']['lot']=lot
     lot=session['user']['lot']
     req=["UPDATE facturation set etatProd=0,etatMin=0,etatMax=0 where idCmd in (SELECT id_commande from commande where lot=? and corbeille=0)",(lot,)]
@@ -1986,10 +1622,7 @@ def suprLot(user):
 
 @app.route('/facturation/<user>',methods=['GET', 'POST'])
 def fact(user): 
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     lot=session['user']['lot']
     req=["SELECT * from client join commande on idclient=idclientCmd where lot=? and etatCmd=1 and commande.corbeille=0 order by client",(lot,)]
     Lclients=lecture_BDD(req)
@@ -2027,14 +1660,11 @@ def fact(user):
 
 @app.route('/changeEtat', methods=['GET', 'POST'])
 def changeEtat():
-    try :
-        session['user']
-    except:
-        return(index())
-    name=request.form.get("name")
+    checkUser()
+    name=getValeurFormulaire("name")
     idCmd=name.split("-")[1]
     idQte=name.split("-")[0]
-    etatCmd=request.form.get("etatCmd")
+    etatCmd=getValeurFormulaire("etatCmd")
     req=["SELECT etatProd from facturation where idProd=?",(idCmd,)]
     Letat=lecture_BDD(req)[0]['etatProd']
     Letat=Letat.split(";")
@@ -2050,20 +1680,17 @@ def changeEtat():
 
 @app.route('/nextStep/<user>', methods=['GET', 'POST'])
 def nextStep(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get("action")
+    checkUser()
+    action=getValeurFormulaire("action")
     lot=session['user']['lot']
     if action=="valider":
         lot=session['user']['lot']
-        date=datetime.datetime.today().strftime('%Y-%m-%d-%H_%M_%S')
+        date=datetime.today().strftime('%Y-%m-%d-%H_%M_%S')
         req=["SELECT id_commande,mail,client,idCE from commande join client on idclientcmd=idclient where lot=? and etatCmd=1 and corbeille=0 order by client",(lot,)]
         commandes=lecture_BDD(req)
         req=["SELECT mail,mailCl,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE where idCE=? and corbeille=0",(commandes[0]['idCE'],)]
         LmailCE=lecture_BDD(req)
-        nbrPdt=request.form.get("nbrePdt")
+        nbrPdt=getValeurFormulaire("nbrePdt")
         if len(LmailCE)>0:
             mailCl=LmailCE[0]['mailCl']
             mailInterFact=LmailCE[0]['mailInterFact']
@@ -2088,7 +1715,7 @@ def nextStep(user):
                 file.save(os.path.join(app.config['FACTURE_FOLDER'], str(commandes[i]["id_commande"]) + "-"+date+"."+ext))
                 LidFact.append(commandes[i]["id_commande"])
             i+=1
-        date=datetime.datetime.today().strftime('%Y-%m-%d')
+        date=datetime.today().strftime('%Y-%m-%d')
         for cmd in commandes:
             emailCE=mail
             emailClient=cmd["mail"]
@@ -2177,19 +1804,19 @@ def nextStep(user):
             req=["UPDATE commande set etatCmd=?,facturedBy=? where id_commande=?",(b,user,cmd["id_commande"],)]
             ecriture_BDD(req)
         #STATS-FACTURATION
-        qtePdt=request.form.get('qtePdt')
+        qtePdt=getValeurFormulaire('qtePdt')
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'facturer',qteFact,qtePdt,lot)]
         ecriture_BDD(req)
         insertHistorique('normal','facturer','fiche synthèse',"validation des données facturées pour le lot",lot)
 
     elif action=="validerSansMail":
         lot=session['user']['lot']
-        date=datetime.datetime.today().strftime('%Y-%m-%d-%H_%M_%S')
+        date=datetime.today().strftime('%Y-%m-%d-%H_%M_%S')
         req=["SELECT id_commande,mail,client,idCE from commande join client on idclientcmd=idclient where lot=? and etatCmd=1 and corbeille=0 order by client",(lot,)]
         commandes=lecture_BDD(req)
         req=["SELECT mail from listingCE where idCE=? and corbeille=0",(commandes[0]['idCE'],)]
         LmailCE=lecture_BDD(req)
-        nbrPdt=request.form.get("nbrePdt")
+        nbrPdt=getValeurFormulaire("nbrePdt")
         Lfiles=request.files.getlist("file")
         i=0
         LidFact=[]
@@ -2200,7 +1827,7 @@ def nextStep(user):
                 file.save(os.path.join(app.config['FACTURE_FOLDER'], str(commandes[i]["id_commande"]) + "-"+date+"."+ext))
                 LidFact.append(commandes[i]["id_commande"])
             i+=1
-        date=datetime.datetime.today().strftime('%Y-%m-%d')
+        date=datetime.today().strftime('%Y-%m-%d')
         for cmd in commandes:
             Lrupt=[]
             req=["SELECT etatMin,mailRupt,code,libW,etatProd,idProd from facturation where idCmd=?",(cmd["id_commande"],)]
@@ -2260,7 +1887,7 @@ def nextStep(user):
             req=["UPDATE commande set etatCmd=?,facturedBy=? where id_commande=?",(b,user,cmd["id_commande"],)]
             ecriture_BDD(req)
         #STATS-FACTURATION
-        qtePdt=request.form.get('qtePdt')
+        qtePdt=getValeurFormulaire('qtePdt')
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'facturer',qteFact,qtePdt,lot)]
         ecriture_BDD(req)
         insertHistorique('normal','facturer','fiche synthèse',"validation des données facturées pour le lot - sans mail",lot)
@@ -2272,14 +1899,14 @@ def nextStep(user):
     else:
         idCmd=action.split('-')[1]
         action=action.split('-')[0]
-        montant1=request.form.get("montant-"+idCmd)
-        numFact=request.form.get("numFact")
+        montant1=getValeurFormulaire("montant-"+idCmd)
+        numFact=getValeurFormulaire("numFact")
         if montant1=="" or montant1=="0":
             return '', 204
         else:
             montant1.replace(",",".")
             montant=str("%.2f" % float(montant1))
-            date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+            date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
             date=date1.split('_')[0]
             heure=date1.split('_')[1]
             etat="0"
@@ -2311,37 +1938,34 @@ def nextStep(user):
 
 @app.route('/facturationInfo/<user>', methods=['GET', 'POST'])
 def facturationInfo(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     if session['user']['page']=="facturation":
         lot=session['user']['lot']
-        action=request.form.get("action")
+        action=getValeurFormulaire("action")
         req=["SELECT idCE from commande where lot=? LIMIT 1",(lot,)]
         idCE=lecture_BDD(req)[0]["idCE"]
     else:
         idCde=session['user']['idDetailCmd']
-        action=request.form.get("action")
+        action=getValeurFormulaire("action")
         req=["SELECT idCE,lot from commande where id_commande=? LIMIT 1",(idCde,)]
         idCE=lecture_BDD(req)[0]["idCE"]
         lot=lecture_BDD(req)[0]["lot"]
     if action=="0":
-        adresse=request.form.get("adresse")
-        qteFact=request.form.get("qteFact")
-        sac=request.form.get("sac")
-        retraitMag=request.form.get("retraitMag")
-        colisIndiv=request.form.get("colisIndiv")
-        colisCol=request.form.get("colisCol")
-        colisExpe=request.form.get("colisExpe")
-        catalogue=request.form.get("catalogue")
-        commentaires=request.form.get("commentaires")
-        mailClient=request.form.get("mailClient")
-        mailInterPrep=request.form.get("mailInterPrep")
-        mailInterFact=request.form.get("mailInterFact")
-        mailInterRelFact=request.form.get("mailInterRelFact")
-        mailInterRel=request.form.get("mailInterRel")
-        mailInterRupt=request.form.get("mailInterRupt")
+        adresse=getValeurFormulaire("adresse")
+        qteFact=getValeurFormulaire("qteFact")
+        sac=getValeurFormulaire("sac")
+        retraitMag=getValeurFormulaire("retraitMag")
+        colisIndiv=getValeurFormulaire("colisIndiv")
+        colisCol=getValeurFormulaire("colisCol")
+        colisExpe=getValeurFormulaire("colisExpe")
+        catalogue=getValeurFormulaire("catalogue")
+        commentaires=getValeurFormulaire("commentaires")
+        mailClient=getValeurFormulaire("mailClient")
+        mailInterPrep=getValeurFormulaire("mailInterPrep")
+        mailInterFact=getValeurFormulaire("mailInterFact")
+        mailInterRelFact=getValeurFormulaire("mailInterRelFact")
+        mailInterRel=getValeurFormulaire("mailInterRel")
+        mailInterRupt=getValeurFormulaire("mailInterRupt")
         mCl=0
         minterPrep=0
         minterFact=0
@@ -2401,10 +2025,7 @@ def facturationInfo(user):
 
 @app.route('/recap/<user>',methods=['GET', 'POST'])
 def recap(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     lot=session['user']['lot']
     req=["SELECT * from facturation where etatProd<>4 and idCmd in (SELECT id_commande from commande where lot=? and corbeille=0) order by code",(lot,)]
     lignes=lecture_BDD(req)
@@ -2449,11 +2070,8 @@ def recap(user):
     
 @app.route('/clientRupt/<user>', methods=['GET', 'POST'])
 def clientRupt(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    ref=request.form.get("ref")
+    checkUser()
+    ref=getValeurFormulaire("ref")
     if ref!=None:
         insertHistorique('normal','facturer','clientRupt',"visualisation ref:",ref)
         req=["SELECT distinct client,commande.idCE,client.tel,client.mail,lot,date,id_commande,entreprise,utilisateur.id FROM client join commande on idclient=idclientCmd join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where clientRupt is null and listingCE.referente=? and listingCE.corbeille=0 and id_commande in (SELECT id_commande from commande join facturation on idCmd=id_commande where etatProd LIKE '%3%')",(ref,)]
@@ -2464,10 +2082,7 @@ def clientRupt(user):
     
     Lclient=lecture_BDD(req)
     Lprod=[]
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     for client in Lclient:
         req=["SELECT code,libW,prix,qte from facturation where idCmd=? and etatMax=3",(client["id_commande"],)]
         prod=lecture_BDD(req)
@@ -2478,12 +2093,9 @@ def clientRupt(user):
     
 @app.route('/modifClientRupt',methods=["POST","GET"])
 def modifClientRupt():
-    try :
-        session['user']
-    except:
-        return(index())
-    idCmd=request.form.get("idCmd")
-    check=request.form.get("check")
+    checkUser()
+    idCmd=getValeurFormulaire("idCmd")
+    check=getValeurFormulaire("check")
     if check=="1":
         req=["UPDATE commande set clientRupt=1 where id_commande=?",(idCmd,)]
     else:
@@ -2500,11 +2112,8 @@ def modifClientRupt():
 
 @app.route('/paiements/<user>',methods=['GET', 'POST'])
 def paiements(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get('filtre')
+    checkUser()
+    action=getValeurFormulaire('filtre')
     #réactulisation du filtre 
     if action=='filtre':
         session['user']['paiementDateMin']="-1"
@@ -2518,7 +2127,7 @@ def paiements(user):
     #vérification de la sauvegarde des filtres
     if (session['user']['paiementDateMin']!='-1' or session['user']['paiementDateMax']!='-1' or session['user']['paiementID']!='-1' or session['user']['paiementLot']!='-1' or session['user']['paiementCE']!='-1' or session['user']['paiementNom']!='-1' or session['user']['paiementMontant']!='-1' or session['user']['paiementType']!='-1'):
         return(searchImpaye(user))
-    ref=request.form.get("ref")
+    ref=getValeurFormulaire("ref")
     if ref!=None:
         insertHistorique('normal','paiement','impayes',"visualisation ref:",ref)
         req=["SELECT DISTINCT idUnique,idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement FROM paiement join commande ON id_commande=idCd JOIN client on idclientCmd=idclient and idCE in (SELECT idCE from listingCE where listingCE.referente=? and corbeille=0) AND etat=0 order by paiement.date ASC, heure ASC  LIMIT 200",(ref,)]
@@ -2527,27 +2136,21 @@ def paiements(user):
         insertHistorique('normal','paiement','impayes',"visualisation all ref",None)
         req=["SELECT DISTINCT idUnique,idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement FROM paiement join commande ON id_commande=idCd JOIN client ON idclientCmd=idclient where commande.corbeille=0 AND etat=0 order by paiement.date ASC, heure ASC LIMIT 200",()]
     Lclients=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     return render_template('paiement_impaye.html',Lclients=Lclients,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
 
 @app.route('/searchImpaye/<user>',methods=['GET', 'POST'])
 def searchImpaye(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    dateMin=str(request.form.get("dateMin"))
-    dateMax=str(request.form.get("dateMax"))
-    idCmd=str(request.form.get("idCmd"))
-    idCE=str(request.form.get("idCE"))
-    lot=str(request.form.get("lot"))
-    client=str(request.form.get("client"))
-    type=str(request.form.get("type"))
-    montant=str(request.form.get("montant"))
-    ref=request.form.get("ref")
+    checkUser()
+    dateMin=str(getValeurFormulaire("dateMin"))
+    dateMax=str(getValeurFormulaire("dateMax"))
+    idCmd=str(getValeurFormulaire("idCmd"))
+    idCE=str(getValeurFormulaire("idCE"))
+    lot=str(getValeurFormulaire("lot"))
+    client=str(getValeurFormulaire("client"))
+    type=str(getValeurFormulaire("type"))
+    montant=str(getValeurFormulaire("montant"))
+    ref=getValeurFormulaire("ref")
     sansDateMini=False
     sansDateMax=False
     #Clés du filtre par session
@@ -2667,24 +2270,18 @@ def searchImpaye(user):
         req=["SELECT DISTINCT idUnique,idCd,relance,idPaiement,paiement.date,heure,type,montant,commande.idCE,lot,client FROM paiement join commande ON id_commande=idCd JOIN client on idclientCmd=idclient left join listingCE on commande.idCE=listingCE.idCE WHERE commande.corbeille=0 and idCd LIKE ? and type LIKE ? and montant LIKE ? and commande.idCE LIKE ? and lot LIKE ? and client LIKE ? and referente LIKE ? AND etat=0 and paiement.date>= (?) and paiement.date<= (?) order by paiement.date ASC, heure ASC  LIMIT 200",('%'+idCmd+'%','%'+type+'%','%'+montant+'%','%'+idCE+'%','%'+lot+'%','%'+client+'%','%'+ref1+'%',dateMin,dateMax)]
         Lclients=lecture_BDD(req)
     
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     insertHistorique('normal','paiement','impayes',"filtre",None)
     return render_template('paiement_impaye.html',user=user,Lclients=Lclients,dateMin=dateMin,dateMax=dateMax,montant=montant,idCmd=idCmd,idCE=idCE,client=client,lot=lot,type=type,ref=ref,listeRef=listeRef,listeAll=listeAll)
 
 
 @app.route('/relancePaiement',methods=['GET', 'POST'])
 def relance():
-    try :
-        session['user']
-    except:
-        return(index())
-    date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+    checkUser()
+    date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
-    id=request.form.get('id')
+    id=getValeurFormulaire('id')
     idCmd=id.split('-')[0]
     idPaiement=id.split('-')[1]
     idRelance=id.split('-')[2]
@@ -2718,7 +2315,7 @@ def relance():
         send_email([str(mail),str(client),str(idCmd),type,montant,str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE),str(idRef)],[],[])
         message="Mail envoyé au client"
     except:
-        message="Erreur lors de l'envoie du mail"
+        message="Erreur lors de l'envoi du mail"
     insertHistorique('normal','paiement','impayes',"relance paiement idcmd:",idCmd)
     return jsonify(message=message,L=L)
    
@@ -2729,10 +2326,10 @@ def valide():
         user=session['user']
     except:
         return(index())
-    date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+    date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
-    id=request.form.get('id')
+    id=getValeurFormulaire('id')
     idCmd=id.split('-')[0]
     idPaiement=id.split('-')[1]
     idRelance=id.split('-')[2]
@@ -2754,10 +2351,10 @@ def annule():
         user=session['user']
     except:
         return(index())
-    date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+    date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
-    id=request.form.get('id')
+    id=getValeurFormulaire('id')
     idCmd=id.split('-')[0]
     idPaiement=id.split('-')[1]
     idRelance=id.split('-')[2]
@@ -2776,30 +2373,15 @@ def extractImpayes():
         user=session['user']
     except:
         return(index())
-    action=request.form.get("action")
+    action=getValeurFormulaire("action")
     if action=="0":
-        req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0",()]
-        Linfo=lecture_BDD(req)
-        with open(exportFold+"/Impayes.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;Referente\n")
-            for row in Linfo:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Impayes()
         insertHistorique('normal','paiement','impayés',"exportation du listing des impayés",None)
     elif action=="1":
-        req=["SELECT listingCE.idCE,entreprise,utilisateur.prenom,SUM(montant) from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0 GROUP BY listingCE.idCE ORDER BY listingCE.idCE",()]
-        Linfo=lecture_BDD(req)
-        with open(exportFold+"/Impayes_Synthese_CE.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("ID CE;Nom du CE;Referente;Montant total estime\n")
-            for row in Linfo:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Impayes_Synthese_CE()
         insertHistorique('normal','paiement','impayés',"exportation synthèse des impayés par CE",None)
     elif action=="2":
-        req=["SELECT utilisateur.prenom,SUM(montant) from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0 GROUP BY utilisateur.prenom ORDER BY utilisateur.prenom",()]
-        Linfo=lecture_BDD(req)
-        with open(exportFold+"/Impayes_Synthese_Referente.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("Referente;Montant total estime\n")
-            for row in Linfo:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Impayes_Synthese_Referente()
         insertHistorique('normal','paiement','impayés',"exportation synthèse des impayés par référente",None)
     
     return paiements(user) 
@@ -2807,14 +2389,11 @@ def extractImpayes():
   
 @app.route('/relanceGroupe/<user>',methods=['GET', 'POST'])
 def relanceGroupe(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     listeRelance=[]
     req=["SELECT idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement FROM paiement join commande ON id_commande=idCd JOIN client ON idclientCmd=idclient where commande.corbeille=0 AND etat=0 order by paiement.date ASC, heure ASC LIMIT 1000",()]
     LPaiement=lecture_BDD(req)
-    action=request.form.get('action')
+    action=getValeurFormulaire('action')
     btEnlever=session['user']['paiement2BtEnlever']
     
     if action=="annuleAll":
@@ -2832,7 +2411,7 @@ def relanceGroupe(user):
 
     elif action=="relanceAll":
         for element in session['user']['listeRelance']:
-            date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+            date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
             date=date1.split('_')[0]
             heure=date1.split('_')[1]
             idCd=element[0]
@@ -2871,7 +2450,7 @@ def relanceGroupe(user):
         
     elif action=="valideAll":
         for element in session['user']['listeRelance']:
-            date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+            date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
             date=date1.split('_')[0]
             heure=date1.split('_')[1]
             idCd=element[0]
@@ -2935,11 +2514,8 @@ def relanceGroupe(user):
 
 @app.route('/ajoutImpayeGroupe', methods=['GET', 'POST'])
 def ajoutImpayeGroupe():
-    try :
-        session['user']
-    except:
-        return(index())
-    listeRecherche=request.form.get("listeRecherche")
+    checkUser()
+    listeRecherche=getValeurFormulaire("listeRecherche")
     idCd=listeRecherche.split(' - ')[0]
     idPaiement=listeRecherche.split(' - ')[7]
     relance=listeRecherche.split(' - ')[8]
@@ -2957,7 +2533,7 @@ def ajoutImpayeGroupe():
         client=liste['client']
         montant=liste['montant']
         message=""
-        action=request.form.get('action')
+        action=getValeurFormulaire('action')
         if action!=None:
             idCd=action.split('--')[0]
             idPaiement=action.split('--')[1]
@@ -2976,11 +2552,8 @@ def ajoutImpayeGroupe():
 
 @app.route('/paiementsPaye/<user>',methods=['GET', 'POST'])
 def paiementsPaye(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get('filtre')
+    checkUser()
+    action=getValeurFormulaire('filtre')
     #réactulisation du filtre 
     if action=='filtre':
         session['user']['paiement2DateMin']="-1"
@@ -2994,7 +2567,7 @@ def paiementsPaye(user):
     #vérification de la sauvegarde des filtres
     if (session['user']['paiement2DateMin']!='-1' or session['user']['paiement2DateMax']!='-1' or session['user']['paiement2ID']!='-1' or session['user']['paiement2Lot']!='-1' or session['user']['paiement2CE']!='-1' or session['user']['paiement2Nom']!='-1' or session['user']['paiement2Montant']!='-1' or session['user']['paiement2Type']!='-1'):
         return(searchPaye(user))
-    ref=request.form.get("ref")
+    ref=getValeurFormulaire("ref")
     if ref!=None:
         insertHistorique('normal','paiement','paiements',"visualisation ref:",ref)
         req=["SELECT DISTINCT idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement FROM paiement join commande ON id_commande=idCd JOIN client on idclientCmd=idclient and idCE in (SELECT idCE from listingCE where listingCE.referente=? and corbeille=0) AND etat=1 order by paiement.date DESC, heure DESC  LIMIT 1000",(ref,)]
@@ -3003,27 +2576,21 @@ def paiementsPaye(user):
         insertHistorique('normal','paiement','paiements',"visualisation all ref",None)
         req=["SELECT DISTINCT idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement,idUnique FROM paiement join commande ON id_commande=idCd JOIN client ON idclientCmd=idclient where commande.corbeille=0 AND etat=1 order by paiement.date DESC, heure DESC LIMIT 1000",()]
     Lclients=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     return render_template('paiement_paye.html',Lclients=Lclients,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
 
 @app.route('/searchPaye/<user>',methods=['GET', 'POST'])
 def searchPaye(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    dateMin=str(request.form.get("dateMin"))
-    dateMax=str(request.form.get("dateMax"))
-    idCmd=str(request.form.get("idCmd"))
-    idCE=str(request.form.get("idCE"))
-    lot=str(request.form.get("lot"))
-    client=str(request.form.get("client"))
-    montant=str(request.form.get("montant"))
-    ref=request.form.get("ref")
-    type1=str(request.form.get("type"))
+    checkUser()
+    dateMin=str(getValeurFormulaire("dateMin"))
+    dateMax=str(getValeurFormulaire("dateMax"))
+    idCmd=str(getValeurFormulaire("idCmd"))
+    idCE=str(getValeurFormulaire("idCE"))
+    lot=str(getValeurFormulaire("lot"))
+    client=str(getValeurFormulaire("client"))
+    montant=str(getValeurFormulaire("montant"))
+    ref=getValeurFormulaire("ref")
+    type1=str(getValeurFormulaire("type"))
     sansDateMini=False
     sansDateMax=False
     #Clés du filtre par session
@@ -3142,30 +2709,24 @@ def searchPaye(user):
         req=["SELECT DISTINCT idCd,relance,idPaiement,paiement.date,heure,type,montant,commande.idCE,lot,client,idUnique FROM paiement join commande ON id_commande=idCd JOIN client on idclientCmd=idclient left join listingCE on commande.idCE=listingCE.idCE WHERE commande.corbeille=0 and idCd LIKE ? and type LIKE ? and montant LIKE ? and commande.idCE LIKE ? and lot LIKE ? and client LIKE ? and referente LIKE ? AND etat=1 and paiement.date>= (?) and paiement.date<= (?) order by paiement.date DESC, heure DESC  LIMIT 1000",('%'+idCmd+'%','%'+type1+'%','%'+montant+'%','%'+idCE+'%','%'+lot+'%','%'+client+'%','%'+ref1+'%',dateMin,dateMax)]
         Lclients=lecture_BDD(req)
     
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     insertHistorique('normal','paiement','paiements',"filtre",None)
     return render_template('paiement_paye.html',user=user,Lclients=Lclients,dateMin=dateMin,dateMax=dateMax,montant=montant,idCmd=idCmd,idCE=idCE,client=client,lot=lot,type=type1,ref=ref,listeRef=listeRef,listeAll=listeAll)
   
 @app.route('/actionFromPaiementPaye/<user>', methods=['GET', 'POST'])
 def actionFromPaiementPaye(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    date1=datetime.datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
+    checkUser()
+    date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
-    Action=request.form.get("action")
+    Action=getValeurFormulaire("action")
     action=Action.split('-')[0]
     idUnique=Action.split('-')[1]
-    idCmd=request.form.get('idCmd')
-    idPaiement=request.form.get('idPaiement')
-    idRelance=request.form.get('idRelance')
-    type=request.form.get('type')
-    montant=request.form.get('montant')
+    idCmd=getValeurFormulaire('idCmd')
+    idPaiement=getValeurFormulaire('idPaiement')
+    idRelance=getValeurFormulaire('idRelance')
+    type=getValeurFormulaire('type')
+    montant=getValeurFormulaire('montant')
     if action=='annuler':
         req=["UPDATE paiement SET etat=2 where idUnique=?",(idUnique,)]
         ecriture_BDD(req)
@@ -3177,12 +2738,9 @@ def actionFromPaiementPaye(user):
 #region
 @app.route('/livraison/<user>', methods=['GET', 'POST'])
 def choixCELivre(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idCELivraison=session['user']['idCELivraison']
-    ref=request.form.get("ref")
+    ref=getValeurFormulaire("ref")
     if ref!=None:
         insertHistorique('normal','livraison','choixCE',"visualisation ref:",ref)
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise from commande join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd>0 and etatCmd<3 and commande.corbeille=0 and listingCE.referente=? and listingCE.corbeille=0 and id_commande in (SELECT distinct idCmd from facturation where etatProd like '%2%') order by commande.idCE",(ref,)]
@@ -3206,32 +2764,23 @@ def choixCELivre(user):
         nbClientAtion.append(nbAtion)
         nbClientRe.append(nbRe)
         minDate.append(date)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
-    dateLim=(datetime.datetime.today()-timedelta(days=15)).strftime('%Y-%m-%d')
+    listeRef,listeAll=getListRef()
+    dateLim=(datetime.today()-timedelta(days=15)).strftime('%Y-%m-%d')
     return render_template('livraison_selectCE.html',user=user,listCE=listCE,nbClientAtion=nbClientAtion,nbClientRe=nbClientRe,idCE=idCELivraison,minDate=minDate,ref=ref,listeRef=listeRef,listeAll=listeAll,dateLim=dateLim)
     
 
 
 @app.route('/selectLivraison/<user>', methods=['GET', 'POST'])
 def selectLivraison(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    session['user']['idCELivraison']=int(request.form.get('idCE'))
+    checkUser()
+    session['user']['idCELivraison']=int(getValeurFormulaire('idCE'))
     insertHistorique('normal','livraison','choixCE',"selection du CE",session['user']['idCELivraison'])
     return visuLivraison(user)
     
 
 @app.route('/visuLivraison/<user>',methods=['GET', 'POST'])
 def visuLivraison(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     idCELivraison=session['user']['idCELivraison']
     req=["SELECT * from commande join client on idclientCmd=idclient where idCE=? and etatCmd>0 and etatCmd<3 and commande.corbeille=0 and id_commande in (SELECT distinct idCmd from facturation where etatProd like '%2%')",(idCELivraison,)]
     Lcmd=lecture_BDD(req)
@@ -3246,14 +2795,11 @@ def visuLivraison(user):
 
 @app.route('/livrer/<user>', methods=['GET', 'POST'])
 def livrer(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    idCE=request.form.get("idCE")
-    LidCommande=request.form.getlist("check")
+    checkUser()
+    idCE=getValeurFormulaire("idCE")
+    LidCommande=getListeForm("check")
     if len(LidCommande)>0:
-        date=datetime.datetime.today().strftime('%d/%m/%Y')
+        date=datetime.today().strftime('%d/%m/%Y')
         req=["insert into livraison (dateLivraison,idCE,nbCmd) values(?,?,?)",(date,idCE,len(LidCommande))]
         ecriture_BDD(req)
     for idCmd in LidCommande:
@@ -3285,10 +2831,7 @@ def livrer(user):
 
 @app.route('/histLivraison/<user>',methods=['GET', 'POST'])
 def histLivraison(user): 
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT * from livraison order by dateLivraison desc LIMIT",()]
     listLivraison=lecture_BDD(req)
     insertHistorique('normal','livraison','historique',"visualisation",None)
@@ -3299,10 +2842,7 @@ def histLivraison(user):
 #region
 @app.route('/ajoutCE/<user>', methods=['GET', 'POST'])
 def ajoutCE(user):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT max(idCE) FROM listingCE WHERE idCE<900900 and corbeille=0",()]
     idCE=int(lecture_BDD(req)[0]['max(idCE)'])+1
     if idCE==900900:
@@ -3311,31 +2851,25 @@ def ajoutCE(user):
     CE={"prenom":"","idCE":idCE,"entreprise":"","intermediaire":"","mail":"","tel":"","mailCl":"0","mailInterPrep":"0","mailInterFact":"0","mailInterRelFact":"0","mailInterRel":"0","mailInterRupt":"0","qteFact":"1","sac":"Papier","retraitMag":"NON","colisIndiv":"NON","colisCol":"NON","colisExpe":"Aucun","catalogue":"1","promotion":"1","commentaires":"","adresse":""}
     req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
     LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     return render_template('CE_ajout.html',CE=CE,user=user,LCE=LCE,listeRef=listeRef,listeAll=listeAll)
 
 @app.route('/addCE', methods=['GET', 'POST'])
 def addCE():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     print("je suis la")
-    idCE=request.form.get("idCE")
-    entreprise=request.form.get("entreprise")
-    referente=request.form.get("referente")
-    intermediaire=request.form.get("intermediaire")
-    mail=request.form.get("mail")
-    tel=request.form.get("tel")
-    mailCl=request.form.get("mailCl")
-    mailInterPrep=request.form.get("mailInterPrep")
-    mailInterFact=request.form.get("mailInterFact")
-    mailInterRelFact=request.form.get("mailInterRelFact")
-    mailInterRel=request.form.get("mailInterRel")
-    mailInterRupt=request.form.get("mailInterRupt")
+    idCE=getValeurFormulaire("idCE")
+    entreprise=getValeurFormulaire("entreprise")
+    referente=getValeurFormulaire("referente")
+    intermediaire=getValeurFormulaire("intermediaire")
+    mail=getValeurFormulaire("mail")
+    tel=getValeurFormulaire("tel")
+    mailCl=getValeurFormulaire("mailCl")
+    mailInterPrep=getValeurFormulaire("mailInterPrep")
+    mailInterFact=getValeurFormulaire("mailInterFact")
+    mailInterRelFact=getValeurFormulaire("mailInterRelFact")
+    mailInterRel=getValeurFormulaire("mailInterRel")
+    mailInterRupt=getValeurFormulaire("mailInterRupt")
     mcl=0
     minterPrep=0
     minterFact=0
@@ -3355,23 +2889,20 @@ def addCE():
         minterRel=1    
     if mailInterRupt=="true":
         minterRupt=1 
-    qteFact=request.form.get("qteFact")
-    sac=request.form.get("sac")
-    retraitMag=request.form.get("retraitMag")
-    colisIndiv=request.form.get("colisIndiv")
-    colisCol=request.form.get("colisCol")
-    colisExpe=request.form.get("colisExpe")
-    catalogue=request.form.get("catalogue")
-    promotion=request.form.get("promotion")
-    commentaires=request.form.get("commentaires")
-    adresse=request.form.get("adresse")
+    qteFact=getValeurFormulaire("qteFact")
+    sac=getValeurFormulaire("sac")
+    retraitMag=getValeurFormulaire("retraitMag")
+    colisIndiv=getValeurFormulaire("colisIndiv")
+    colisCol=getValeurFormulaire("colisCol")
+    colisExpe=getValeurFormulaire("colisExpe")
+    catalogue=getValeurFormulaire("catalogue")
+    promotion=getValeurFormulaire("promotion")
+    commentaires=getValeurFormulaire("commentaires")
+    adresse=getValeurFormulaire("adresse")
     CE={"prenom":"","idCE":idCE,"entreprise":"","intermediaire":"","mail":"","tel":"","mailCl":"0","mailInterPrep":"0","mailInterFact":"0","mailInterRelFact":"0","mailInterRel":"0","mailInterRupt":"0","qteFact":"1","sac":"Papier","retraitMag":"NON","colisIndiv":"NON","colisCol":"NON","colisExpe":"Aucun","catalogue":"1","promotion":"1","commentaires":"","adresse":""}
     req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
     LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
 
     req=["INSERT INTO listingCE (referente,idCE,entreprise,intermediaire,mail,tel,corbeille,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(referente,idCE,entreprise,intermediaire,mail,tel,0,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse)]
     ecriture_BDD(req)
@@ -3381,11 +2912,8 @@ def addCE():
 
 @app.route('/rechercheCE/<user>',methods=['GET', 'POST'])
 def rechercheCE(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    CEselectionne=request.form.get("CEselectionne")
+    checkUser()
+    CEselectionne=getValeurFormulaire("CEselectionne")
     if CEselectionne=="" or CEselectionne is None:
         idCEselec=""
     else:
@@ -3393,10 +2921,7 @@ def rechercheCE(user):
     insertHistorique('normal','connexion','listingCE','filtre All ref',None)
     req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
     LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     if idCEselec is None or idCEselec=="":
         if session['user']['rechercheCE']=='-1':
             req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
@@ -3417,11 +2942,8 @@ def rechercheCE(user):
 
 @app.route('/searchCE', methods=['GET', 'POST'])
 def searchCE():
-    try :
-        session['user']
-    except:
-        return(index())
-    CEselectionne=request.form.get("CEselectionne")
+    checkUser()
+    CEselectionne=getValeurFormulaire("CEselectionne")
     try:
         CE=CEselectionne.split(" - ")[0]
         req=["SELECT listingCE.id,referente,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 AND idCE=?",(CE,)]
@@ -3437,23 +2959,20 @@ def searchCE():
 
 @app.route('/modifrechercheCE', methods=['GET', 'POST'])
 def modifrechercheCE():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("ide")
-    idCE=request.form.get("idCE")
-    entreprise=request.form.get("entreprise")
-    referente=request.form.get("referente")
-    intermediaire=request.form.get("intermediaire")
-    mail=request.form.get("mail")
-    tel=request.form.get("tel")
-    mailCl=request.form.get("mailCl")
-    mailInterPrep=request.form.get("mailInterPrep")
-    mailInterFact=request.form.get("mailInterFact")
-    mailInterRelFact=request.form.get("mailInterRelFact")
-    mailInterRel=request.form.get("mailInterRel")
-    mailInterRupt=request.form.get("mailInterRupt")
+    checkUser()
+    ide=getValeurFormulaire("ide")
+    idCE=getValeurFormulaire("idCE")
+    entreprise=getValeurFormulaire("entreprise")
+    referente=getValeurFormulaire("referente")
+    intermediaire=getValeurFormulaire("intermediaire")
+    mail=getValeurFormulaire("mail")
+    tel=getValeurFormulaire("tel")
+    mailCl=getValeurFormulaire("mailCl")
+    mailInterPrep=getValeurFormulaire("mailInterPrep")
+    mailInterFact=getValeurFormulaire("mailInterFact")
+    mailInterRelFact=getValeurFormulaire("mailInterRelFact")
+    mailInterRel=getValeurFormulaire("mailInterRel")
+    mailInterRupt=getValeurFormulaire("mailInterRupt")
     mcl=0
     minterPrep=0
     minterFact=0
@@ -3472,16 +2991,16 @@ def modifrechercheCE():
         minterRel=1    
     if mailInterRupt=="true":
         minterRupt=1 
-    qteFact=request.form.get("qteFact")
-    sac=request.form.get("sac")
-    retraitMag=request.form.get("retraitMag")
-    colisIndiv=request.form.get("colisIndiv")
-    colisCol=request.form.get("colisCol")
-    colisExpe=request.form.get("colisExpe")
-    catalogue=request.form.get("catalogue")
-    promotion=request.form.get("promotion")
-    commentaires=request.form.get("commentaires")
-    adresse=request.form.get("adresse")
+    qteFact=getValeurFormulaire("qteFact")
+    sac=getValeurFormulaire("sac")
+    retraitMag=getValeurFormulaire("retraitMag")
+    colisIndiv=getValeurFormulaire("colisIndiv")
+    colisCol=getValeurFormulaire("colisCol")
+    colisExpe=getValeurFormulaire("colisExpe")
+    catalogue=getValeurFormulaire("catalogue")
+    promotion=getValeurFormulaire("promotion")
+    commentaires=getValeurFormulaire("commentaires")
+    adresse=getValeurFormulaire("adresse")
     insertHistorique('normal','pageCE','rechercheCE','modification ligne CE n°',ide)
     req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=?,qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=?,adresse=? where id=?",(idCE,entreprise,referente,intermediaire,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse,ide)]
     print(req)
@@ -3491,11 +3010,8 @@ def modifrechercheCE():
 
 @app.route('/CE/<user>',methods=['GET', 'POST'])
 def pageCE(user):
-    try :
-        session['user']
-    except:
-        return(index())
-    ref=request.form.get("ref")
+    checkUser()
+    ref=getValeurFormulaire("ref")
     if ref!=None:
         insertHistorique('normal','pageCE','listingCE','filtre sur la réf id:',ref)
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
@@ -3505,32 +3021,26 @@ def pageCE(user):
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
 
     LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     return render_template('CE_general.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
     
 
 @app.route('/modifCE', methods=['GET', 'POST'])
 def modifCE():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("id")
-    nouvIdCE=request.form.get("nouvidCE")
-    entreprise=request.form.get("entreprise")
-    ref=request.form.get("ref")
-    inter=request.form.get("inter")
-    mail=request.form.get("mail")
-    tel=request.form.get("tel")
-    mailCl=request.form.get("mailCl")
-    mailInterPrep=request.form.get("mailInterPrep")
-    mailInterFact=request.form.get("mailInterFact")
-    mailInterRelFact=request.form.get("mailInterRelFact")
-    mailInterRel=request.form.get("mailInterRel")
-    mailInterRupt=request.form.get("mailInterRupt")
+    checkUser()
+    ide=getValeurFormulaire("id")
+    nouvIdCE=getValeurFormulaire("nouvidCE")
+    entreprise=getValeurFormulaire("entreprise")
+    ref=getValeurFormulaire("ref")
+    inter=getValeurFormulaire("inter")
+    mail=getValeurFormulaire("mail")
+    tel=getValeurFormulaire("tel")
+    mailCl=getValeurFormulaire("mailCl")
+    mailInterPrep=getValeurFormulaire("mailInterPrep")
+    mailInterFact=getValeurFormulaire("mailInterFact")
+    mailInterRelFact=getValeurFormulaire("mailInterRelFact")
+    mailInterRel=getValeurFormulaire("mailInterRel")
+    mailInterRupt=getValeurFormulaire("mailInterRupt")
     mcl=0
     minterPrep=0
     minterFact=0
@@ -3557,20 +3067,17 @@ def modifCE():
 
 @app.route('/modifCEInfo', methods=['GET', 'POST'])
 def modifCEInfo():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("id")
-    qteFact=request.form.get("qteFact")
-    sac=request.form.get("sac")
-    retraitMag=request.form.get("retraitMag")
-    colisIndiv=request.form.get("colisIndiv")
-    colisCol=request.form.get("colisCol")
-    colisExpe=request.form.get("colisExpe")
-    catalogue=request.form.get("catalogue")
-    promotion=request.form.get("promotion")
-    commentaires=request.form.get("commentaires")
+    checkUser()
+    ide=getValeurFormulaire("id")
+    qteFact=getValeurFormulaire("qteFact")
+    sac=getValeurFormulaire("sac")
+    retraitMag=getValeurFormulaire("retraitMag")
+    colisIndiv=getValeurFormulaire("colisIndiv")
+    colisCol=getValeurFormulaire("colisCol")
+    colisExpe=getValeurFormulaire("colisExpe")
+    catalogue=getValeurFormulaire("catalogue")
+    promotion=getValeurFormulaire("promotion")
+    commentaires=getValeurFormulaire("commentaires")
     req=["UPDATE listingCE SET qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=? WHERE id=?",(qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,ide)]
     ecriture_BDD(req)
     insertHistorique('normal','pageCE','infoCE','modification ligne CE n°',ide)
@@ -3578,12 +3085,9 @@ def modifCEInfo():
 
 @app.route('/modifCEAdresse', methods=['GET', 'POST'])
 def modifCEAdresse():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("id")
-    adresse=request.form.get("adresse")
+    checkUser()
+    ide=getValeurFormulaire("id")
+    adresse=getValeurFormulaire("adresse")
     req=["UPDATE listingCE SET adresse=? WHERE id=?",(adresse,ide)]
     ecriture_BDD(req)
     insertHistorique('normal','pageCE','adresseCE','modification ligne CE n°',ide)
@@ -3591,11 +3095,8 @@ def modifCEAdresse():
 
 @app.route('/suprCE', methods=['GET', 'POST'])
 def suprCE():
-    try :
-        session['user']
-    except:
-        return(index())
-    ide=request.form.get("id")
+    checkUser()
+    ide=getValeurFormulaire("id")
     req=["UPDATE listingCE set corbeille=1 where id=?",(ide,)]
     ecriture_BDD(req)
     insertHistorique('normal','pageCE','listingCE','suppression CE n°',ide)
@@ -3603,11 +3104,8 @@ def suprCE():
 
 @app.route('/infoCE/<user>',methods=['GET', 'POST'])
 def pageCEinfo(user): 
-    try :
-        session['user']
-    except:
-        return(index())
-    ref=request.form.get("ref")
+    checkUser()
+    ref=getValeurFormulaire("ref")
     if ref==None or ref==0 or ref=='0':
         insertHistorique('normal','pageCE','infoCE','filtre All ref',None)
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
@@ -3616,19 +3114,13 @@ def pageCEinfo(user):
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
         ref=int(ref)
     LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     return render_template('CE_infos.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
 
 @app.route('/adresseCE/<user>',methods=['GET', 'POST'])
 def pageCEadresse(user): 
-    try :
-        session['user']
-    except:
-        return(index())
-    ref=request.form.get("ref")
+    checkUser()
+    ref=getValeurFormulaire("ref")
     if ref==0 or ref==None or ref=='0':
         insertHistorique('normal','pageCE','adresseCE','filtre All ref',None)
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
@@ -3638,10 +3130,7 @@ def pageCEadresse(user):
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
         ref=int(ref)
     LCE=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='REF'",()]
-    listeRef=lecture_BDD(req)
-    req=["SELECT prenom,id FROM utilisateur WHERE niveau='TOUT LE MONDE'",()]
-    listeAll=lecture_BDD(req)
+    listeRef,listeAll=getListRef()
     return render_template('CE_adresses.html',LCE=LCE,user=user,ref=ref,listeRef=listeRef,listeAll=listeAll)
 #endregion
 
@@ -3649,19 +3138,13 @@ def pageCEadresse(user):
 #region
 @app.route('/connexion',methods=['GET', 'POST'])
 def connexion():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     insertHistorique('DW','connexion','connexion',"connexion",None)
     return render_template("dw_connexion.html")
     
 @app.route('/utilisateurs',methods=['GET', 'POST'])
 def utilisateurs():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT * FROM utilisateur WHERE etat='ACTIF' ORDER BY id",()]
     utilisateur=lecture_BDD(req)
     insertHistorique('DW','utilisateur','session',"visualisation",None)
@@ -3669,10 +3152,7 @@ def utilisateurs():
 
 @app.route('/ajoutUtilisateur',methods=['GET', 'POST'])
 def ajoutUtilisateur():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT max(id) FROM utilisateur",()]
     id=lecture_BDD(req)[0]['max(id)']
     idUser=id+1
@@ -3690,11 +3170,8 @@ def ajoutUtilisateur():
 
 @app.route('/supprUtilisateur',methods=['GET', 'POST'])
 def supprUtilisateur():
-    try :
-        session['user']
-    except:
-        return(index())
-    id=request.form.get("id")
+    checkUser()
+    id=getValeurFormulaire("id")
     req=["SELECT niveau FROM utilisateur WHERE id=?",(id,)]
     niveau=lecture_BDD(req)[0]['niveau']
     if niveau=="ADMIN":
@@ -3720,15 +3197,12 @@ def supprUtilisateur():
 
 @app.route('/modifUtilisateur',methods=['GET', 'POST'])
 def modifUtilisateur():
-    try :
-        session['user']
-    except:
-        return(index())
-    id=request.form.get("id")
-    nom=request.form.get("nom")
-    prenom=request.form.get("prenom")
-    mail=request.form.get("mail")
-    niveau=request.form.get("niveau")
+    checkUser()
+    id=getValeurFormulaire("id")
+    nom=getValeurFormulaire("nom")
+    prenom=getValeurFormulaire("prenom")
+    mail=getValeurFormulaire("mail")
+    niveau=getValeurFormulaire("niveau")
     req=["SELECT niveau FROM utilisateur WHERE id=?",(id,)]
     niveauAv=lecture_BDD(req)[0]['niveau']
     req=["UPDATE utilisateur SET nom=?,prenom=?,mail=?,niveau=?  WHERE id=?",(nom,prenom,mail,niveau,id)]
@@ -3739,11 +3213,8 @@ def modifUtilisateur():
     
 @app.route('/initMDP',methods=['GET', 'POST'])
 def initMDP():
-    try :
-        session['user']
-    except:
-        return(index())
-    id=request.form.get("idMDP")
+    checkUser()
+    id=getValeurFormulaire("idMDP")
     req=["SELECT id,nom,prenom,mail FROM utilisateur WHERE id=?",(id,)]
     user=lecture_BDD(req)[0]
     insertHistorique('DW','utilisateur','session',"modification mdp utilisateur id",id)
@@ -3751,15 +3222,12 @@ def initMDP():
 
 @app.route('/validerMDP',methods=['GET', 'POST'])
 def validerMDP():
-    try :
-        session['user']
-    except:
-        return(index())
-    id=request.form.get("idMDP")
+    checkUser()
+    id=getValeurFormulaire("idMDP")
     # MDP CRYPTER
-    # mdp=request.form.get("mdp").encode()
+    # mdp=getValeurFormulaire("mdp").encode()
     # mdpC=crypter(mdp)
-    mdpC=request.form.get("mdp")
+    mdpC=getValeurFormulaire("mdp")
     req=["UPDATE utilisateur SET mdp=? WHERE id=?",(mdpC,id)]
     ecriture_BDD(req)
     insertHistorique('DW','utilisateur','session',"validation mdp utilisateur id",id)
@@ -3767,19 +3235,13 @@ def validerMDP():
 
 @app.route('/confirmerMDP',methods=['GET', 'POST'])
 def confirmerMDP():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     insertHistorique('DW','utilisateur','session',"confirmation modification mdp utilisateur id",id)
     return render_template("dw_utilisateurs_mdp_succes.html")
 
 @app.route('/postes',methods=['GET', 'POST'])
 def postes():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT * FROM postes",()]
     Lpc=lecture_BDD(req)
     insertHistorique('DW','utilisateur','poste',"visualisation",None)
@@ -3787,10 +3249,7 @@ def postes():
 
 @app.route('/ajoutPoste',methods=['GET', 'POST'])
 def ajoutPoste():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT max(id) FROM postes",()]
     id=lecture_BDD(req)[0]['max(id)']
     idPoste=id+1
@@ -3805,11 +3264,8 @@ def ajoutPoste():
 
 @app.route('/supprPoste',methods=['GET', 'POST'])
 def supprPoste():
-    try :
-        session['user']
-    except:
-        return(index())
-    id=request.form.get("id")
+    checkUser()
+    id=getValeurFormulaire("id")
     req=["DELETE FROM postes WHERE id=?",(id,)]
     ecriture_BDD(req)
     message="Changement(s) pris en compte"
@@ -3819,14 +3275,11 @@ def supprPoste():
 
 @app.route('/modifPoste',methods=['GET', 'POST'])
 def modifPoste():
-    try :
-        session['user']
-    except:
-        return(index())
-    id=request.form.get("id")
-    numPC=request.form.get("numPC")
-    dossierExtract=str(request.form.get("dossierExtract"))
-    dossierErreur=str(request.form.get("dossierErreur"))
+    checkUser()
+    id=getValeurFormulaire("id")
+    numPC=getValeurFormulaire("numPC")
+    dossierExtract=str(getValeurFormulaire("dossierExtract"))
+    dossierErreur=str(getValeurFormulaire("dossierErreur"))
     req=["UPDATE postes SET numPC=?,dossierExtract=?,dossierErreur=? WHERE id=?",(numPC,dossierExtract,dossierErreur,id)]
     ecriture_BDD(req)
     insertHistorique('DW','utilisateur','poste',"modification poste numPC:",numPC)
@@ -3834,10 +3287,7 @@ def modifPoste():
 
 @app.route('/corbeille')
 def corbeille():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT id_commande,client,societe,total from commande join client on idClient=idClientCmd where commande.corbeille=1 and idExtractionCmd is null",()]
     Lmanu=lecture_BDD(req)
     req=["SELECT distinct idExtraction,commande.date,createur from extractions join commande on idExtraction=idExtractionCmd where corbeille=1",()]
@@ -3853,12 +3303,9 @@ def corbeille():
 
 @app.route('/actionCorb',methods=['GET', 'POST'])
 def actionCorb():
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get("action")
-    LidCmd=request.form.getlist("check")
+    checkUser()
+    action=getValeurFormulaire("action")
+    LidCmd=getListeForm("check")
     if action=="0":
         for idCmd in LidCmd:
             for image in os.listdir(repertoireImgClient) :
@@ -3891,10 +3338,7 @@ def actionCorb():
 
 @app.route('/corbCE')
 def corbCE():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT id,idCE,entreprise,intermediaire from listingCE where corbeille=1",()]
     insertHistorique('DW','corbeille','CE',"visualisation",None)
     Lce=lecture_BDD(req)
@@ -3903,12 +3347,9 @@ def corbCE():
 
 @app.route('/actionCorbCE',methods=['GET', 'POST'])
 def actionCorbCE():
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get("action")
-    LidCE=request.form.getlist("check")
+    checkUser()
+    action=getValeurFormulaire("action")
+    LidCE=getListeForm("check")
     if action=="0":
         for idCE in LidCE:
             req=["DELETE from listingCE where id=? and corbeille=1",(idCE,)]
@@ -3927,30 +3368,24 @@ def actionCorbCE():
 
 @app.route('/export_de_donnees',methods=['GET', 'POST'])
 def export_de_donnees():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     insertHistorique('DW','clients','general',"visualisation",None)
     return render_template("dw_export_de_donnees.html")
 
 
 @app.route('/action_export_de_donnees',methods=['GET', 'POST'])
 def action_export_de_donnees():
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get("action")
+    checkUser()
+    action=getValeurFormulaire("action")
     if action!=None:
-        dateMin=request.form.get("dateMin")
-        dateMax=request.form.get("dateMax")
+        dateMin=getValeurFormulaire("dateMin")
+        dateMax=getValeurFormulaire("dateMax")
         if dateMax==None:
-            dateMax=str(datetime.datetime.today().strptime('%Y-%m-%d'))
+            dateMax=str(datetime.today().strptime('%Y-%m-%d'))
         if dateMin==None:  
             dateMin=str(datetime.date(2021,1,1))
-        maxD=datetime.datetime.strptime(dateMax,'%Y-%m-%d')
-        minD=datetime.datetime.strptime(dateMin,'%Y-%m-%d')
+        maxD=datetime.strptime(dateMax,'%Y-%m-%d')
+        minD=datetime.strptime(dateMin,'%Y-%m-%d')
     if action=="0" or action=="99":
         #suppression doublons
         req=["SELECT idclient,mail,client FROM client GROUP BY mail,client HAVING COUNT(*) > 1",()]
@@ -3967,66 +3402,31 @@ def action_export_de_donnees():
         insertHistorique('DW','export_de_donnees','general',"suppression des doublons",None)
     if action=="1" or action=="99":
         #Export des mails
-        req=["SELECT client,mail FROM client",()]
-        Lmail=lecture_BDD(req)
-        with open(exportFold+"/Mail_Clients.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("Nom/Prénom;Mail\n")
-            for row in Lmail:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Mail_Clients()
         insertHistorique('DW','export_de_donnees','general',"exportation des mails clients",None)
     if action=="2" or action=="99":
         #Export des infos CE
-        req=["SELECT idCE,entreprise,referente,intermediaire,mail,tel,adresse,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,commentaires FROM listingCE",()]
-        Lmail=lecture_BDD(req)
-        with open(exportFold+"/Infos_CE.csv","w") as csvfile:
-            csvfile.write("Numero;Nom du CE;Referente;Intermediaire;Mail;Telephone;Adresse;Mail CLient;Mail CE Preparation;Mail CE Facturation;Mail CE Facturation+Reliquat;;Mail CE Reliquat;Mail CE Rupture;Factures;Sacs;Retrait Mag;Colis Individuel;Colis Collectif;Expedition;Catalogue;Commentaires\n")
-            for row in Lmail:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Infos_CE()
         insertHistorique('DW','export_de_donnees','general',"exportation des infos CE",None)
     if action=="3" or action=="99":
         #Export des commandes
-        req=["SELECT * FROM commande WHERE date<=? and date>=? ",(maxD,minD)]
-        Lcmd=lecture_BDD(req)
-        with open(exportFold+"/Commandes.csv","w") as csvfile:
-            csvfile.write("ID Client;ID extraction;ID CE;Societe;Nom prénom;Mail;Telephone;Adresse;Commentaire\n")
-            for row in Lcmd:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Commandes(maxD,minD)
         insertHistorique('DW','export_de_donnees','general',"exportation des commandes",None)
     if action=="4" or action=="99":
         #Export des paiements
-        req=["SELECT * FROM paiement WHERE date<=? and date>=?",(maxD,minD)]
-        Lcmd=lecture_BDD(req)
-        with open(exportFold+"/Paiements.csv","w") as csvfile:
-            csvfile.write("ID Unique;ID Commande;Type;Date;Etat;Heure;Relance;IDpaiement;LastOne\n")
-            for row in Lcmd:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Paiements(maxD,minD)
         insertHistorique('DW','export_de_donnees','general',"exportation des paiements",None)
     if action=="5" or action=="99":
         #Export des impayés listing
-        req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur.id=listingCE.utilisateur WHERE lastOne=1 AND paiement.etat=0",()]
-        Linfo=lecture_BDD(req)
-        with open(exportFold+"/Impayes.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;Referente\n")
-            for row in Linfo:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Impayes()
         insertHistorique('DW','export_de_donnees','general',"exportation du listing des impayés",None)
     if action=="6" or action=="99":
         #Export des impayés par CE
-        req=["SELECT listingCE.idCE,entreprise,utilisateur.prenom,SUM(montant) from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0 GROUP BY listingCE.idCE ORDER BY listingCE.idCE",()]
-        Linfo=lecture_BDD(req)
-        with open(exportFold+"/Impayes_Synthese_CE.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("ID CE;Nom du CE;Referente;Montant total estime\n")
-            for row in Linfo:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Impayes_Synthese_CE()
         insertHistorique('DW','export_de_donnees','general',"exportation synthèse des impayés par CE",None)
     if action=="7" or action=="99":
         #Export des impayés par référente
-        req=["SELECT utilisateur.prenom,SUM(montant) from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0 GROUP BY utilisateur.prenom ORDER BY utilisateur.prenom",()]
-        Linfo=lecture_BDD(req)
-        with open(exportFold+"/Impayes_Synthese_Referente.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("Referente;Montant total estime\n")
-            for row in Linfo:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Impayes_Synthese_Referente()
         insertHistorique('DW','export_de_donnees','general',"exportation synthèse des impayés par référente",None)
     
     return '',204
@@ -4044,22 +3444,19 @@ def deltaTime(date,dAnnee,dMois):
         Nmois+=12-dMois
         Nannee-=1
     Nannee-=dAnnee
-    newdate=datetime.datetime(Nannee, Nmois, Njour).strftime('%Y-%m-%d')
+    newdate=datetime(Nannee, Nmois, Njour).strftime('%Y-%m-%d')
     return (newdate)
 
 @app.route('/stat',methods=['GET', 'POST'])
 def stat():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.datetime.today().strftime('%Y-%m-%d'),1,0)
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
-        dateMinForm=request.form.get("dateMin")
-        dateMaxForm=request.form.get("dateMax")
+        dateMinForm=getValeurFormulaire("dateMin")
+        dateMaxForm=getValeurFormulaire("dateMax")
         dateMin=session['user']['dwDateMin']
         dateMax=session['user']['dwDateMax']
         if dateMinForm!=dateMin:
@@ -4079,11 +3476,11 @@ def stat():
             
     elif dateMin!="" and dateMin!=None:
         phrase=" and date>='"+dateMin+"'"
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         
     else:
         phrase=""
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         req=["SELECT min(date) from commande where corbeille=0",()]
         dateMin=lecture_BDD(req)[0]["min(date)"]
         if dateMin==None:
@@ -4112,9 +3509,9 @@ def stat():
     Ldate=lecture_BDD(req3)
     tpstot=datetime.timedelta(0)
     for d in Ldate:
-        date=datetime.datetime.strptime(d["date"], '%Y-%m-%d')
+        date=datetime.strptime(d["date"], '%Y-%m-%d')
         if d["dateFact"]!=None:
-            dateFact=datetime.datetime.strptime(d["dateFact"], '%Y-%m-%d')
+            dateFact=datetime.strptime(d["dateFact"], '%Y-%m-%d')
             tpstot+=dateFact-date 
     if len(Ldate)>0:
         tpstot=tpstot.days/len(Ldate)
@@ -4159,8 +3556,8 @@ def stat():
                 nbRupt+=1
     coutRupt=round(coutRupt,2)
     #boucle for datemin to dateMax
-    maxD=datetime.datetime.strptime(dateMax, '%Y-%m-%d')
-    minD=datetime.datetime.strptime(dateMin, '%Y-%m-%d')
+    maxD=datetime.strptime(dateMax, '%Y-%m-%d')
+    minD=datetime.strptime(dateMin, '%Y-%m-%d')
     Ldate=[]
     for i in range((maxD - minD).days + 1):
         dateFormat=minD + datetime.timedelta(days=i)
@@ -4174,10 +3571,7 @@ def stat():
 
 
 def calculCACE(idCE):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     CA=0
     req=["SELECT prix,etatProd from facturation join commande on idCmd=id_commande where corbeille=0 and idCE=?",(idCE,)]
     l=lecture_BDD(req)
@@ -4192,10 +3586,7 @@ def calculCACE(idCE):
     
 
 def calculCAProd(code):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     CA=0
     req=["SELECT prix,etatProd from facturation join commande on idCmd=id_commande where corbeille=0 and code=?",(code,)]
     l=lecture_BDD(req)
@@ -4211,16 +3602,8 @@ def calculCAProd(code):
 
 @app.route('/export')
 def export():
-    try :
-        session['user']
-    except:
-        return(index())
-    req=["SELECT qte,prix,code,libW,idHW,id_commande,date,dateLot,dateFact,referente,entreprise,listingCE.idCE from facturation join commande on id_commande=idCmd,listingCE where listingCE.idCE=commande.idCE and commande.corbeille=0",()]
-    export=lecture_BDD(req)
-    with open(statFold+"/ExtractorStat.csv","w") as csvfile:
-        csvfile.write("qte;prix;code;Libelle;idHW;id_commande;date;dateLot;dateFact;referente;entreprise;idCE\n")
-        for row in export:
-            csvfile.write(';'.join(str(r) for r in row) + '\n')
+    checkUser()
+    export_Extractor_Stat()
     insertHistorique('DW','stats','general',"exportation données",None)
     return '',204
     
@@ -4228,17 +3611,14 @@ def export():
 ##################### STAT CE ####################
 @app.route('/statCE',methods=['GET', 'POST'])
 def statCE():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.datetime.today().strftime('%Y-%m-%d'),1,0)
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
-        dateMinForm=request.form.get("dateMin")
-        dateMaxForm=request.form.get("dateMax")
+        dateMinForm=getValeurFormulaire("dateMin")
+        dateMaxForm=getValeurFormulaire("dateMax")
         dateMin=session['user']['dwDateMin']
         dateMax=session['user']['dwDateMax']
         if dateMinForm!=dateMin:
@@ -4257,12 +3637,12 @@ def statCE():
             dateMin=lecture_BDD(req)[0]["min(date)"]
         
     elif dateMin!="" and dateMin!=None:
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         phrase=" and date>='"+dateMin+"'"
         
     else:
         phrase=""
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         req=["SELECT min(date) from commande where corbeille=0",()]
         dateMin=lecture_BDD(req)[0]["min(date)"]
 
@@ -4303,17 +3683,8 @@ def statCE():
 
 @app.route('/exportAdresseCE',methods=['GET', 'POST'])
 def exportAdresseCE():
-    try :
-        session['user']
-    except:
-        return(index())
-
-    req=["SELECT utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,qteFact,sac,colisIndiv,colisCol,colisExpe,commentaires,adresse FROM listingCE JOIN utilisateur ON listingCE.referente=utilisateur.id",()]
-    export=lecture_BDD(req)
-    with open(statFold+"/InfosCE.csv","w") as csvfile:
-        csvfile.write("Referente;n°CE;Entreprise;Intermediaire;Mail;Telephone;Quantité de factures;Type de sac;Colis individuel;Colis Collectif;Expedition;Commentaires;Adresse\n")
-        for row in export:
-            csvfile.write(';'.join(str(r) for r in row) + '\n')
+    checkUser()
+    export_Infos_CE()
     insertHistorique('DW','stats','CE',"exportation des données",None)
     
     return '',204
@@ -4322,17 +3693,14 @@ def exportAdresseCE():
 #Stat Ref
 @app.route('/statRef',methods=['GET', 'POST'])
 def statRef():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.datetime.today().strftime('%Y-%m-%d'),1,0)
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
-        dateMinForm=request.form.get("dateMin")
-        dateMaxForm=request.form.get("dateMax")
+        dateMinForm=getValeurFormulaire("dateMin")
+        dateMaxForm=getValeurFormulaire("dateMax")
         dateMin=session['user']['dwDateMin']
         dateMax=session['user']['dwDateMax']
         if dateMinForm!=dateMin:
@@ -4352,11 +3720,11 @@ def statRef():
             
     elif dateMin!="" and dateMin!=None:
         phrase=" and date>='"+dateMin+"'"
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         
     else:
         phrase=""
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         req=["SELECT min(date) from commande where corbeille=0",()]
         dateMin=lecture_BDD(req)[0]["min(date)"]
         if dateMin==None:
@@ -4386,17 +3754,17 @@ def statRef():
         Ldate=lecture_BDD(req3)
         tpstot=datetime.timedelta(0)
         for d in Ldate:
-            date=datetime.datetime.strptime(d["date"], '%Y-%m-%d')
+            date=datetime.strptime(d["date"], '%Y-%m-%d')
             if d["dateFact"]!=None:
-                dateFact=datetime.datetime.strptime(d["dateFact"], '%Y-%m-%d')
+                dateFact=datetime.strptime(d["dateFact"], '%Y-%m-%d')
                 tpstot+=dateFact-date 
         if len(Ldate)>0:
             tpstot=tpstot.days/len(Ldate)
         else:
             tpstot=tpstot.days
         #boucle for datemin to dateMax
-        maxD=datetime.datetime.strptime(dateMax, '%Y-%m-%d')
-        minD=datetime.datetime.strptime(dateMin, '%Y-%m-%d')
+        maxD=datetime.strptime(dateMax, '%Y-%m-%d')
+        minD=datetime.strptime(dateMin, '%Y-%m-%d')
         Ldate=[]
         for i in range((maxD - minD).days + 1):
             dateFormat=minD + datetime.timedelta(days=i)
@@ -4414,17 +3782,14 @@ def statRef():
 #Stat User Commandes
 @app.route('/statUser',methods=['GET', 'POST'])
 def statUser():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.datetime.today().strftime('%Y-%m-%d'),1,0)
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
-        dateMinForm=request.form.get("dateMin")
-        dateMaxForm=request.form.get("dateMax")
+        dateMinForm=getValeurFormulaire("dateMin")
+        dateMaxForm=getValeurFormulaire("dateMax")
         dateMin=session['user']['dwDateMin']
         dateMax=session['user']['dwDateMax']
         if dateMinForm!=dateMin:
@@ -4444,11 +3809,11 @@ def statUser():
             
     elif dateMin!="" and dateMin!=None:
         phrase=" and date>='"+dateMin+"'"
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         
     else:
         phrase=""
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         req=["SELECT min(date) from stats",()]
         dateMin=lecture_BDD(req)[0]["min(date)"]
         if dateMin==None:
@@ -4460,8 +3825,8 @@ def statUser():
     LtotRef=[]
     for ref in Lref:
         #boucle for datemin to dateMax
-        maxD=datetime.datetime.strptime(dateMax, '%Y-%m-%d')
-        minD=datetime.datetime.strptime(dateMin, '%Y-%m-%d')
+        maxD=datetime.strptime(dateMax, '%Y-%m-%d')
+        minD=datetime.strptime(dateMin, '%Y-%m-%d')
         LdateExtraction=[]
         LdateAjout=[]
         LdatePreparation=[]
@@ -4502,17 +3867,14 @@ def statUser():
 ###Stat User Produits
 @app.route('/statUserPdt',methods=['GET', 'POST'])
 def statUserPdt():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.datetime.today().strftime('%Y-%m-%d'),1,0)
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
-        dateMinForm=request.form.get("dateMin")
-        dateMaxForm=request.form.get("dateMax")
+        dateMinForm=getValeurFormulaire("dateMin")
+        dateMaxForm=getValeurFormulaire("dateMax")
         dateMin=session['user']['dwDateMin']
         dateMax=session['user']['dwDateMax']
         if dateMinForm!=dateMin:
@@ -4532,11 +3894,11 @@ def statUserPdt():
             
     elif dateMin!="" and dateMin!=None:
         phrase=" and date>='"+dateMin+"'"
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         
     else:
         phrase=""
-        dateMax=datetime.datetime.today().strftime('%Y-%m-%d')
+        dateMax=datetime.today().strftime('%Y-%m-%d')
         req=["SELECT min(date) from stats",()]
         dateMin=lecture_BDD(req)[0]["min(date)"]
         if dateMin==None:
@@ -4548,8 +3910,8 @@ def statUserPdt():
     LtotRef=[]
     for ref in Lref:
         #boucle for datemin to dateMax
-        maxD=datetime.datetime.strptime(dateMax, '%Y-%m-%d')
-        minD=datetime.datetime.strptime(dateMin, '%Y-%m-%d')
+        maxD=datetime.strptime(dateMax, '%Y-%m-%d')
+        minD=datetime.strptime(dateMin, '%Y-%m-%d')
         LdateExtraction=[]
         LdateAjout=[]
         LdatePreparation=[]
@@ -4590,10 +3952,7 @@ def statUserPdt():
 ##########info client##########
 @app.route('/clients',methods=['GET', 'POST'])
 def infoClient():
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     req=["SELECT * from client order by idCEclient,client",()]
     Lclients=lecture_BDD(req)
     insertHistorique('DW','clients','general',"visualisation",None)
@@ -4602,11 +3961,8 @@ def infoClient():
 
 @app.route('/actionClient',methods=['GET', 'POST'])
 def actionClient():
-    try :
-        session['user']
-    except:
-        return(index())
-    action=request.form.get("action")
+    checkUser()
+    action=getValeurFormulaire("action")
     if action=="0":
         #supression doublons
         req=["SELECT idclient,mail,client FROM client GROUP BY mail,client HAVING COUNT(*) > 1",()]
@@ -4624,31 +3980,18 @@ def actionClient():
             
         return infoClient()
     if action=="1":
-        req=["SELECT client,mail from client",()]
-        Lmail=lecture_BDD(req)
-        with open(exportFold+"/Mail_Clients.csv","w", encoding="utf-8") as csvfile:
-            csvfile.write("Nom/Prénom;Mail\n")
-            for row in Lmail:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Mail_Clients()
         insertHistorique('DW','client','general',"exportation des données clients",None)
     else:
-        req=["SELECT idCE,entreprise,referente,intermediaire,mail,tel,adresse,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,commentaires from listingCE",()]
-        Lmail=lecture_BDD(req)
-        with open(exportFold+"/Infos_CE.csv","w") as csvfile:
-            csvfile.write("Numero;Nom du CE;Referente;Intermediaire;Mail;Telephone;Adresse;Mail CLient;Mail CE Preparation;Mail CE Facturation;Mail CE Facturation+Reliquat;;Mail CE Reliquat;Mail CE Rupture;Factures;Sacs;Retrait Mag;Colis Individuel;Colis Collectif;Expedition;Catalogue;Commentaires\n")
-            for row in Lmail:
-                csvfile.write(';'.join(str(r) for r in row) + '\n')
+        export_Infos_CE()
         insertHistorique('DW','client','general',"exportation des données CE",None)
     return '',204
 
 
 #Traitement des données (CODE QTE OUI) et Calcul
 def extraction(txt,cb,user):
-    try :
-        session['user']
-    except:
-        return(index())
-    date=datetime.datetime.today().strftime('%Y-%m-%d')
+    checkUser()
+    date=datetime.today().strftime('%Y-%m-%d')
     idExtraction=session['user']['idExtraction']
     user=session['user']['id']
     req=["SELECT idCE from extractions where idExtraction=?",(idExtraction,)]
@@ -4731,10 +4074,7 @@ def extraction(txt,cb,user):
            
 
 def initTraitement(nCE,user,repertoire,erreurFile):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     #Parcours les PDFs - Récupération des données brutes - Traitement des données - Déplacement PDFs
     nbError=0
     nbFichier=0
@@ -4748,7 +4088,7 @@ def initTraitement(nCE,user,repertoire,erreurFile):
         if extension=='csv' or extension=='CSV':
             try:
                 chemin=repertoire+"/"
-                liste,idclient=infos_dans_csv(chemin,nom,idExtraction)
+                liste,idclient=infos_dans_csv(chemin,nom,idExtraction,session['user']['id'])
                 os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+".csv")
             except Exception as e:
                 print(str(e))
@@ -4805,10 +4145,7 @@ def initTraitement(nCE,user,repertoire,erreurFile):
 
 
 def separation_des_pages(repertoire):
-    try :
-        session['user']
-    except:
-        return(index())
+    checkUser()
     n=0
     for nom in os.listdir(repertoire) :
         name, file_extension = os.path.splitext(nom)
