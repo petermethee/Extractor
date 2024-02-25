@@ -485,8 +485,8 @@
 				</td>
 			</tr>	
 		</table>
-        <!-- <p class="SousTitreDetails">Factures à envoyer</p>
-        <table>
+        <p class="SousTitreDetails">Factures à envoyer</p>
+        <table align="center">
             <th class="thGGG"></th>
             <th class="thGGG"></th>
             <th class="thMoy1"></th>
@@ -500,18 +500,21 @@
             </td>
             <td></td>
             <td>
-                <button class="validBt" id="{{idDetailCmd}}" value="factures" name="action" onclick="clickFactures(this)">Envoyer factures</button>
+                <button class="validBt" id="{{idDetailCmd}}" value="factures" name="action" onclick="clickFactures()" >Envoyer factures</button>
             </td>
 	</tr>
-        </table> -->
+        </table>
         
         
                 {%endif%}
 
                 <br>
         </div>
+        
         </form>
+        
     </div>
+    
 </body>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
@@ -670,9 +673,10 @@
     tableEl.addEventListener("click", onDeleteRow);
     
     function clickFactures(){
-        alert("Facture(s) envoyée(s) !")
+        alert("Facture(s) envoyée(s) !");
+        window.location.reload(true);
     }
-    
+
     function clickPaiement(t) {
         var type = t.id.split("-")[1];
         var montant = document.getElementById(t.id.split("-")[0] + "-montant").value;

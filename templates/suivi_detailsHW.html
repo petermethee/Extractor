@@ -591,25 +591,25 @@
 				</td>
 			</tr>	
 		</table>
-        <!-- <p class="SousTitreDetails">Factures à envoyer</p>
-        <table>
+        <p class="SousTitreDetails">Factures à envoyer</p>
+        <table align="center">
             <th class="thGGG"></th>
             <th class="thGGG"></th>
             <th class="thMoy1"></th>
             <th class="thMoy1"></th>
             <tr>
-            <td></td>
-            <td>
-                <div align="center" class="selFich thGGG">
-			        <input type="file" name="file" multiple class="test">
-                </div>
-            </td>
-            <td></td>
-            <td>
-                <button class="validBt" id="{{idDetailCmd}}" value="factures" name="action" onclick="clickFactures(this)">Envoyer factures</button>
-            </td>
-	</tr>
-        </table> -->
+                <td></td>
+                <td>
+                    <div align="center" class="selFich thGGG">
+                        <input type="file" name="file" multiple class="test">
+                    </div>
+                </td>
+                <td></td>
+                <td>
+                    <button class="validBt" id="{{idDetailCmd}}" value="factures" name="action" onclick="clickFactures()" >Envoyer factures</button>
+                </td>
+	        </tr>
+        </table>
 
 
                 <br>
@@ -654,6 +654,11 @@
                 IlibW.value = data.lib;
             }
         });
+    }
+
+    function clickFactures(){
+        alert("Facture(s) envoyée(s) !");
+        window.location.reload(true);
     }
 
     function onAddProd() {

@@ -586,7 +586,7 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         <h3>Clé RIB : 37</h3>
         <h3>IBAN : FR76 1130 6000 8492 5236 9205 037</h3>
         <h3>Code BIC : AGRIFRPP813</h2>
-        <br><h3>- Par téléphone : 04 88 60 23 05</h3>"""
+        <br><h3>- Par téléphone : 04 90 83 90 41</h3>"""
         # HTML+="""  
         # <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         # <h2> Voici le lien :</h2>

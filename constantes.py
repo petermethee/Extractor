@@ -52,7 +52,7 @@ app.config['SECRET_KEY']=b'a8ab364e355734de641db4e18298c74bff8625fe76c6725ce7ba2
 # 4 -> Annulé
 # 5 -> Livré
 
-#----------------Etats paiement
+#----------------Etats Paiements
 # 0 -> Impayé
 # 1 -> Payé
 # 2 -> Annulé

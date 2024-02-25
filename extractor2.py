@@ -486,17 +486,20 @@ def actionFromDetails(user):
         session['user']['page']="detailCommande"
         return facturationInfo(user)
 
-    elif action=="factures":        
+    elif action=="factures":  
+        #Partage de nouvelles factures
+        date=datetime.today().strftime('%Y-%m-%d-%H_%M_%S')      
         req=["SELECT id_commande,mail,client,idCE from commande join client on idclientcmd=idclient WHERE id_commande=?",(idCmd,)]
         cmd=lecture_BDD(req)
         Linfo=[cmd[0]["mail"],cmd[0]["client"],str(cmd[0]["id_commande"]),99]
         Lfiles=request.files.getlist("file")
+        print(Lfiles)
         i=0
         LidFact=[]
         for file in Lfiles:
             if file.filename!='':
                 ext=file.filename.split(".")[1]
-                file.save(os.path.join(app.config['FACTURE_FOLDER'],str(cmd[0]["id_commande"])+"-"+date+"-"+heure+"."+ext))
+                file.save(os.path.join(app.config['FACTURE_FOLDER'],str(cmd[i]["id_commande"])+"-"+date+"."+ext))
                 LidFact.append(cmd[0]["id_commande"])
             i=i+1
         Lfact=[]
@@ -505,6 +508,7 @@ def actionFromDetails(user):
                 if facture.startswith(str(cmd[0]['id_commande'])+"-"):
                     Lfact.append(app.config['FACTURE_FOLDER']+"/"+facture)
         send_email(Linfo,Lfact,[])
+        return (detailsCmd(user))
         
     elif "relance" in action:
         Particule=action.split('relance')[1]
