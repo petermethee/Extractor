@@ -100,7 +100,6 @@
 		function changePC(t){
 			var e = document.getElementById("idPoste");
 			var idPC = e.options[e.selectedIndex].text;
-			alert(idPC);
 			req = jQuery.ajax({
                     url: '/changePC',
                     type: 'POST',
