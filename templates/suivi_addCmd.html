@@ -26,7 +26,7 @@
                 placeholder="Rechercher un client" id="input" autocomplete="off">
             <datalist id="Lclients">
                 {%for client in Lclients%}
-                <option value="{{client['idCEclient']}} - {{client['idclient']}} - {{client['client']}}">
+                <option value="{{client['date']}} - {{client['client']}} - {{client['idCEclient']}}">
                     {%endfor%}
             </datalist>
         </div>

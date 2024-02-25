@@ -636,7 +636,7 @@ def annuler():
 @app.route('/addCmd/<user>', methods=['GET', 'POST'])
 def addCmd(user):
     checkUser()
-    req=["SELECT idclient,client,idCEclient from client",()]
+    req=["SELECT idclient,client,idCEclient,date from client join commande on idclientCmd=idclient order by date desc",()]
     Lclients=lecture_BDD(req)
     req=["SELECT idCE from listingCE where corbeille=0 order by idCE",()]
     LCE=lecture_BDD(req)
