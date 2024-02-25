@@ -717,7 +717,7 @@ def searchClient():
     checkUser()
     client=getValeurFormulaire("client")
     try:
-        idclient=client.split(" - ")[1]
+        idclient=client.split("]")[0].split("[")[1]
         req=["SELECT * from client where idclient=?",(idclient,)]
         reqInfos=lecture_BDD(req)
         Linfo=[reqInfos[0]['idCEclient'],reqInfos[0]['societe'],reqInfos[0]['client'],reqInfos[0]['mail'],reqInfos[0]['tel'],reqInfos[0]['adresse'],reqInfos[0]['commentaire']]
