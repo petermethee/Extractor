@@ -12,24 +12,24 @@ import PyPDF2
 from flask import send_file
 #from simplecrypt import encrypt, decrypt
 import datetime
+from constantes import bdd,bddCP,xmlARTICLE,xmlARTMAG,fact, EMAIL_ADDRESS,PASSWORD,Lcode,passkey
 
+# bdd="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_hist_extraction.db"
+# bddCP="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_code_postal.db"
+# xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTICLE.xml"
+# xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTMAG.xml"
+# fact="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures"
 
-bdd="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_hist_extraction.db"
-bddCP="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_code_postal.db"
-xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTICLE.xml"
-xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTMAG.xml"
-fact="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures"
+# # bdd="/home/jamessou/CEPROG/bdd/bdd_hist_extraction.db"
+# # bddCP="/home/jamessou/CEPROG/bdd/bdd_code_postal.db"
+# # xmlARTICLE="/home/jamessou/xmlpm/ARTICLE.xml"
+# # xmlARTMAG="/home/jamessou/xmlpm/ARTMAG.xml"
+# # fact="/home/jamessou/CE/Factures"
 
-# bdd="/home/jamessou/CEPROG/bdd/bdd_hist_extraction.db"
-# bddCP="/home/jamessou/CEPROG/bdd/bdd_code_postal.db"
-# xmlARTICLE="/home/jamessou/xmlpm/ARTICLE.xml"
-# xmlARTMAG="/home/jamessou/xmlpm/ARTMAG.xml"
-# fact="/home/jamessou/CE/Factures"
-
-EMAIL_ADDRESS="cseparfums@gmail.com"
-PASSWORD="rdlyghzgsadlfeue"
-Lcode=[]
-passkey="par84fumerie700"
+# EMAIL_ADDRESS="cseparfums@gmail.com"
+# PASSWORD="rdlyghzgsadlfeue"
+# Lcode=[]
+# passkey="par84fumerie700"
 
 ############Récupération BDD##############
 #region

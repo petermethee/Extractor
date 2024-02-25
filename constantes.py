@@ -11,7 +11,12 @@ repertoireImgClient='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_cl
 repertoireImgCmd='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_cmd'
 exportFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Export"
 statFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat"
-logFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat/"
+logFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat"
+bdd="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_hist_extraction.db"
+bddCP="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_code_postal.db"
+xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTICLE.xml"
+xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTMAG.xml"
+fact="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures"
 
 #------------------Constantes PC JD
 
@@ -24,7 +29,13 @@ logFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat/"
 # repertoireImgCmd='/home/jamessou/CEPROG/bdd/static/image_cmd'
 # exportFold="/home/jamessou/CE/Export"
 # statFold="/home/jamessou/CE/Stat"
-# lofFold= TBD
+# lofFold= "/home/jamessou/CE/Stat"
+# bdd="/home/jamessou/CEPROG/bdd/bdd_hist_extraction.db"
+# bddCP="/home/jamessou/CEPROG/bdd/bdd_code_postal.db"
+# xmlARTICLE="/home/jamessou/xmlpm/ARTICLE.xml"
+# xmlARTMAG="/home/jamessou/xmlpm/ARTMAG.xml"
+# fact="/home/jamessou/CE/Factures"
+
 #-----------------Constantes globales
 
 Lmag=["1-Sorgues","2-République","3-Les Halles","5-Isle","6-Vedène","Michael"]
@@ -33,6 +44,12 @@ ligne=8
 parasites=[",",".",":",";"," ","-","_","None",'REFERENCE','Reference','Référence','reference','référence','REF','Ref','ref','Réf','réf','/']
 LparasiteQte=["l","L","i","I","|"]
 delaiRupt=8
+
+#-----------------Constantes mail
+EMAIL_ADDRESS="cseparfums@gmail.com"
+PASSWORD="rdlyghzgsadlfeue"
+Lcode=[]
+passkey="par84fumerie700"
 
 #-----------------Constantes Sessions
 app.config['SECRET_KEY']=b'a8ab364e355734de641db4e18298c74bff8625fe76c6725ce7ba25417f6a7d1a'

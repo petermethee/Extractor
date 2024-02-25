@@ -12,7 +12,7 @@ import datetime
 from detectHandwrite4 import extractHandwrite
 from tool import lecture_BDD,ecriture_BDD,majusca,getSocietor,getXML,getLcode,checkCode,checkPrix,getPrix,getStockAutres,getStockSorgues,listeA,CodePossible,codepostal,getVille,fixoumobile,send_email,fusionnerPDF,crypter,decrypter
 import json
-from datetime import timedelta
+from datetime import timedelta,datetime
 import csv
 from constantes import *
 from fonctions import *
@@ -655,7 +655,7 @@ def addProd():
     date=""
     if errone==0:
         prix=getPrix(code)
-        dateLim=datetime.today()+datetime.timedelta(delaiRupt)
+        dateLim=datetime.today()+timedelta(delaiRupt)
         req=["SELECT date from rupture where rupt_code=? and date>?",(code,dateLim)]
         l=lecture_BDD(req)
         if len(l)>0:
@@ -1123,7 +1123,7 @@ def creerlot(user):
     checkUser()
     idCE=session['user']['idCE']
     date=datetime.today().strftime('%Y-%m-%d')
-    dateLim=datetime.today()+datetime.timedelta(delaiRupt)
+    dateLim=datetime.today()+timedelta(delaiRupt)
     req=["SELECT max(lot) from commande",()]
     try:
         session['user']['lot']=lecture_BDD(req)[0]["max(lot)"]+1
@@ -3455,7 +3455,7 @@ def deltaTime(date,dAnnee,dMois):
 def stat():
     checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),0,6)
         dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
@@ -3511,7 +3511,7 @@ def stat():
     CA=round(CA,2)
     #calcul temps moyen de traitement
     Ldate=lecture_BDD(req3)
-    tpstot=datetime.timedelta(0)
+    tpstot=timedelta(days=0)
     for d in Ldate:
         date=datetime.strptime(d["date"], '%Y-%m-%d')
         if d["dateFact"]!=None:
@@ -3564,7 +3564,7 @@ def stat():
     minD=datetime.strptime(dateMin, '%Y-%m-%d')
     Ldate=[]
     for i in range((maxD - minD).days + 1):
-        dateFormat=minD + datetime.timedelta(days=i)
+        dateFormat=minD + timedelta(days=i)
         dateI=dateFormat.strftime('%Y-%m-%d')
         req=["SELECT count(id_commande) from commande where date<=? and (dateFact>? or dateFact isNull) and corbeille=0",(dateI,dateI)]
         nbCmd=int(lecture_BDD(req)[0]["count(id_commande)"])
@@ -3617,7 +3617,7 @@ def export():
 def statCE():
     checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),0,6)
         dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
@@ -3699,7 +3699,7 @@ def exportAdresseCE():
 def statRef():
     checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),0,1)
         dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
@@ -3756,7 +3756,7 @@ def statRef():
         CA=round(CA,2)
         #calcul temps moyen de traitement
         Ldate=lecture_BDD(req3)
-        tpstot=datetime.timedelta(0)
+        tpstot=timedelta(0)
         for d in Ldate:
             date=datetime.strptime(d["date"], '%Y-%m-%d')
             if d["dateFact"]!=None:
@@ -3771,7 +3771,7 @@ def statRef():
         minD=datetime.strptime(dateMin, '%Y-%m-%d')
         Ldate=[]
         for i in range((maxD - minD).days + 1):
-            dateFormat=minD + datetime.timedelta(days=i)
+            dateFormat=minD + timedelta(days=i)
             dateI=dateFormat.strftime('%Y-%m-%d')
             req=["SELECT count(id_commande) from commande where date<=? and (dateFact>? or dateFact isNull) and corbeille=0 and idCE in (SELECT idCE from listingCE where referente=? and corbeille=0)",(dateI,dateI,ref['id'])]
             nbCmd=int(lecture_BDD(req)[0]["count(id_commande)"])
@@ -3788,7 +3788,7 @@ def statRef():
 def statUser():
     checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),0,1)
         dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
@@ -3836,7 +3836,7 @@ def statUser():
         LdatePreparation=[]
         LdateFacturation=[]
         for i in range((maxD - minD).days + 1):
-            dateFormat=minD + datetime.timedelta(days=i)
+            dateFormat=minD + timedelta(days=i)
             dateI=dateFormat.strftime('%Y-%m-%d')
             #extraction 
             action='extraire'
@@ -3873,7 +3873,7 @@ def statUser():
 def statUserPdt():
     checkUser()
     if session['user']['firstCo']=='-1':
-        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),1,0)
+        dateMin=deltaTime(datetime.today().strftime('%Y-%m-%d'),0,1)
         dateMax=datetime.today().strftime('%Y-%m-%d')
     else :
         #TODO ne se réactualise pas en fonction du choix de l'utilisateur
@@ -3921,7 +3921,7 @@ def statUserPdt():
         LdatePreparation=[]
         LdateFacturation=[]
         for i in range((maxD - minD).days + 1):
-            dateFormat=minD + datetime.timedelta(days=i)
+            dateFormat=minD + timedelta(days=i)
             dateI=dateFormat.strftime('%Y-%m-%d')
             #extraction 
             action='extraire'
