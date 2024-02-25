@@ -227,20 +227,34 @@ def searchSuivi(user):
         ref1=""
     else:
         ref1=ref
-
-    if sansDateMini:
-        if sansDateMax:
-            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%','%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+    if etat!="1000":
+        if sansDateMini:
+            if sansDateMax:
+                req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%','%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+                Lclients=lecture_BDD(req)
+            else:
+                req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date<= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+                Lclients=lecture_BDD(req)
+        elif sansDateMax:
+            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date>= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
             Lclients=lecture_BDD(req)
         else:
-            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date<= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
+            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date >= (?) and date <= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
             Lclients=lecture_BDD(req)
-    elif sansDateMax:
-        req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date>= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
-        Lclients=lecture_BDD(req)
     else:
-        req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date >= (?) and date <= (?) and etatCmd LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,dateMax,'%'+etat+'%','%'+ref1+'%','%'+mail+'%')]
-        Lclients=lecture_BDD(req)
+        if sansDateMini:
+            if sansDateMax:
+                req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%','%'+ref1+'%','%'+mail+'%')]
+                Lclients=lecture_BDD(req)
+            else:
+                req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date<= (?) and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMax,'%'+ref1+'%','%'+mail+'%')]
+                Lclients=lecture_BDD(req)
+        elif sansDateMax:
+            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date>= (?) and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,'%'+ref1+'%','%'+mail+'%')]
+            Lclients=lecture_BDD(req)
+        else:
+            req=["SELECT DISTINCT(id_commande),commande.idCE,client,total,etatCmd,date from client join commande on idclient=idclientCmd left join listingCE on commande.idCE=listingCE.idCE where commande.corbeille=0 and id_commande LIKE ? and commande.idCE LIKE ? and client LIKE ? and date >= (?) and date <= (?) and referente LIKE ? and client.mail LIKE ? order by id_commande DESC LIMIT 1000",('%'+idCmd+'%','%'+idCE+'%','%'+client+'%',dateMin,dateMax,'%'+ref1+'%','%'+mail+'%')]
+            Lclients=lecture_BDD(req)
     listeRef,listeAll=getListRef()
     write_log(str(session['user']['id']),"/searchSuivi - Filtre avec les valeurs suivantes DateMax : "+str(session['user']['filtreDateMin'])+" // dateMin : "+str(session['user']['filtreDateMin'])+" // id : "+str(session['user']['filtreID'])+" // ce : "+str(session['user']['filtreCE'])+" // Nom : "+str(session['user']['filtreNom'])+"// Etat : "+str(session['user']['filtreEtat'])+"// Mail :"+str(session['user']['filtreMail']))
     return render_template('suivi_general.html',user=user,Lclients=Lclients,dateMin=dateMin,dateMax=dateMax,idCmd=idCmd,idCE=idCE,client=client,etat=etat,ref=ref,mail=mail,listeRef=listeRef,listeAll=listeAll)

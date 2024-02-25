@@ -88,42 +88,42 @@
                 <td class="tdRechercheD">
                     <select class="selectState" name="etat" onchange="search()">
                         {% if etat=="0" %}
-                        <option value="">Tout</option>
+                        <option value=1000>Tout</option>
                         <option selected value=0>Préparation</option>
                         <option value=1>Facturation</option>
                         <option value=2>Facturé</option>
                         <option value=3>Livré</option>
                         <option value=99>Annulé</option>
                         {%elif etat=="1" %}
-                        <option value="">Tout</option>
+                        <option value=1000>Tout</option>
                         <option value=0>Préparation</option>
                         <option selected value=1>Facturation</option>
                         <option value=2>Facturé</option>
                         <option value=3>Livré</option>
                         <option value=99>Annulé</option>
                         {%elif etat=="2" %}
-                        <option value="">Tout</option>
+                        <option value=1000>Tout</option>
                         <option value=0>Préparation</option>
                         <option value=1>Facturation</option>
                         <option selected value=2>Facturé</option>
                         <option value=3>Livré</option>
                         <option value=99>Annulé</option>
                         {%elif etat=="3" %}
-                        <option value="">Tout</option>
+                        <option value=1000>Tout</option>
                         <option value=0>Préparation</option>
                         <option value=1>Facturation</option>
                         <option value=2>Facturé</option>
                         <option selected value=3>Livré</option>
                         <option value=99>Annulé</option>
                         {%elif etat=="99" %}
-                        <option value="">Tout</option>
+                        <option value=1000>Tout</option>
                         <option value=0>Préparation</option>
                         <option value=1>Facturation</option>
                         <option value=2>Facturé</option>
                         <option value=3>Livré</option>
                         <option selected value=99>Annulé</option>
                         {%else%}
-                        <option selected value="">Tout</option>
+                        <option selected value=1000>Tout</option>
                         <option value=0>Préparation</option>
                         <option value=1>Facturation</option>
                         <option value=2>Facturé</option>
