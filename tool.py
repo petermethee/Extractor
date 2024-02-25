@@ -631,6 +631,8 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         <br>
         <h1>Votre Equipe CSE Parfums / Parfumerie MPB</h1>
         <br><br>
+        <h2>Frais de port de 6,99€ pour les commandes inférieures à 59€.</h2>
+        <br><br>
         <h3>Veuillez noter que ce message vous a été envoyé d'une adresse qui ne peut recevoir d'e-mails. Merci de ne pas y répondre.</h3>
         <body>
     </html>

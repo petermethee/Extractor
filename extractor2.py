@@ -19,7 +19,6 @@ from fonctions import *
 
 ###FONCTIONS PAGE WEB###
 
-
 def insertHistorique(monde,page,onglet,action,numero):
     date=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     user=session['user']['id']
