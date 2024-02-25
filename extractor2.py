@@ -1127,7 +1127,7 @@ def listProd(user):
     date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
-    insertHistorique('normal','préparer','listeProduit',"visualisation n°:",idCE)
+    write_log(str(session['user']['id']),"/listeProduit - Visualisation du CE n° "+idCE)
     return render_template('preparation_bon.html',user=user,nbError=nbError,Lidclient=Lidclient,code=code,ean=ean,lib=lib,libCl=libCl,quantite=qte,atom=oui,nProd=len(code),idCE=idCE,nomCE=nomCE,LidHW=LidHW,Lstock=Lstock,referente=referente,date=date,heure=heure)
 
 
@@ -1186,7 +1186,7 @@ def creerlot(user):
         if mailInterPrep==1:
             Linfo[0]=mail
             send_email(Linfo,[],[])
-    insertHistorique('normal','préparer','listeProduit',"formation lot n°:",lot)
+    write_log(str(session['user']['id']),"/lot - Formation du lot n° "+lot)
     return bonPrep(user)
     
 #endregion   
@@ -1199,11 +1199,11 @@ def reliquats(user):
     lot=session['user']['lot']
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        insertHistorique('normal','reliquats','choixLot',"filtre ref n°:",ref)
+        write_log(str(session['user']['id']),"/reliquat - Filtre sur la référente "+str(ref))
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise,lot,dateLot from commande inner join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd=1 and commande.corbeille=0 and listingCE.referente=? and listingCE.corbeille=0 order by lot",(ref,)]
         ref=int(ref)
     else:
-        insertHistorique('normal','reliquats','choixLot',"filtre All ref",ref)
+        write_log(str(session['user']['id']),"/suivi - Filtre sur toutes les référentes ")
         req=["SELECT distinct commande.idCE,lot,utilisateur.prenom,entreprise,lot,dateLot from commande inner join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd=1 and commande.corbeille=0 and listingCE.corbeille=0 order by lot",()]
     
     listLot=lecture_BDD(req)
@@ -1261,7 +1261,7 @@ def defReliquat(user):
         referente=""
         idCE=""
         nomCE=""
-    insertHistorique('normal','reliquats','choixLot',"selection du lot n°",lot)
+    write_log(str(session['user']['id']),"/defReliquat - Sélection du lot n°"+lot)
 
     return render_template('reliquat_def.html',user=user,nomCE=nomCE,idCE=idCE,lot=lot,code=code,ean=ean,lib=lib,quantite=qte,nProd=len(code),Lreliquats=Lreliquats,Lmag=Lmag,Lstock=Lstock,Lstockbis=Lstockbis,referente=referente,dateLot=dateLot)
 
@@ -1276,7 +1276,7 @@ def addReliquat():
     ecriture_BDD(req)
     req=["SELECT max(idReliquat) from reliquats where code=? and lot=?",(code,lot)]
     idReliquat=lecture_BDD(req)[0]['max(idReliquat)']
-    insertHistorique('normal','reliquats','defReliquat_transfert',"ajout demande reliquat n°",idReliquat)
+    write_log(str(session['user']['id']),"/addReliquat - Ajout de la demande reliquat n° "+idReliquat)
     return jsonify(idReliquat=idReliquat)
 
 
@@ -1288,7 +1288,7 @@ def updateReliquat():
     qte=getValeurFormulaire("qte")
     req=["UPDATE reliquats set mag=?, qte=? where idReliquat=?",(mag,qte,idReliquat)]
     ecriture_BDD(req)
-    insertHistorique('normal','reliquats','defReliquat_transfert',"maj demande reliquat n°",idReliquat)
+    write_log(str(session['user']['id']),"/updateReliquat - Mise à jour de la demande reliquat n°"+idReliquat)
     return jsonify(result="success")
     
 
@@ -1298,7 +1298,7 @@ def delReliquat():
     idReliquat=getValeurFormulaire("idReliquat")
     req=["delete from reliquats where idReliquat=?",(idReliquat,)]
     ecriture_BDD(req)
-    insertHistorique('normal','reliquats','defReliquat_transfert',"suppression demande reliquat n°",idReliquat)
+    write_log(str(session['user']['id']),"/delReliquat - Suppression du reliquat n° "+idReliquat)
     return jsonify(result="success")
            
 
@@ -1358,7 +1358,7 @@ def bonPrep(user):
         idCE=""
         nomCE=""
         referente=""
-    insertHistorique('normal','reliquats','defReliquat_bonPrep',"visualitaion bon de prép lot n°",lot)
+    write_log(str(session['user']['id']),"/bonPrep -Visualisation du bon de préparation du lot n°"+lot)
     return render_template('reliquat_bonPrep.html',user=user,code=code,ean=ean,lib=lib,libCl=libCl,quantite=qte,atom=oui,nProd=len(code),idCE=idCE,nomCE=nomCE,lot=lot,LidHW=LidHW,Lstock=Lstock,referente=referente,dateLot=dateLot,Linfo=Linfo)
 
 
@@ -1390,7 +1390,7 @@ def visuReliquat(user,tout=0):
         maxRelik=l[0]['max(idReliquat)']
     else:
         maxRelik=0
-    insertHistorique('normal','reliquats','ou_sont_les_reliquats',"visualitation maxreliquat:",maxRelik)
+    write_log(str(session['user']['id']),"/visuReliquat - Visualisation reliquat avec l'idMax n° "+maxRelik)
     return render_template('reliquat_general.html',user=user,Lrelik=Lrelik,Lmag=Lmag,idReliquat=idReliquat,maxRelik=maxRelik,LidCE=LidCE,date=date,heure=heure)
     
 
@@ -1401,7 +1401,7 @@ def changeQteDonnee():
     qteDonnee=getValeurFormulaire("qteDonnee")
     req=["UPDATE reliquats set qteDonnee=? where idReliquat=?",(qteDonnee,idRelik)]
     ecriture_BDD(req)
-    insertHistorique('normal','reliquats','ou_sont_les_reliquats',"ajout quantité donnée idreliquat n°:",idRelik)
+    write_log(str(session['user']['id']),"/changeQteDonnee - Ajout de la quantité pour l'idReliquat n°"+idRelik+" avec une quantité de "+qteDonnee)
     return jsonify()
     
 
@@ -1414,7 +1414,7 @@ def filtreReliquat(user):
     if idReliquat!="":
         req=["UPDATE lastRelik set id=?",(idReliquat,)]
         ecriture_BDD(req)
-    insertHistorique('normal','reliquats','ou_sont_les_reliquats',"filtre idreliquat n°:",idReliquat)
+    write_log(str(session['user']['id']),"/filtreReliquat - Filtre sur la idReliquat "+idReliquat)
     return visuReliquat(user,tout)
     
 
@@ -1441,11 +1441,11 @@ def filtreReliquatCE(user):
             maxRelik=l[0]['max(idReliquat)']
         else:
             maxRelik=0
-        insertHistorique('normal','reliquats','ou_sont_les_reliquats',"filtre idreliquat n°:",idReliquat)
+        write_log(str(session['user']['id']),"/filtreReliquarCE - Filtre sur le reliquat "+idReliquat)
         return render_template('reliquat_general.html',user=user,Lrelik=Lrelik,Lmag=Lmag,idCE=idCE,idReliquat=idReliquat,maxRelik=maxRelik,LidCE=LidCE)
     else: 
         tout=0
-        insertHistorique('normal','reliquats','ou_sont_les_reliquats',"filtre tout idreliquat n°:",tout)
+        write_log(str(session['user']['id']),"/filtreReliquatCE - Filtre tout les reliquats ")
         return(visuReliquat(user,tout))
     
 
@@ -1455,7 +1455,7 @@ def rupture(user):
     date=datetime.today().strftime('%Y-%m-%d')
     req=["SELECT distinct idReliquat,reliquats.code,reliquats.qte,reliquats.lot,ean,libW,idCE,rupture.date from reliquats join facturation on reliquats.code=facturation.code join commande on id_commande=facturation.idCmd left join rupture on rupt_code=reliquats.code where commande.lot=reliquats.lot and etatMin<2 and mag=? and corbeille=0 and reliquats.code not in (SELECT rupt_code from rupture where date>?) order by mag,idReliquat",(Lmag[4],date)]
     Lrelik=lecture_BDD(req)
-    insertHistorique('normal','reliquats','produits_rupture',"Visualisation",None)
+    write_log(str(session['user']['id']),"/rupture - Visualisation des ruptures")
     return render_template('reliquat_rupture.html',Lrelik=Lrelik,user=user)
     
 
@@ -1486,7 +1486,7 @@ def planning(user):
             L2[-1].append([[rupt["rupt_code"],rupt["lib"]]])
         else:
             L2[-1][-1].append([rupt["rupt_code"],rupt["lib"]])
-    insertHistorique('normal','reliquats','produits_rupture',"Visualisation du planning",None)
+    write_log(str(session['user']['id']),"/planning - Visualisation du planning")
     return render_template("reliquat_michael_planning.html",L0=L0,L1=L1,L2=L2,user=user)
     
 
@@ -1507,7 +1507,7 @@ def suprRupt():
         ecriture_BDD(req)
     req=["delete from rupture where rupt_code=?",(idRupt,)]
     ecriture_BDD(req)
-    insertHistorique('normal','reliquats','produits_rupture__planning',"suppression de l'id rupture",idRupt)
+    write_log(str(session['user']['id']),"/suprRupt - Suppression de l'id rupture n°"+idRupt)
     return jsonify()
     
 
@@ -1537,7 +1537,7 @@ def validRupt(user):
                     maxEtat=max(L)
                     req=["UPDATE facturation set etatProd=?,etatMin=?,etatMax=? where idProd=?",(etat,minEtat,maxEtat,ID)]
                     ecriture_BDD(req)
-            insertHistorique('normal','reliquats','produits_rupture',"validation rupture code:",Lcode[i])
+            write_log(str(session['user']['id']),"/validRupt - Validation de la rupture du code "+Lcode[i])
     return rupture(user)
     
 
@@ -1563,7 +1563,7 @@ def michael(user):
             stockTot+=int(s)
         stockPrev=stockTot-l["sum(qte)"]
         Lstock.append([stockRes,stockTot,stockPrev,date])
-    insertHistorique('normal','reliquats','michael',"visualisation",None)
+    write_log(str(session['user']['id']),"/michael - Visualisation")
     return render_template("reliquat_michael.html",user=user,lignes=lignes,Lstock=Lstock)
     
 
@@ -1580,8 +1580,7 @@ def changeDatePrev():
     else:
         req=["INSERT into prevision (date,code) values (?,?)",(date,code)]
         ecriture_BDD(req)
-    insertHistorique('normal','reliquats','michael',"modification date rupture",None)
-    
+    write_log(str(session['user']['id']),"/changeDatePrev - Modification de la date de rupture"+str(date)+" pour le code " +str(code))
     return jsonify()
     
 #endregion
@@ -1594,11 +1593,11 @@ def choixLot(user):
     lot=session['user']['lot']
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        insertHistorique('normal','facturer','choixLot',"visualisation ref:",ref)
+        write_log(str(session['user']['id']),"/choixLot - Visualisation sur la référente "+str(ref))
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise,lot,dateLot from commande inner join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd=1 and commande.corbeille=0 and listingCE.referente=? and listingCE.corbeille=0 order by lot",(ref,)]
         ref=int(ref)
     else:
-        insertHistorique('normal','facturer','choixLot',"visualisation all ref",None)
+        write_log(str(session['user']['id']),"/choixLot - Visualisation sur toutes les référentes")
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise,lot,dateLot from commande inner join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd=1 and commande.corbeille=0 and listingCE.corbeille=0 order by lot",()]
     
     listLot=lecture_BDD(req)
@@ -1619,7 +1618,7 @@ def selectLot(user):
     mode=getValeurFormulaire('mode')
     if mode=="1":
         return defReliquat(user)
-    insertHistorique('normal','facturer','choixLot',"selection lot",lot)
+    write_log(str(session['user']['id']),"/selectLot - Sélection du lot n°"+lot)
     return fact(user)
     
 
@@ -1633,7 +1632,7 @@ def suprLot(user):
     ecriture_BDD(req)
     req=["UPDATE commande set lot=NULL,etatCmd=0,dateLot=NULL where lot=? and etatCmd=1 and corbeille=0",(lot,)]
     ecriture_BDD(req)
-    insertHistorique('normal','facturer','choixLot',"suppression lot",lot)
+    write_log(str(session['user']['id']),"/suprLot - Suppression du lot n°"+lot)
     return reliquats(user)
     
 
@@ -1671,7 +1670,7 @@ def fact(user):
         idCE=""
         nomCE=""
         referente=""
-    insertHistorique('normal','facturer','fiche synthèse',"visualisation lot",lot)
+    write_log(str(session['user']['id']),"/facturation - Visualisation du lot n°"+lot)
     return render_template('facturation_general.html',user=user,nomCE=nomCE,Lclients=Lclients,Lbons=Lbonstot,idCE=idCE,lot=lot,LEtatTot=LEtatTot,Lsomme=Lsomme,referente=referente)
     
 
@@ -1691,7 +1690,7 @@ def changeEtat():
     strEtatCmd = ";".join(Letat)
     req=["UPDATE facturation set etatProd=?,etatMin=?,etatMax=? where idProd=?",(strEtatCmd,minEtat,maxEtat,idCmd)]
     ecriture_BDD(req)
-    insertHistorique('normal','facturer','fiche synthèse',"modification état idcmd",idCmd)
+    write_log(str(session['user']['id']),"/changeEtat - Modification de l'état de la commande n°"+idCmd)
     return '', 204
     
 
@@ -1824,7 +1823,7 @@ def nextStep(user):
         qtePdt=getValeurFormulaire('qtePdt')
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'facturer',qteFact,qtePdt,lot)]
         ecriture_BDD(req)
-        insertHistorique('normal','facturer','fiche synthèse',"validation des données facturées pour le lot",lot)
+        write_log(str(session['user']['id']),"/nextStep - Validation des données facturées pour le lot n°"+lot)
 
     elif action=="validerSansMail":
         lot=session['user']['lot']
@@ -1907,10 +1906,10 @@ def nextStep(user):
         qtePdt=getValeurFormulaire('qtePdt')
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'facturer',qteFact,qtePdt,lot)]
         ecriture_BDD(req)
-        insertHistorique('normal','facturer','fiche synthèse',"validation des données facturées pour le lot - sans mail",lot)
+        write_log(str(session['user']['id']),"/nextStep - validation des données facturées pour le lot n° (sans mail)"+lot)
 
     elif action=="info":
-        insertHistorique('normal','facturer','fiche synthèse_infos',"visualisation lot",lot)
+        write_log(str(session['user']['id']),"/nextStep - Visualisation synthèse des infos CE du lot n°"+lot)
         session['user']['page']="facturation"
         return facturationInfo(user)
     else:
@@ -1947,7 +1946,7 @@ def nextStep(user):
             client=liste[0]["client"]
             idRef=liste[0]["referente"]
             send_email([str(mail),str(client),str(idCmd),action,montant,str(nbrPdt),adresse,idCmd,str(idClient),str(idCE),str(idRef)],[],[])
-            insertHistorique('normal','facturer','fiche synthèse',"demande de paiement idcmd",idCmd)
+            write_log(str(session['user']['id']),"/nextStep - Demande de paiement pour la commande n°"+idCmd)
             return '', 204    
     return fact(user)
 
@@ -2003,7 +2002,7 @@ def facturationInfo(user):
             minterRupt=1 
         req=["UPDATE listingCE SET qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,commentaires=?,adresse=?,mailCl=?,mailInterPrep=?, mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=? WHERE idCE=?",(qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,commentaires,adresse,mCl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,idCE)]
         ecriture_BDD(req)
-        insertHistorique('normal','facturer','fiche synthèse_infos',"modification CE:",idCE)
+        write_log(str(session['user']['id']),"/facturationInfo - Modification du CE n°"+idCE)
 
     if action=="1":
         if session['user']['page']=="facturation":
@@ -2080,7 +2079,7 @@ def recap(user):
     except:
         idCE=""
         nomCE=""
-    insertHistorique('normal','facturer','récap',"visualisation lot:",lot)
+    write_log(str(session['user']['id']),"/recap - Visualisation du lot n°"+lot)
     return render_template('facturation_recap.html',user=user,nomCE=nomCE,idCE=idCE,lot=lot,code=code,ean=ean,lib=lib,quantite=qte,Letat=Letat,nProd=len(code),Lreliquats=Lreliquats)
 
     
@@ -2090,11 +2089,11 @@ def clientRupt(user):
     checkUser()
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        insertHistorique('normal','facturer','clientRupt',"visualisation ref:",ref)
+        write_log(str(session['user']['id']),"/clientRupt - Visualisation avec filtre sur la référente°"+ref)
         req=["SELECT distinct client,commande.idCE,client.tel,client.mail,lot,date,id_commande,entreprise,utilisateur.id FROM client join commande on idclient=idclientCmd join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where clientRupt is null and listingCE.referente=? and listingCE.corbeille=0 and id_commande in (SELECT id_commande from commande join facturation on idCmd=id_commande where etatProd LIKE '%3%')",(ref,)]
         ref=int(ref)
     else:
-        insertHistorique('normal','facturer','clientRupt',"visualisation all ref",None)
+        write_log(str(session['user']['id']),"/clientRupt - Visualisation sans filtre référente")
         req=["SELECT distinct client,commande.idCE,client.tel,client.mail,lot,date,id_commande,entreprise,utilisateur.id FROM client join commande on idclient=idclientCmd join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where clientRupt is null and listingCE.corbeille=0 and id_commande in (SELECT id_commande from commande join facturation on idCmd=id_commande where etatProd LIKE '%3%')",()]
     
     Lclient=lecture_BDD(req)
@@ -2104,7 +2103,7 @@ def clientRupt(user):
         req=["SELECT code,libW,prix,qte from facturation where idCmd=? and etatMax=3",(client["id_commande"],)]
         prod=lecture_BDD(req)
         Lprod.append(prod)
-    insertHistorique('normal','facturer','clientRupt',"visualisation",None)
+    write_log(str(session['user']['id']),"/clientRupt - Visualisatyion")
     return render_template('facturation_clientRupt.html',user=user,Lclient=Lclient,Lprod=Lprod,listeRef=listeRef,listeAll=listeAll)
 
     
@@ -2118,7 +2117,7 @@ def modifClientRupt():
     else:
         req=["UPDATE commande set clientRupt=NULL where id_commande=?",(idCmd,)]
     ecriture_BDD(req)
-    insertHistorique('normal','facturer','clientRupt',"modification idcmd",idCmd)
+    write_log(str(session['user']['id']),"/modifClientRupt - Modification de la commande n°"+idCmd)
 
     return jsonify()
     
@@ -2146,11 +2145,11 @@ def paiements(user):
         return(searchImpaye(user))
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        insertHistorique('normal','paiement','impayes',"visualisation ref:",ref)
+        write_log(str(session['user']['id']),"/paiements - Visualisation avec la réferente n°"+ref)
         req=["SELECT DISTINCT idUnique,idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement FROM paiement join commande ON id_commande=idCd JOIN client on idclientCmd=idclient and idCE in (SELECT idCE from listingCE where listingCE.referente=? and corbeille=0) AND etat=0 order by paiement.date ASC, heure ASC  LIMIT 200",(ref,)]
         ref=int(ref)
     else:
-        insertHistorique('normal','paiement','impayes',"visualisation all ref",None)
+        write_log(str(session['user']['id']),"/paiements - Visualisation sans filtre de référente")
         req=["SELECT DISTINCT idUnique,idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement FROM paiement join commande ON id_commande=idCd JOIN client ON idclientCmd=idclient where commande.corbeille=0 AND etat=0 order by paiement.date ASC, heure ASC LIMIT 200",()]
     Lclients=lecture_BDD(req)
     listeRef,listeAll=getListRef()
@@ -2288,7 +2287,7 @@ def searchImpaye(user):
         Lclients=lecture_BDD(req)
     
     listeRef,listeAll=getListRef()
-    insertHistorique('normal','paiement','impayes',"filtre",None)
+    write_log(str(session['user']['id']),"/searchImpayes - Visualisation")
     return render_template('paiement_impaye.html',user=user,Lclients=Lclients,dateMin=dateMin,dateMax=dateMax,montant=montant,idCmd=idCmd,idCE=idCE,client=client,lot=lot,type=type,ref=ref,listeRef=listeRef,listeAll=listeAll)
 
 
@@ -2333,7 +2332,7 @@ def relance():
         message="Mail envoyé au client"
     except:
         message="Erreur lors de l'envoi du mail"
-    insertHistorique('normal','paiement','impayes',"relance paiement idcmd:",idCmd)
+    write_log(str(session['user']['id']),"/relancePaiement - Relance du paiments de la commande n°"+idCmd)
     return jsonify(message=message,L=L)
    
 @app.route('/validePaiement',methods=['GET', 'POST'])
@@ -2358,7 +2357,7 @@ def valide():
     req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'paiement',1,montant,idCmd)]
     ecriture_BDD(req)
     message="Demande de paiement validée"
-    insertHistorique('normal','paiement','impayes',"validation paiement idcmd:",idCmd)
+    write_log(str(session['user']['id']),"/validePaiement - Validation du paiement de la commande n°"+idCmd)
     return jsonify(message=message)
 
 @app.route('/annulePaiement',methods=['GET', 'POST'])
@@ -2380,7 +2379,7 @@ def annule():
     req=["UPDATE paiement SET etat=2 where idCd=? AND idPaiement=? AND relance=? AND type=? AND montant=?",(idCmd,idPaiement,idRelance,type,montant)]
     ecriture_BDD(req)
     message="Demande de paiement annulée"
-    insertHistorique('normal','paiement','impayes',"annulation paiement idcmd:",idCmd)
+    write_log(str(session['user']['id']),"/annulePaiement - Annulation du paiement de la commande n°"+idCmd)
     return jsonify(message=message)
 
 @app.route('/extractImpayes',methods=['GET', 'POST'])
@@ -2393,14 +2392,13 @@ def extractImpayes():
     action=getValeurFormulaire("action")
     if action=="0":
         export_Impayes()
-        insertHistorique('normal','paiement','impayés',"exportation du listing des impayés",None)
+        write_log(str(session['user']['id']),"/extractImpayes - Exportation du listing des impayés.csv")
     elif action=="1":
         export_Impayes_Synthese_CE()
-        insertHistorique('normal','paiement','impayés',"exportation synthèse des impayés par CE",None)
+        write_log(str(session['user']['id']),"/extractImpayes - Exportation du listing des impayésCE.csv")
     elif action=="2":
         export_Impayes_Synthese_Referente()
-        insertHistorique('normal','paiement','impayés',"exportation synthèse des impayés par référente",None)
-    
+        write_log(str(session['user']['id']),"/extractImpayes - Exportation du listing des impayésRef.csv")
     return paiements(user) 
 
   
@@ -2423,7 +2421,7 @@ def relanceGroupe(user):
             req=["UPDATE paiement SET etat=2 where idCd=? AND idPaiement=? AND relance=? AND type=?",(idCd,idPaiement,relance,type)]
             ecriture_BDD(req)
         session['user']['listeRelance']=[]
-        insertHistorique('normal','paiement','relance groupe',"annulation liste paiement",None)
+        write_log(str(session['user']['id']),"/relanceGroupe - Annulation des paiements en masse")
         return render_template('paiement_relanceGroupe.html',LPaiement=LPaiement,user=user,listeRelance=listeRelance,btEnlever=btEnlever)
 
     elif action=="relanceAll":
@@ -2462,7 +2460,7 @@ def relanceGroupe(user):
             idRef=liste[0]["referente"]
             send_email([str(mail),str(client),str(idCd),type,str(montant),str(nbrPdt),adresse,idCdMail,str(idClient),str(idCE),str(idRef)],[],[])
         session['user']['listeRelance']=[]
-        insertHistorique('normal','paiement','relance groupe',"relance liste paiement",None)
+        write_log(str(session['user']['id']),"/relanceGroupe - Relance des paiements en masse")
         return render_template('paiement_relanceGroupe.html',LPaiement=LPaiement,user=user,listeRelance=listeRelance,btEnlever=btEnlever)
         
     elif action=="valideAll":
@@ -2484,7 +2482,7 @@ def relanceGroupe(user):
             req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'paiement',1,montant,idCd)]
             ecriture_BDD(req)
         session['user']['listeRelance']=[]
-        insertHistorique('normal','paiement','relance groupe',"validation liste paiement",None)
+        write_log(str(session['user']['id']),"/relanceGroupe - Validation des paiements en masse")
         return render_template('paiement_relanceGroupe.html',LPaiement=LPaiement,user=user,listeRelance=listeRelance,btEnlever=btEnlever)
 
     elif action=="enleverUn":
@@ -2500,8 +2498,7 @@ def relanceGroupe(user):
 
                 if clientSelec not in listeRelance:
                     listeRelance.append(clientSelec)
-        insertHistorique('normal','paiement','relance groupe',"enlever element de la liste",None)
-        
+        write_log(str(session['user']['id']),"/relanceGroupe - Enlever un élementn de la liste des paiements en masse")
         return render_template('paiement_relanceGroupe.html',LPaiement=LPaiement,user=user,listeRelance=listeRelance,btEnlever=btEnlever)
 
     else:
@@ -2525,7 +2522,7 @@ def relanceGroupe(user):
 
                 if clientSelec not in listeRelance:
                     listeRelance.append(clientSelec)
-        insertHistorique('normal','paiement','relance groupe',"visualisation",None)
+        write_log(str(session['user']['id']),"/relanceGroupe - Visualisation des paiements en masse")
         
         return render_template('paiement_relanceGroupe.html',LPaiement=LPaiement,user=user,listeRelance=listeRelance,btEnlever=btEnlever)
 
@@ -2561,7 +2558,8 @@ def ajoutImpayeGroupe():
                 session['user']['listeRelance'].remove(liste)
             else:
                 print("not in session")
-        insertHistorique('normal','paiement','relance groupe',"ajout liste paiement",None)
+        
+        write_log(str(session['user']['id']),"/ajoutImpayesGroupe - Ajout d'un élement à la liste des paiements en masse")
         return jsonify(date=date,heure=heure,idCd=idCd,idCE=idCE,lot=lot,client=client,type=type,montant=montant,idPaiement=idPaiement,relance=relance,message=message)
     else:
         message="Ce paiement est déjà sélectionné dans la liste."
@@ -2586,11 +2584,11 @@ def paiementsPaye(user):
         return(searchPaye(user))
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        insertHistorique('normal','paiement','paiements',"visualisation ref:",ref)
+        write_log(str(session['user']['id']),"/paiementsPaye - Filtre sur la référente "+str(ref))
         req=["SELECT DISTINCT idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement FROM paiement join commande ON id_commande=idCd JOIN client on idclientCmd=idclient and idCE in (SELECT idCE from listingCE where listingCE.referente=? and corbeille=0) AND etat=1 order by paiement.date DESC, heure DESC  LIMIT 1000",(ref,)]
         ref=int(ref)
     else:
-        insertHistorique('normal','paiement','paiements',"visualisation all ref",None)
+        write_log(str(session['user']['id']),"/paiementsPaye - Filtre sur toutes les référentes")
         req=["SELECT DISTINCT idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement,idUnique FROM paiement join commande ON id_commande=idCd JOIN client ON idclientCmd=idclient where commande.corbeille=0 AND etat=1 order by paiement.date DESC, heure DESC LIMIT 1000",()]
     Lclients=lecture_BDD(req)
     listeRef,listeAll=getListRef()
@@ -2727,7 +2725,7 @@ def searchPaye(user):
         Lclients=lecture_BDD(req)
     
     listeRef,listeAll=getListRef()
-    insertHistorique('normal','paiement','paiements',"filtre",None)
+    write_log(str(session['user']['id']),"/searchPaye - Filtre")
     return render_template('paiement_paye.html',user=user,Lclients=Lclients,dateMin=dateMin,dateMax=dateMax,montant=montant,idCmd=idCmd,idCE=idCE,client=client,lot=lot,type=type1,ref=ref,listeRef=listeRef,listeAll=listeAll)
   
 @app.route('/actionFromPaiementPaye/<user>', methods=['GET', 'POST'])
@@ -2747,7 +2745,7 @@ def actionFromPaiementPaye(user):
     if action=='annuler':
         req=["UPDATE paiement SET etat=2 where idUnique=?",(idUnique,)]
         ecriture_BDD(req)
-        insertHistorique('normal','paiement','paiements',"annulation paiement payé idcmd",idCmd)
+        write_log(str(session['user']['id']),"/actionFromPaiementPaye - Annulation du paiement de la commande"+idCmd)
     return paiementsPaye(user)
 #endregion
 
@@ -2759,11 +2757,11 @@ def choixCELivre(user):
     idCELivraison=session['user']['idCELivraison']
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        insertHistorique('normal','livraison','choixCE',"visualisation ref:",ref)
+        write_log(str(session['user']['id']),"/livraison - Filtre sur la référente "+str(ref))
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise from commande join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd>0 and etatCmd<3 and commande.corbeille=0 and listingCE.referente=? and listingCE.corbeille=0 and id_commande in (SELECT distinct idCmd from facturation where etatProd like '%2%') order by commande.idCE",(ref,)]
         ref=int(ref)
     else:
-        insertHistorique('normal','livraison','choixCE',"visualisation all ref",None)
+        write_log(str(session['user']['id']),"/livraison - Filtre sur toutes les référentes")
         req=["SELECT distinct commande.idCE,utilisateur.prenom,entreprise from commande join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatCmd>0 and etatCmd<3 and commande.corbeille=0 and listingCE.corbeille=0 and id_commande in (SELECT distinct idCmd from facturation where etatProd like '%2%') order by commande.idCE",()]
     
     listCE=lecture_BDD(req)
@@ -2791,7 +2789,7 @@ def choixCELivre(user):
 def selectLivraison(user):
     checkUser()
     session['user']['idCELivraison']=int(getValeurFormulaire('idCE'))
-    insertHistorique('normal','livraison','choixCE',"selection du CE",session['user']['idCELivraison'])
+    write_log(str(session['user']['id']),"/selectLivraison - Selection du CE n° "+session['user']['idCELivraison'])
     return visuLivraison(user)
     
 
@@ -2806,7 +2804,8 @@ def visuLivraison(user):
         nomCE=lecture_BDD(req)[0]["entreprise"]
     except:
         nomCE=""
-    insertHistorique('normal','livraison','à livrer',"visualisation CE",idCELivraison)
+        
+    write_log(str(session['user']['id']),"/visuLivraison - Visualisation du CE n° "+idCELivraison)
     return render_template('livraison_general.html',user=user,idCE=idCELivraison,nomCE=nomCE,Lcmd=Lcmd)
 
 
@@ -2851,7 +2850,7 @@ def histLivraison(user):
     checkUser()
     req=["SELECT * from livraison order by dateLivraison desc LIMIT",()]
     listLivraison=lecture_BDD(req)
-    insertHistorique('normal','livraison','historique',"visualisation",None)
+    write_log(str(session['user']['id']),"/histLivraison - Visualisation de l'histotirque de livraison")
     return render_template('livraison_hist.html',user=user,listLivraison=listLivraison)
 #endregion    
 
@@ -2923,8 +2922,7 @@ def addCE():
 
     req=["INSERT INTO listingCE (referente,idCE,entreprise,intermediaire,mail,tel,corbeille,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(referente,idCE,entreprise,intermediaire,mail,tel,0,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse)]
     ecriture_BDD(req)
-    print(req)
-    insertHistorique('normal','pageCE','ajoutCE','ajout CE n°',idCE)
+    write_log(str(session['user']['id']),"/addCE - Ajout du CE n° "+idCE)
     return '',204
 
 @app.route('/rechercheCE/<user>',methods=['GET', 'POST'])
@@ -2935,7 +2933,8 @@ def rechercheCE(user):
         idCEselec=""
     else:
         idCEselec=int(CEselectionne.split(" - ")[0])
-    insertHistorique('normal','connexion','listingCE','filtre All ref',None)
+        
+    write_log(str(session['user']['id']),"/rechercheCE - Filtre du CE n° "+idCEselec)
     req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
     LCE=lecture_BDD(req)
     listeRef,listeAll=getListRef()
@@ -2971,7 +2970,8 @@ def searchCE():
     except :
         taille=0
         Linfo=[]
-    insertHistorique('normal','CE','recherche',"filtre",CE)
+        
+    write_log(str(session['user']['id']),"/searchCE - Filtre du CE n° "+CE)
     return jsonify(Linfo=Linfo,taille=taille,CEselectionne=CEselectionne)
 
 @app.route('/modifrechercheCE', methods=['GET', 'POST'])
@@ -3018,11 +3018,10 @@ def modifrechercheCE():
     promotion=getValeurFormulaire("promotion")
     commentaires=getValeurFormulaire("commentaires")
     adresse=getValeurFormulaire("adresse")
-    insertHistorique('normal','pageCE','rechercheCE','modification ligne CE n°',ide)
+    
+    write_log(str(session['user']['id']),"/modifRechercheCE - Modification du CE n° "+ide)
     req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=?,qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=?,adresse=? where id=?",(idCE,entreprise,referente,intermediaire,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse,ide)]
-    print(req)
     ecriture_BDD(req)
-    insertHistorique('normal','pageCE','listingCE','modification ligne CE n°',ide)
     return '',204
 
 @app.route('/CE/<user>',methods=['GET', 'POST'])
@@ -3030,11 +3029,11 @@ def pageCE(user):
     checkUser()
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        insertHistorique('normal','pageCE','listingCE','filtre sur la réf id:',ref)
+        write_log(str(session['user']['id']),"/CE - Filtre sur la référente "+str(ref))
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
         ref=int(ref)
     else:
-        insertHistorique('normal','connexion','listingCE','filtre All ref',None)
+        write_log(str(session['user']['id']),"/CE - Filtre sur toutes les référentes")
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
 
     LCE=lecture_BDD(req)
@@ -3078,7 +3077,7 @@ def modifCE():
         minterRupt=1 
     req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=? where id=?",(nouvIdCE,entreprise,ref,inter,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,ide)]
     ecriture_BDD(req)
-    insertHistorique('normal','pageCE','listingCE','modification ligne CE n°',nouvIdCE)
+    write_log(str(session['user']['id']),"/modifCE - Modification du CE n°"+nouvIdCE)
     return '',204
     
 
@@ -3097,7 +3096,7 @@ def modifCEInfo():
     commentaires=getValeurFormulaire("commentaires")
     req=["UPDATE listingCE SET qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=? WHERE id=?",(qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,ide)]
     ecriture_BDD(req)
-    insertHistorique('normal','pageCE','infoCE','modification ligne CE n°',ide)
+    write_log(str(session['user']['id']),"/modifCEInfo - Modification ligne C n°"+ide)
     return '',204
 
 @app.route('/modifCEAdresse', methods=['GET', 'POST'])
@@ -3107,7 +3106,7 @@ def modifCEAdresse():
     adresse=getValeurFormulaire("adresse")
     req=["UPDATE listingCE SET adresse=? WHERE id=?",(adresse,ide)]
     ecriture_BDD(req)
-    insertHistorique('normal','pageCE','adresseCE','modification ligne CE n°',ide)
+    write_log(str(session['user']['id']),"/modifCEAdresse - Modification ligne C n°"+ide)
     return '',204
 
 @app.route('/suprCE', methods=['GET', 'POST'])
@@ -3116,7 +3115,7 @@ def suprCE():
     ide=getValeurFormulaire("id")
     req=["UPDATE listingCE set corbeille=1 where id=?",(ide,)]
     ecriture_BDD(req)
-    insertHistorique('normal','pageCE','listingCE','suppression CE n°',ide)
+    write_log(str(session['user']['id']),"suprCE - Suppression ligne C n°"+ide)
     return jsonify()
 
 @app.route('/infoCE/<user>',methods=['GET', 'POST'])
@@ -3124,10 +3123,10 @@ def pageCEinfo(user):
     checkUser()
     ref=getValeurFormulaire("ref")
     if ref==None or ref==0 or ref=='0':
-        insertHistorique('normal','pageCE','infoCE','filtre All ref',None)
+        write_log(str(session['user']['id']),"/infoCE - Filtre sur la référente "+str(ref))
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
     else:
-        insertHistorique('normal','pageCE','infoCE','filtre ref',ref)
+        write_log(str(session['user']['id']),"/infoCE - Filtre sur toutes les référentes")
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
         ref=int(ref)
     LCE=lecture_BDD(req)
@@ -3139,11 +3138,11 @@ def pageCEadresse(user):
     checkUser()
     ref=getValeurFormulaire("ref")
     if ref==0 or ref==None or ref=='0':
-        insertHistorique('normal','pageCE','adresseCE','filtre All ref',None)
+        write_log(str(session['user']['id']),"/adresseCE - Filtre sur la référente "+str(ref))
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 order by idCE",()]
         
     else:
-        insertHistorique('normal','pageCE','adresseCE','filtre ref',ref)
+        write_log(str(session['user']['id']),"/adresseCE - Filtre sur toutes les référentes")
         req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0 and listingCE.referente=? order by idCE",(ref,)]
         ref=int(ref)
     LCE=lecture_BDD(req)
@@ -3156,7 +3155,7 @@ def pageCEadresse(user):
 @app.route('/connexion',methods=['GET', 'POST'])
 def connexion():
     checkUser()
-    insertHistorique('DW','connexion','connexion',"connexion",None)
+    write_log(str(session['user']['id']),"/connexion - Connexion")
     return render_template("dw_connexion.html")
     
 @app.route('/utilisateurs',methods=['GET', 'POST'])
@@ -3164,7 +3163,7 @@ def utilisateurs():
     checkUser()
     req=["SELECT * FROM utilisateur WHERE etat='ACTIF' ORDER BY id",()]
     utilisateur=lecture_BDD(req)
-    insertHistorique('DW','utilisateur','session',"visualisation",None)
+    write_log(str(session['user']['id']),"/utilisateurs - Visualisation")
     return render_template("dw_utilisateurs.html",utilisateur=utilisateur)
 
 @app.route('/ajoutUtilisateur',methods=['GET', 'POST'])
@@ -3181,7 +3180,7 @@ def ajoutUtilisateur():
     etat='ACTIF'
     req=["INSERT INTO utilisateur (id,nom,prenom,mail,mdp,niveau,etat) VALUES(?,?,?,?,?,?,?)",(idUser,nom,prenom,mail,mdp,niveau,etat)]
     ecriture_BDD(req)
-    insertHistorique('DW','utilisateur','session',"ajout utilisateur id",id)
+    write_log(str(session['user']['id']),"/ajoutUtilisateur - Ajout utilisateur id n°"+id)
     return utilisateurs()
     
 
@@ -3200,7 +3199,7 @@ def supprUtilisateur():
             req=["UPDATE utilisateur SET etat='INACTIF' WHERE id=?",(id,)]
             ecriture_BDD(req)
             message="Changement(s) pris en compte"
-            insertHistorique('DW','utilisateur','session',"desactivation utilisateur id",id)
+            write_log(str(session['user']['id']),"/supprUtilisateur - Désactivation utilisateur id n°"+id)
         else:
             message="Veuillez attribuer les CE du référent n°"+id+" a d'autres référents avant de le supprimer"
         
@@ -3208,7 +3207,7 @@ def supprUtilisateur():
         req=["UPDATE utilisateur SET etat='INACTIF' WHERE id=?",(id,)]
         ecriture_BDD(req)
         message="Changement(s) pris en compte"
-        insertHistorique('DW','utilisateur','session',"desactivation utilisateur id",id)
+        write_log(str(session['user']['id']),"/supputilisateur - Desactiviation utilisateur id n°"+id)
     return jsonify(message=message)
 
 
@@ -3224,7 +3223,7 @@ def modifUtilisateur():
     niveauAv=lecture_BDD(req)[0]['niveau']
     req=["UPDATE utilisateur SET nom=?,prenom=?,mail=?,niveau=?  WHERE id=?",(nom,prenom,mail,niveau,id)]
     ecriture_BDD(req)
-    insertHistorique('DW','utilisateur','session',"modification utilisateur id",id)
+    write_log(str(session['user']['id']),"/modifUtilisateur - Modification utilisateur id n°"+id)
 
     return '',204
     
@@ -3234,7 +3233,7 @@ def initMDP():
     id=getValeurFormulaire("idMDP")
     req=["SELECT id,nom,prenom,mail FROM utilisateur WHERE id=?",(id,)]
     user=lecture_BDD(req)[0]
-    insertHistorique('DW','utilisateur','session',"modification mdp utilisateur id",id)
+    write_log(str(session['user']['id']),"/initMDP - Modification mdp utilisateur id n°"+id)
     return render_template("dw_utilisateurs_mdp.html",id=id,user=user)
 
 @app.route('/validerMDP',methods=['GET', 'POST'])
@@ -3247,13 +3246,13 @@ def validerMDP():
     mdpC=getValeurFormulaire("mdp")
     req=["UPDATE utilisateur SET mdp=? WHERE id=?",(mdpC,id)]
     ecriture_BDD(req)
-    insertHistorique('DW','utilisateur','session',"validation mdp utilisateur id",id)
+    write_log(str(session['user']['id']),"validMDP - Validation mdp utilisateur id n°"+id)
     return render_template("dw_utilisateurs_mdp_succes.html")
 
 @app.route('/confirmerMDP',methods=['GET', 'POST'])
 def confirmerMDP():
     checkUser()
-    insertHistorique('DW','utilisateur','session',"confirmation modification mdp utilisateur id",id)
+    write_log(str(session['user']['id']),"/confirmerMDP - Confirmation modification mdp utilisateur id n°"+id)
     return render_template("dw_utilisateurs_mdp_succes.html")
 
 @app.route('/postes',methods=['GET', 'POST'])
@@ -3261,7 +3260,7 @@ def postes():
     checkUser()
     req=["SELECT * FROM postes",()]
     Lpc=lecture_BDD(req)
-    insertHistorique('DW','utilisateur','poste',"visualisation",None)
+    write_log(str(session['user']['id']),"/postes - Visualisation")
     return render_template("dw_utilisateurs_postes.html",Lpc=Lpc)
 
 @app.route('/ajoutPoste',methods=['GET', 'POST'])
@@ -3275,7 +3274,7 @@ def ajoutPoste():
     dossierErreur="C:/exemple/pc/test/ - "+str(idPoste)
     req=["INSERT INTO postes VALUES(?,?,?,?)",(idPoste,numPC,dossierExtract,dossierErreur)]
     ecriture_BDD(req)
-    insertHistorique('DW','utilisateur','poste',"ajout poste numPC:",numPC)
+    write_log(str(session['user']['id']),"/ajoutPoste - Ajout poste numPC n°"+numPC)
     return postes()
     
 
@@ -3286,7 +3285,7 @@ def supprPoste():
     req=["DELETE FROM postes WHERE id=?",(id,)]
     ecriture_BDD(req)
     message="Changement(s) pris en compte"
-    insertHistorique('DW','utilisateur','poste',"suppression poste numPC:",id)
+    write_log(str(session['user']['id']),"/supprPoste - Suppression du poste numPC n°"+id)
     return jsonify(message=message)
 
 
@@ -3299,7 +3298,7 @@ def modifPoste():
     dossierErreur=str(getValeurFormulaire("dossierErreur"))
     req=["UPDATE postes SET numPC=?,dossierExtract=?,dossierErreur=? WHERE id=?",(numPC,dossierExtract,dossierErreur,id)]
     ecriture_BDD(req)
-    insertHistorique('DW','utilisateur','poste',"modification poste numPC:",numPC)
+    write_log(str(session['user']['id']),"/modidPoste - Modification poste numPC °"+numPC)
     return '',204
 
 @app.route('/corbeille')
@@ -3314,7 +3313,7 @@ def corbeille():
         req=["SELECT id_commande,client,societe,total from commande join client on idClient=idClientCmd where commande.corbeille=1 and commande.idExtractionCmd=?",(extract["idExtraction"],)]
         l=lecture_BDD(req)
         Lcmd.append(l)
-    insertHistorique('DW','corbeille','commandes',"visualisation",None)
+    write_log(str(session['user']['id']),"/corbeille - Visualisation")
     return render_template("dw_corb_cde.html",Lcmd=Lcmd,Lextract=Lextract,Lmanu=Lmanu)
     
 
@@ -3342,13 +3341,14 @@ def actionCorb():
         
         req=["delete from extractions where idExtraction not in (SELECT idExtractionCmd from commande where corbeille=0)",()]
         ecriture_BDD(req)
-        insertHistorique('DW','corbeille','commandes',"suppression des commandes",None)
+        write_log(str(session['user']['id']),"/actionCorb - Suppression des commandes")
 
     else:
         for cmd in LidCmd:
             req=["UPDATE commande set corbeille=0,deletedBy='' where id_commande=?",(cmd,)]
             ecriture_BDD(req)
-        insertHistorique('DW','corbeille','commandes',"ajout dans le monde normal",None)
+        write_log(str(session['user']['id']),"/actionCorb - Ajout de la commande dans le monde normal")
+
 
     return corbeille()
     
@@ -3357,7 +3357,7 @@ def actionCorb():
 def corbCE():
     checkUser()
     req=["SELECT id,idCE,entreprise,intermediaire from listingCE where corbeille=1",()]
-    insertHistorique('DW','corbeille','CE',"visualisation",None)
+    write_log(str(session['user']['id']),"/corbCE - Visualisation")
     Lce=lecture_BDD(req)
     return render_template("dw_corb_CE.html",Lce=Lce)
     
@@ -3371,13 +3371,14 @@ def actionCorbCE():
         for idCE in LidCE:
             req=["DELETE from listingCE where id=? and corbeille=1",(idCE,)]
             ecriture_BDD(req)
-        insertHistorique('DW','corbeille','CE',"suppression CE",None)
+            write_log(str(session['user']['id']),"/actionCorbCE - Suppression du CE n°"+idCE)
+
 
     else:
         for idCE in LidCE:
             req=["UPDATE listingCE set corbeille=0 where id=?",(idCE,)]
             ecriture_BDD(req)
-        insertHistorique('DW','corbeille','CE',"ajout du CE dans le monde normal",None)
+        write_log(str(session['user']['id']),"/actionCorbCE - Ajout dans le monde normal du CE n°"+idCE)
 
     return corbCE()
 
@@ -3386,7 +3387,7 @@ def actionCorbCE():
 @app.route('/export_de_donnees',methods=['GET', 'POST'])
 def export_de_donnees():
     checkUser()
-    insertHistorique('DW','clients','general',"visualisation",None)
+    write_log(str(session['user']['id']),"/export_de_donnees - Visualisation")
     return render_template("dw_export_de_donnees.html")
 
 
@@ -3416,35 +3417,36 @@ def action_export_de_donnees():
                     ecriture_BDD(req)
                 req=["delete from client where idclient<>? and mail=? and client=?",(mail["idclient"],mail["mail"],mail["client"])]
                 ecriture_BDD(req)
-        insertHistorique('DW','export_de_donnees','general',"suppression des doublons",None)
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Suppression des doublons")
+
     if action=="1" or action=="99":
         #Export des mails
         export_Mail_Clients()
-        insertHistorique('DW','export_de_donnees','general',"exportation des mails clients",None)
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des mails clients")
     if action=="2" or action=="99":
         #Export des infos CE
         export_Infos_CE()
-        insertHistorique('DW','export_de_donnees','general',"exportation des infos CE",None)
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des infos CE")
     if action=="3" or action=="99":
         #Export des commandes
         export_Commandes(maxD,minD)
-        insertHistorique('DW','export_de_donnees','general',"exportation des commandes",None)
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des commandes")
     if action=="4" or action=="99":
         #Export des paiements
         export_Paiements(maxD,minD)
-        insertHistorique('DW','export_de_donnees','general',"exportation des paiements",None)
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des paiements")
     if action=="5" or action=="99":
         #Export des impayés listing
         export_Impayes()
-        insertHistorique('DW','export_de_donnees','general',"exportation du listing des impayés",None)
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des impayés")
     if action=="6" or action=="99":
         #Export des impayés par CE
         export_Impayes_Synthese_CE()
-        insertHistorique('DW','export_de_donnees','general',"exportation synthèse des impayés par CE",None)
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des impayés par CE")
     if action=="7" or action=="99":
         #Export des impayés par référente
         export_Impayes_Synthese_Referente()
-        insertHistorique('DW','export_de_donnees','general',"exportation synthèse des impayés par référente",None)
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des impayés par référente")
     
     return '',204
 
@@ -3583,7 +3585,7 @@ def stat():
         nbCmd=int(lecture_BDD(req)[0]["count(id_commande)"])
         Ldate.append([dateI,nbCmd])
     jsondata=json.dumps({'Ldate':Ldate})
-    insertHistorique('DW','stats','general',"visualisation",None)
+    write_log(str(session['user']['id']),"/stat - Visualisation")
     return render_template("dw_stat_general.html",CA=CA,cmdTot=cmdTot,tpstot=tpstot,bestP=bestP,nbProd=nbProd,idCEmax=idCEmax,CAmax=CAmax,CAProdMax=CAProdmax,libMax=libMax,coutRupt=coutRupt,nbRupt=nbRupt,dateMin=dateMin,dateMax=dateMax,jsondata=jsondata)
 
 
@@ -3621,7 +3623,7 @@ def calculCAProd(code):
 def export():
     checkUser()
     export_Extractor_Stat()
-    insertHistorique('DW','stats','general',"exportation données",None)
+    write_log(str(session['user']['id']),"/export - Exportation des données")
     return '',204
     
 
@@ -3695,14 +3697,14 @@ def statCE():
                 CAProdmax=CAProd
                 libMax=prod["libW"]
         LbestSell.append([CAProdmax,libMax])
-    insertHistorique('DW','stats','CE',"visualisation",None)
+    write_log(str(session['user']['id']),"/statCE - Visualisation")
     return render_template("dw_stat_CE.html",dateMin=dateMin,dateMax=dateMax,LnbCmd=LnbCmd,LbestProd=LbestProd,LbestSell=LbestSell,LidCE=LidCE,LCACE=LCACE)
 
 @app.route('/exportAdresseCE',methods=['GET', 'POST'])
 def exportAdresseCE():
     checkUser()
     export_Infos_CE()
-    insertHistorique('DW','stats','CE',"exportation des données",None)
+    write_log(str(session['user']['id']),"/exportAdresseCE - Exportation des données")
     
     return '',204
 
@@ -3792,7 +3794,7 @@ def statRef():
         jsondata=json.dumps({'Ldate':Ldate}) 
 
         LtotRef.append([cmdTot,CA,tpstot,jsondata])
-    insertHistorique('DW','stats','ref',"visualisation",None)
+    write_log(str(session['user']['id']),"/statRef - Visualisation")  
     return render_template("dw_stat_ref.html",LtotRef=LtotRef,dateMin=dateMin,dateMax=dateMax,Lref=Lref)
     
 
@@ -3878,7 +3880,7 @@ def statUser():
         jsondataFacturation=json.dumps({'Ldate':LdateFacturation})    
 
         LtotRef.append([jsondataExtraction,jsondataAjout,jsondataPreparation,jsondataFacturation])
-    insertHistorique('DW','stats','user-cde',"visualisation",None)
+    write_log(str(session['user']['id']),"/statUser - Visualisation")    
     return render_template("dw_stat_user_cde.html",LtotRef=LtotRef,dateMin=dateMin,dateMax=dateMax,Lref=Lref,Lcat=Lcat)
 
 ###Stat User Produits
@@ -3963,7 +3965,7 @@ def statUserPdt():
         jsondataFacturation=json.dumps({'Ldate':LdateFacturation})    
 
         LtotRef.append([jsondataExtraction,jsondataAjout,jsondataPreparation,jsondataFacturation])
-    insertHistorique('DW','stats','user-pdt',"visualisation",None)
+    write_log(str(session['user']['id']),"/statUserPdt - Visualisation")
     return render_template("dw_stat_user_pdt.html",LtotRef=LtotRef,dateMin=dateMin,dateMax=dateMax,Lref=Lref,Lcat=Lcat)
 
 ##########info client##########
@@ -3972,7 +3974,7 @@ def infoClient():
     checkUser()
     req=["SELECT * from client order by idCEclient,client",()]
     Lclients=lecture_BDD(req)
-    insertHistorique('DW','clients','general',"visualisation",None)
+    write_log(str(session['user']['id']),"/clients - Visualisation")
     return render_template("dw_clients.html",Lclients=Lclients)
     
 
@@ -3993,15 +3995,15 @@ def actionClient():
                     ecriture_BDD(req)
                 req=["delete from client where idclient<>? and mail=? and client=?",(mail["idclient"],mail["mail"],mail["client"])]
                 ecriture_BDD(req)
-        insertHistorique('DW','client','general',"suppression des doublons",None)
+        write_log(str(session['user']['id']),"/actionsClients - Suppression des doublons")
             
         return infoClient()
     if action=="1":
         export_Mail_Clients()
-        insertHistorique('DW','client','general',"exportation des données clients",None)
+        write_log(str(session['user']['id']),"/actionsClients - Exportation des données clients")
     else:
         export_Infos_CE()
-        insertHistorique('DW','client','general',"exportation des données CE",None)
+        write_log(str(session['user']['id']),"/actionsClients - Exportation des données CE")
     return '',204
 
 

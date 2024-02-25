@@ -102,17 +102,11 @@ def export_Extractor_Stat():
             csvfile.write(';'.join(str(r) for r in row) + '\n')
 
 def write_log(user,texte):
-    print("dans fonction")
     now = datetime.now()
-    print("now")
-    print(now)
     # Formater la date pour l'utiliser comme nom de fichier
     filename = logFold+now.strftime("%Y-%m")+".txt"
-    print("filename")
-    print(filename)
     # Créer et écrire dans le fichier
     with open(filename, "a") as f:
-        print("ligne ecrite")
         log=str(now)+" user : "+user+" "+texte+"\n"
         f.write(log)
 
