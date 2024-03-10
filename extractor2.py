@@ -1127,7 +1127,7 @@ def listProd(user):
     date1=datetime.today().strftime('%Y-%m-%d_%H:%M:%S')
     date=date1.split('_')[0]
     heure=date1.split('_')[1]
-    write_log(str(session['user']['id']),"/listeProduit - Visualisation du CE n° "+idCE)
+    write_log(str(session['user']['id']),"/listeProduit - Visualisation du CE n° "+str(idCE))
     return render_template('preparation_bon.html',user=user,nbError=nbError,Lidclient=Lidclient,code=code,ean=ean,lib=lib,libCl=libCl,quantite=qte,atom=oui,nProd=len(code),idCE=idCE,nomCE=nomCE,LidHW=LidHW,Lstock=Lstock,referente=referente,date=date,heure=heure)
 
 
@@ -1186,7 +1186,7 @@ def creerlot(user):
         if mailInterPrep==1:
             Linfo[0]=mail
             send_email(Linfo,[],[])
-    write_log(str(session['user']['id']),"/lot - Formation du lot n° "+lot)
+    write_log(str(session['user']['id']),"/lot - Formation du lot n° "+str(lot))
     return bonPrep(user)
     
 #endregion   
@@ -1261,7 +1261,7 @@ def defReliquat(user):
         referente=""
         idCE=""
         nomCE=""
-    write_log(str(session['user']['id']),"/defReliquat - Sélection du lot n°"+lot)
+    write_log(str(session['user']['id']),"/defReliquat - Sélection du lot n°"+str(lot))
 
     return render_template('reliquat_def.html',user=user,nomCE=nomCE,idCE=idCE,lot=lot,code=code,ean=ean,lib=lib,quantite=qte,nProd=len(code),Lreliquats=Lreliquats,Lmag=Lmag,Lstock=Lstock,Lstockbis=Lstockbis,referente=referente,dateLot=dateLot)
 
@@ -1276,7 +1276,7 @@ def addReliquat():
     ecriture_BDD(req)
     req=["SELECT max(idReliquat) from reliquats where code=? and lot=?",(code,lot)]
     idReliquat=lecture_BDD(req)[0]['max(idReliquat)']
-    write_log(str(session['user']['id']),"/addReliquat - Ajout de la demande reliquat n° "+idReliquat)
+    write_log(str(session['user']['id']),"/addReliquat - Ajout de la demande reliquat n° "+str(idReliquat))
     return jsonify(idReliquat=idReliquat)
 
 
@@ -1288,7 +1288,7 @@ def updateReliquat():
     qte=getValeurFormulaire("qte")
     req=["UPDATE reliquats set mag=?, qte=? where idReliquat=?",(mag,qte,idReliquat)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/updateReliquat - Mise à jour de la demande reliquat n°"+idReliquat)
+    write_log(str(session['user']['id']),"/updateReliquat - Mise à jour de la demande reliquat n°"+str(idReliquat))
     return jsonify(result="success")
     
 
@@ -1298,7 +1298,7 @@ def delReliquat():
     idReliquat=getValeurFormulaire("idReliquat")
     req=["delete from reliquats where idReliquat=?",(idReliquat,)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/delReliquat - Suppression du reliquat n° "+idReliquat)
+    write_log(str(session['user']['id']),"/delReliquat - Suppression du reliquat n° "+str(idReliquat))
     return jsonify(result="success")
            
 
@@ -1358,7 +1358,7 @@ def bonPrep(user):
         idCE=""
         nomCE=""
         referente=""
-    write_log(str(session['user']['id']),"/bonPrep -Visualisation du bon de préparation du lot n°"+lot)
+    write_log(str(session['user']['id']),"/bonPrep -Visualisation du bon de préparation du lot n°"+str(lot))
     return render_template('reliquat_bonPrep.html',user=user,code=code,ean=ean,lib=lib,libCl=libCl,quantite=qte,atom=oui,nProd=len(code),idCE=idCE,nomCE=nomCE,lot=lot,LidHW=LidHW,Lstock=Lstock,referente=referente,dateLot=dateLot,Linfo=Linfo)
 
 
@@ -1390,7 +1390,7 @@ def visuReliquat(user,tout=0):
         maxRelik=l[0]['max(idReliquat)']
     else:
         maxRelik=0
-    write_log(str(session['user']['id']),"/visuReliquat - Visualisation reliquat avec l'idMax n° "+maxRelik)
+    write_log(str(session['user']['id']),"/visuReliquat - Visualisation reliquat avec l'idMax n° "+str(maxRelik))
     return render_template('reliquat_general.html',user=user,Lrelik=Lrelik,Lmag=Lmag,idReliquat=idReliquat,maxRelik=maxRelik,LidCE=LidCE,date=date,heure=heure)
     
 
@@ -1401,7 +1401,7 @@ def changeQteDonnee():
     qteDonnee=getValeurFormulaire("qteDonnee")
     req=["UPDATE reliquats set qteDonnee=? where idReliquat=?",(qteDonnee,idRelik)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/changeQteDonnee - Ajout de la quantité pour l'idReliquat n°"+idRelik+" avec une quantité de "+qteDonnee)
+    write_log(str(session['user']['id']),"/changeQteDonnee - Ajout de la quantité pour l'idReliquat n°"+str(idRelik)+" avec une quantité de "+str(qteDonnee))
     return jsonify()
     
 
@@ -1414,7 +1414,7 @@ def filtreReliquat(user):
     if idReliquat!="":
         req=["UPDATE lastRelik set id=?",(idReliquat,)]
         ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/filtreReliquat - Filtre sur la idReliquat "+idReliquat)
+    write_log(str(session['user']['id']),"/filtreReliquat - Filtre sur la idReliquat "+str(idReliquat))
     return visuReliquat(user,tout)
     
 
@@ -1441,7 +1441,7 @@ def filtreReliquatCE(user):
             maxRelik=l[0]['max(idReliquat)']
         else:
             maxRelik=0
-        write_log(str(session['user']['id']),"/filtreReliquarCE - Filtre sur le reliquat "+idReliquat)
+        write_log(str(session['user']['id']),"/filtreReliquarCE - Filtre sur le reliquat "+str(idReliquat))
         return render_template('reliquat_general.html',user=user,Lrelik=Lrelik,Lmag=Lmag,idCE=idCE,idReliquat=idReliquat,maxRelik=maxRelik,LidCE=LidCE)
     else: 
         tout=0
@@ -1507,7 +1507,7 @@ def suprRupt():
         ecriture_BDD(req)
     req=["delete from rupture where rupt_code=?",(idRupt,)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/suprRupt - Suppression de l'id rupture n°"+idRupt)
+    write_log(str(session['user']['id']),"/suprRupt - Suppression de l'id rupture n°"+str(idRupt))
     return jsonify()
     
 
@@ -1537,7 +1537,7 @@ def validRupt(user):
                     maxEtat=max(L)
                     req=["UPDATE facturation set etatProd=?,etatMin=?,etatMax=? where idProd=?",(etat,minEtat,maxEtat,ID)]
                     ecriture_BDD(req)
-            write_log(str(session['user']['id']),"/validRupt - Validation de la rupture du code "+Lcode[i])
+            write_log(str(session['user']['id']),"/validRupt - Validation de la rupture du code "+str(Lcode[i]))
     return rupture(user)
     
 
@@ -1618,7 +1618,7 @@ def selectLot(user):
     mode=getValeurFormulaire('mode')
     if mode=="1":
         return defReliquat(user)
-    write_log(str(session['user']['id']),"/selectLot - Sélection du lot n°"+lot)
+    write_log(str(session['user']['id']),"/selectLot - Sélection du lot n°"+str(lot))
     return fact(user)
     
 
@@ -1632,7 +1632,7 @@ def suprLot(user):
     ecriture_BDD(req)
     req=["UPDATE commande set lot=NULL,etatCmd=0,dateLot=NULL where lot=? and etatCmd=1 and corbeille=0",(lot,)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/suprLot - Suppression du lot n°"+lot)
+    write_log(str(session['user']['id']),"/suprLot - Suppression du lot n°"+str(lot))
     return reliquats(user)
     
 
@@ -1670,7 +1670,7 @@ def fact(user):
         idCE=""
         nomCE=""
         referente=""
-    write_log(str(session['user']['id']),"/facturation - Visualisation du lot n°"+lot)
+    write_log(str(session['user']['id']),"/facturation - Visualisation du lot n°"+str(lot))
     return render_template('facturation_general.html',user=user,nomCE=nomCE,Lclients=Lclients,Lbons=Lbonstot,idCE=idCE,lot=lot,LEtatTot=LEtatTot,Lsomme=Lsomme,referente=referente)
     
 
@@ -1690,7 +1690,7 @@ def changeEtat():
     strEtatCmd = ";".join(Letat)
     req=["UPDATE facturation set etatProd=?,etatMin=?,etatMax=? where idProd=?",(strEtatCmd,minEtat,maxEtat,idCmd)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/changeEtat - Modification de l'état de la commande n°"+idCmd)
+    write_log(str(session['user']['id']),"/changeEtat - Modification de l'état de la commande n°"+str(idCmd))
     return '', 204
     
 
@@ -1823,7 +1823,7 @@ def nextStep(user):
         qtePdt=getValeurFormulaire('qtePdt')
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'facturer',qteFact,qtePdt,lot)]
         ecriture_BDD(req)
-        write_log(str(session['user']['id']),"/nextStep - Validation des données facturées pour le lot n°"+lot)
+        write_log(str(session['user']['id']),"/nextStep - Validation des données facturées pour le lot n°"+str(lot))
 
     elif action=="validerSansMail":
         lot=session['user']['lot']
@@ -1906,10 +1906,10 @@ def nextStep(user):
         qtePdt=getValeurFormulaire('qtePdt')
         req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'facturer',qteFact,qtePdt,lot)]
         ecriture_BDD(req)
-        write_log(str(session['user']['id']),"/nextStep - validation des données facturées pour le lot n° (sans mail)"+lot)
+        write_log(str(session['user']['id']),"/nextStep - validation des données facturées pour le lot n° (sans mail)"+str(lot))
 
     elif action=="info":
-        write_log(str(session['user']['id']),"/nextStep - Visualisation synthèse des infos CE du lot n°"+lot)
+        write_log(str(session['user']['id']),"/nextStep - Visualisation synthèse des infos CE du lot n°"+str(lot))
         session['user']['page']="facturation"
         return facturationInfo(user)
     else:
@@ -1946,7 +1946,7 @@ def nextStep(user):
             client=liste[0]["client"]
             idRef=liste[0]["referente"]
             send_email([str(mail),str(client),str(idCmd),action,montant,str(nbrPdt),adresse,idCmd,str(idClient),str(idCE),str(idRef)],[],[])
-            write_log(str(session['user']['id']),"/nextStep - Demande de paiement pour la commande n°"+idCmd)
+            write_log(str(session['user']['id']),"/nextStep - Demande de paiement pour la commande n°"+str(idCmd))
             return '', 204    
     return fact(user)
 
@@ -2002,7 +2002,7 @@ def facturationInfo(user):
             minterRupt=1 
         req=["UPDATE listingCE SET qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,commentaires=?,adresse=?,mailCl=?,mailInterPrep=?, mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=? WHERE idCE=?",(qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,commentaires,adresse,mCl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,idCE)]
         ecriture_BDD(req)
-        write_log(str(session['user']['id']),"/facturationInfo - Modification du CE n°"+idCE)
+        write_log(str(session['user']['id']),"/facturationInfo - Modification du CE n°"+str(idCE))
 
     if action=="1":
         if session['user']['page']=="facturation":
@@ -2079,7 +2079,7 @@ def recap(user):
     except:
         idCE=""
         nomCE=""
-    write_log(str(session['user']['id']),"/recap - Visualisation du lot n°"+lot)
+    write_log(str(session['user']['id']),"/recap - Visualisation du lot n°"+str(lot))
     return render_template('facturation_recap.html',user=user,nomCE=nomCE,idCE=idCE,lot=lot,code=code,ean=ean,lib=lib,quantite=qte,Letat=Letat,nProd=len(code),Lreliquats=Lreliquats)
 
     
@@ -2089,7 +2089,7 @@ def clientRupt(user):
     checkUser()
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        write_log(str(session['user']['id']),"/clientRupt - Visualisation avec filtre sur la référente°"+ref)
+        write_log(str(session['user']['id']),"/clientRupt - Visualisation avec filtre sur la référente°"+str(ref))
         req=["SELECT distinct client,commande.idCE,client.tel,client.mail,lot,date,id_commande,entreprise,utilisateur.id FROM client join commande on idclient=idclientCmd join listingCE on commande.idCE=listingCE.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where clientRupt is null and listingCE.referente=? and listingCE.corbeille=0 and id_commande in (SELECT id_commande from commande join facturation on idCmd=id_commande where etatProd LIKE '%3%')",(ref,)]
         ref=int(ref)
     else:
@@ -2103,7 +2103,7 @@ def clientRupt(user):
         req=["SELECT code,libW,prix,qte from facturation where idCmd=? and etatMax=3",(client["id_commande"],)]
         prod=lecture_BDD(req)
         Lprod.append(prod)
-    write_log(str(session['user']['id']),"/clientRupt - Visualisatyion")
+    write_log(str(session['user']['id']),"/clientRupt - Visualisation")
     return render_template('facturation_clientRupt.html',user=user,Lclient=Lclient,Lprod=Lprod,listeRef=listeRef,listeAll=listeAll)
 
     
@@ -2117,7 +2117,7 @@ def modifClientRupt():
     else:
         req=["UPDATE commande set clientRupt=NULL where id_commande=?",(idCmd,)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/modifClientRupt - Modification de la commande n°"+idCmd)
+    write_log(str(session['user']['id']),"/modifClientRupt - Modification de la commande n°"+str(idCmd))
 
     return jsonify()
     
@@ -2145,7 +2145,7 @@ def paiements(user):
         return(searchImpaye(user))
     ref=getValeurFormulaire("ref")
     if ref!=None:
-        write_log(str(session['user']['id']),"/paiements - Visualisation avec la réferente n°"+ref)
+        write_log(str(session['user']['id']),"/paiements - Visualisation avec la réferente n°"+str(ref))
         req=["SELECT DISTINCT idUnique,idCd,paiement.date,heure,type,montant,idCE,lot,client,relance,idPaiement FROM paiement join commande ON id_commande=idCd JOIN client on idclientCmd=idclient and idCE in (SELECT idCE from listingCE where listingCE.referente=? and corbeille=0) AND etat=0 order by paiement.date ASC, heure ASC  LIMIT 200",(ref,)]
         ref=int(ref)
     else:
@@ -2332,7 +2332,7 @@ def relance():
         message="Mail envoyé au client"
     except:
         message="Erreur lors de l'envoi du mail"
-    write_log(str(session['user']['id']),"/relancePaiement - Relance du paiments de la commande n°"+idCmd)
+    write_log(str(session['user']['id']),"/relancePaiement - Relance du paiments de la commande n°"+str(idCmd))
     return jsonify(message=message,L=L)
    
 @app.route('/validePaiement',methods=['GET', 'POST'])
@@ -2357,7 +2357,7 @@ def valide():
     req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'paiement',1,montant,idCmd)]
     ecriture_BDD(req)
     message="Demande de paiement validée"
-    write_log(str(session['user']['id']),"/validePaiement - Validation du paiement de la commande n°"+idCmd)
+    write_log(str(session['user']['id']),"/validePaiement - Validation du paiement de la commande n°"+str(idCmd))
     return jsonify(message=message)
 
 @app.route('/annulePaiement',methods=['GET', 'POST'])
@@ -2379,7 +2379,7 @@ def annule():
     req=["UPDATE paiement SET etat=2 where idCd=? AND idPaiement=? AND relance=? AND type=? AND montant=?",(idCmd,idPaiement,idRelance,type,montant)]
     ecriture_BDD(req)
     message="Demande de paiement annulée"
-    write_log(str(session['user']['id']),"/annulePaiement - Annulation du paiement de la commande n°"+idCmd)
+    write_log(str(session['user']['id']),"/annulePaiement - Annulation du paiement de la commande n°"+str(idCmd))
     return jsonify(message=message)
 
 @app.route('/extractImpayes',methods=['GET', 'POST'])
@@ -2745,7 +2745,7 @@ def actionFromPaiementPaye(user):
     if action=='annuler':
         req=["UPDATE paiement SET etat=2 where idUnique=?",(idUnique,)]
         ecriture_BDD(req)
-        write_log(str(session['user']['id']),"/actionFromPaiementPaye - Annulation du paiement de la commande"+idCmd)
+        write_log(str(session['user']['id']),"/actionFromPaiementPaye - Annulation du paiement de la commande"+str(idCmd))
     return paiementsPaye(user)
 #endregion
 
@@ -2789,7 +2789,7 @@ def choixCELivre(user):
 def selectLivraison(user):
     checkUser()
     session['user']['idCELivraison']=int(getValeurFormulaire('idCE'))
-    write_log(str(session['user']['id']),"/selectLivraison - Selection du CE n° "+session['user']['idCELivraison'])
+    write_log(str(session['user']['id']),"/selectLivraison - Selection du CE n° "+str(session['user']['idCELivraison']))
     return visuLivraison(user)
     
 
@@ -2805,7 +2805,7 @@ def visuLivraison(user):
     except:
         nomCE=""
         
-    write_log(str(session['user']['id']),"/visuLivraison - Visualisation du CE n° "+idCELivraison)
+    write_log(str(session['user']['id']),"/visuLivraison - Visualisation du CE n° "+str(idCELivraison))
     return render_template('livraison_general.html',user=user,idCE=idCELivraison,nomCE=nomCE,Lcmd=Lcmd)
 
 
@@ -2922,7 +2922,7 @@ def addCE():
 
     req=["INSERT INTO listingCE (referente,idCE,entreprise,intermediaire,mail,tel,corbeille,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(referente,idCE,entreprise,intermediaire,mail,tel,0,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/addCE - Ajout du CE n° "+idCE)
+    write_log(str(session['user']['id']),"/addCE - Ajout du CE n° "+str(idCE))
     return '',204
 
 @app.route('/rechercheCE/<user>',methods=['GET', 'POST'])
@@ -2934,7 +2934,7 @@ def rechercheCE(user):
     else:
         idCEselec=int(CEselectionne.split(" - ")[0])
         
-    write_log(str(session['user']['id']),"/rechercheCE - Filtre du CE n° "+idCEselec)
+    write_log(str(session['user']['id']),"/rechercheCE - Filtre du CE n° "+str(idCEselec))
     req=["SELECT listingCE.id,utilisateur.prenom,idCE,entreprise,intermediaire,listingCE.mail,tel,mailCl,mailInterPrep,mailInterFact,mailInterRelFact,mailInterRel,mailInterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse from listingCE  JOIN utilisateur ON listingCE.referente=utilisateur.id where corbeille=0",()]
     LCE=lecture_BDD(req)
     listeRef,listeAll=getListRef()
@@ -2971,7 +2971,7 @@ def searchCE():
         taille=0
         Linfo=[]
         
-    write_log(str(session['user']['id']),"/searchCE - Filtre du CE n° "+CE)
+    write_log(str(session['user']['id']),"/searchCE - Filtre du CE n° "+str(CE))
     return jsonify(Linfo=Linfo,taille=taille,CEselectionne=CEselectionne)
 
 @app.route('/modifrechercheCE', methods=['GET', 'POST'])
@@ -3019,7 +3019,7 @@ def modifrechercheCE():
     commentaires=getValeurFormulaire("commentaires")
     adresse=getValeurFormulaire("adresse")
     
-    write_log(str(session['user']['id']),"/modifRechercheCE - Modification du CE n° "+ide)
+    write_log(str(session['user']['id']),"/modifRechercheCE - Modification du CE n° "+str(ide))
     req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=?,qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=?,adresse=? where id=?",(idCE,entreprise,referente,intermediaire,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,adresse,ide)]
     ecriture_BDD(req)
     return '',204
@@ -3077,7 +3077,7 @@ def modifCE():
         minterRupt=1 
     req=["UPDATE listingCE SET idCE=?,entreprise=?,referente=?,intermediaire=?,mail=?,tel=?,mailCl=?,mailInterPrep=?,mailInterFact=?,mailInterRelFact=?,mailInterRel=?,mailInterRupt=? where id=?",(nouvIdCE,entreprise,ref,inter,mail,tel,mcl,minterPrep,minterFact,minterRelFact,minterRel,minterRupt,ide)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/modifCE - Modification du CE n°"+nouvIdCE)
+    write_log(str(session['user']['id']),"/modifCE - Modification du CE n°"+str(nouvIdCE))
     return '',204
     
 
@@ -3096,7 +3096,7 @@ def modifCEInfo():
     commentaires=getValeurFormulaire("commentaires")
     req=["UPDATE listingCE SET qteFact=?,sac=?,retraitMag=?,colisIndiv=?,colisCol=?,colisExpe=?,catalogue=?,promotion=?,commentaires=? WHERE id=?",(qteFact,sac,retraitMag,colisIndiv,colisCol,colisExpe,catalogue,promotion,commentaires,ide)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/modifCEInfo - Modification ligne C n°"+ide)
+    write_log(str(session['user']['id']),"/modifCEInfo - Modification ligne C n°"+str(ide))
     return '',204
 
 @app.route('/modifCEAdresse', methods=['GET', 'POST'])
@@ -3106,7 +3106,7 @@ def modifCEAdresse():
     adresse=getValeurFormulaire("adresse")
     req=["UPDATE listingCE SET adresse=? WHERE id=?",(adresse,ide)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/modifCEAdresse - Modification ligne C n°"+ide)
+    write_log(str(session['user']['id']),"/modifCEAdresse - Modification ligne C n°"+str(ide))
     return '',204
 
 @app.route('/suprCE', methods=['GET', 'POST'])
@@ -3115,7 +3115,7 @@ def suprCE():
     ide=getValeurFormulaire("id")
     req=["UPDATE listingCE set corbeille=1 where id=?",(ide,)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"suprCE - Suppression ligne C n°"+ide)
+    write_log(str(session['user']['id']),"suprCE - Suppression ligne C n°"+str(ide))
     return jsonify()
 
 @app.route('/infoCE/<user>',methods=['GET', 'POST'])
@@ -3180,7 +3180,7 @@ def ajoutUtilisateur():
     etat='ACTIF'
     req=["INSERT INTO utilisateur (id,nom,prenom,mail,mdp,niveau,etat) VALUES(?,?,?,?,?,?,?)",(idUser,nom,prenom,mail,mdp,niveau,etat)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/ajoutUtilisateur - Ajout utilisateur id n°"+id)
+    write_log(str(session['user']['id']),"/ajoutUtilisateur - Ajout utilisateur id n°"+str(id))
     return utilisateurs()
     
 
@@ -3199,7 +3199,7 @@ def supprUtilisateur():
             req=["UPDATE utilisateur SET etat='INACTIF' WHERE id=?",(id,)]
             ecriture_BDD(req)
             message="Changement(s) pris en compte"
-            write_log(str(session['user']['id']),"/supprUtilisateur - Désactivation utilisateur id n°"+id)
+            write_log(str(session['user']['id']),"/supprUtilisateur - Désactivation utilisateur id n°"+str(id))
         else:
             message="Veuillez attribuer les CE du référent n°"+id+" a d'autres référents avant de le supprimer"
         
@@ -3207,7 +3207,7 @@ def supprUtilisateur():
         req=["UPDATE utilisateur SET etat='INACTIF' WHERE id=?",(id,)]
         ecriture_BDD(req)
         message="Changement(s) pris en compte"
-        write_log(str(session['user']['id']),"/supputilisateur - Desactiviation utilisateur id n°"+id)
+        write_log(str(session['user']['id']),"/supputilisateur - Desactiviation utilisateur id n°"+str(id))
     return jsonify(message=message)
 
 
@@ -3223,7 +3223,7 @@ def modifUtilisateur():
     niveauAv=lecture_BDD(req)[0]['niveau']
     req=["UPDATE utilisateur SET nom=?,prenom=?,mail=?,niveau=?  WHERE id=?",(nom,prenom,mail,niveau,id)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/modifUtilisateur - Modification utilisateur id n°"+id)
+    write_log(str(session['user']['id']),"/modifUtilisateur - Modification utilisateur id n°"+str(id))
 
     return '',204
     
@@ -3233,7 +3233,7 @@ def initMDP():
     id=getValeurFormulaire("idMDP")
     req=["SELECT id,nom,prenom,mail FROM utilisateur WHERE id=?",(id,)]
     user=lecture_BDD(req)[0]
-    write_log(str(session['user']['id']),"/initMDP - Modification mdp utilisateur id n°"+id)
+    write_log(str(session['user']['id']),"/initMDP - Modification mdp utilisateur id n°"+str(id))
     return render_template("dw_utilisateurs_mdp.html",id=id,user=user)
 
 @app.route('/validerMDP',methods=['GET', 'POST'])
@@ -3246,13 +3246,13 @@ def validerMDP():
     mdpC=getValeurFormulaire("mdp")
     req=["UPDATE utilisateur SET mdp=? WHERE id=?",(mdpC,id)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"validMDP - Validation mdp utilisateur id n°"+id)
+    write_log(str(session['user']['id']),"validMDP - Validation mdp utilisateur id n°"+str(id))
     return render_template("dw_utilisateurs_mdp_succes.html")
 
 @app.route('/confirmerMDP',methods=['GET', 'POST'])
 def confirmerMDP():
     checkUser()
-    write_log(str(session['user']['id']),"/confirmerMDP - Confirmation modification mdp utilisateur id n°"+id)
+    write_log(str(session['user']['id']),"/confirmerMDP - Confirmation modification mdp utilisateur id n°"+str(id))
     return render_template("dw_utilisateurs_mdp_succes.html")
 
 @app.route('/postes',methods=['GET', 'POST'])
@@ -3274,7 +3274,7 @@ def ajoutPoste():
     dossierErreur="C:/exemple/pc/test/ - "+str(idPoste)
     req=["INSERT INTO postes VALUES(?,?,?,?)",(idPoste,numPC,dossierExtract,dossierErreur)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/ajoutPoste - Ajout poste numPC n°"+numPC)
+    write_log(str(session['user']['id']),"/ajoutPoste - Ajout poste numPC n°"+str(numPC))
     return postes()
     
 
@@ -3285,7 +3285,7 @@ def supprPoste():
     req=["DELETE FROM postes WHERE id=?",(id,)]
     ecriture_BDD(req)
     message="Changement(s) pris en compte"
-    write_log(str(session['user']['id']),"/supprPoste - Suppression du poste numPC n°"+id)
+    write_log(str(session['user']['id']),"/supprPoste - Suppression du poste numPC n°"+str(id))
     return jsonify(message=message)
 
 
@@ -3298,7 +3298,7 @@ def modifPoste():
     dossierErreur=str(getValeurFormulaire("dossierErreur"))
     req=["UPDATE postes SET numPC=?,dossierExtract=?,dossierErreur=? WHERE id=?",(numPC,dossierExtract,dossierErreur,id)]
     ecriture_BDD(req)
-    write_log(str(session['user']['id']),"/modidPoste - Modification poste numPC °"+numPC)
+    write_log(str(session['user']['id']),"/modidPoste - Modification poste numPC °"+str(numPC))
     return '',204
 
 @app.route('/corbeille')
@@ -3371,14 +3371,14 @@ def actionCorbCE():
         for idCE in LidCE:
             req=["DELETE from listingCE where id=? and corbeille=1",(idCE,)]
             ecriture_BDD(req)
-            write_log(str(session['user']['id']),"/actionCorbCE - Suppression du CE n°"+idCE)
+            write_log(str(session['user']['id']),"/actionCorbCE - Suppression du CE n°"+str(idCE))
 
 
     else:
         for idCE in LidCE:
             req=["UPDATE listingCE set corbeille=0 where id=?",(idCE,)]
             ecriture_BDD(req)
-        write_log(str(session['user']['id']),"/actionCorbCE - Ajout dans le monde normal du CE n°"+idCE)
+        write_log(str(session['user']['id']),"/actionCorbCE - Ajout dans le monde normal du CE n°"+str(idCE))
 
     return corbCE()
 
