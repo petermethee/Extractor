@@ -761,10 +761,10 @@ def start(user):
     LidCE=lecture_BDD(req)
     req=["SELECT id,numPC from postes ORDER BY numPC",()]
     Lpc=lecture_BDD(req)
-    if session['user']['idPC']!="-1" and session['user']['idPC'] in Lpc:
-        idPC=session['user']['idPC'] 
-    else:
-        idPC=Lpc[0]
+    # if session['user']['idPC']!="-1" or session['user']['idPC'] in Lpc:
+    #     idPC=session['user']['idPC'] 
+    # else:
+    #     idPC=Lpc[0]
     #Commandes à préparer/facturer
     req=["SELECT count(id_commande) FROM commande WHERE etatCmd=1 and corbeille=0",()]
     encours=lecture_BDD(req)[0]["count(id_commande)"]
