@@ -353,7 +353,7 @@ def fixoumobile(tel):
     fixe=""
     liste=['.',',',' ','-','_','/']
     for c in liste:
-        print(c)
+        #print(c)
         tel=tel.replace(c,'')
     if indicatif=='06' or indicatif=='07':
         mobile=tel
@@ -367,13 +367,13 @@ def send_email(clients,facture,rupt):
     #Récupération données clients
     
     email_clients=clients[0]
-    print("email_clients")
-    print(email_clients)
+    # print("email_clients")
+    # print(email_clients)
     prenom=clients[1]
     n_cde=clients[2]
     etat=clients[3:]
-    print("etat f° send email")
-    print(etat)
+    # print("etat f° send email")
+    # print(etat)
     html=getHTML(etat,prenom,n_cde,rupt,email_clients)
 
     #Écriture du message
@@ -381,52 +381,52 @@ def send_email(clients,facture,rupt):
         subject="CSE Parfums - Suivi de votre commande n°"+n_cde
     else:
         subject="CSE Parfums - Paiement de votre commande n°"+n_cde
-    print("apres if esle")
+    # print("apres if esle")
     msg=MIMEMultipart()
     msg['Subject'] = subject
     msg['To']=email_clients
-    print("apres message")
+    # print("apres message")
     part=MIMEText(html,"html")
-    print("apres part")
+    # print("apres part")
     for fact in facture:
-        print("facture A")
+        # print("facture A")
         pdf = MIMEApplication(open(fact, 'rb').read())
-        print("facture B")
+        # print("facture B")
         pdf.add_header('Content-Disposition', 'attachment', filename= "Facture.pdf")
-        print("facture C")
+        # print("facture C")
         msg.attach(pdf)
-        print("facture D")
+        # print("facture D")
     msg.attach(part) 
     try:
         """
         server = smtplib.SMTP('mail.cseparfums.com',25)
         """
         server = smtplib.SMTP('smtp.gmail.com',587)
-        print("serveur")
+        # print("serveur")
         # server=smtplib.SMTP('SSL0.OVH.NET',587)
         # server.set_debuglevel(1)
         server.ehlo()
-        print("serveur ehlo")
+        # print("serveur ehlo")
         server.starttls()
-        print("serveur strat tls")
+        # print("serveur strat tls")
         server.login(EMAIL_ADDRESS,PASSWORD)
-        print("serveur login")
+        # print("serveur login")
         """message = 'Subject: {}\n\n{}'.format(subject, msg)"""
-        print("EMAIL_ADDRESS")
+        # print("EMAIL_ADDRESS")
         print(EMAIL_ADDRESS)
-        print("email_clients")
+        # print("email_clients")
         print(email_clients)
         server.sendmail(EMAIL_ADDRESS,email_clients, msg.as_string())
-        print("serveur send mail")
+        # print("serveur send mail")
         server.quit()
-        print("serveur quit")
+        # print("serveur quit")
     except Exception as e:
         print("Echec : ",e)
 
 def getHTML(etats,prenom,n_cde,rupt,mail):
     etat=etats[0]
-    print("etat")
-    print(etat)
+    # print("etat")
+    # print(etat)
     if len(etats)>1:
         montant=etats[1]
         nbrPdt=etats[2]
@@ -637,7 +637,7 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         <body>
     </html>
     """
-    print("htmlOK")
+    # print("htmlOK")
     return(HTML)
 
 def decompAdresse(adresse):
@@ -670,20 +670,20 @@ def fusionnerPDF(liste,id):
 def crypter(mdp):
     date1=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     heure=date1.split('_')[1]
-    print(heure)
+    # print(heure)
     cipher = encrypt(passkey, mdp)
     date2=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     heure2=date2.split('_')[1]   
-    print(heure2)
+    # print(heure2)
     return(cipher)
 
 def decrypter(mdpCrypt):
     date1=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     heure=date1.split('_')[1]
-    print(heure)
+    # print(heure)
     cipher = decrypt(passkey, mdpCrypt)
     date2=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     heure2=date2.split('_')[1]
-    print(heure2)
+    # print(heure2)
     return(cipher)
 
