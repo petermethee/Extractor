@@ -660,7 +660,7 @@ def fusionnerPDF(liste,id):
     mergeFile = PyPDF2.PdfFileMerger()
     for _pdf in liste:
         if "pdf" in _pdf:
-            mergeFile.append(PyPDF2.PdfFileReader(_pdf, 'rb'))
+            mergeFile.append(PyPDF2.PdfFileReader(_pdf, 'rb'), import_bookmarks=False)
     titre=fact+"/factures-n°"+id+".pdf"
     mergeFile.write(titre)
     return(titre)

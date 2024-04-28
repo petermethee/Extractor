@@ -290,7 +290,7 @@ def annuleCmd():
             texte="4"
         else:
             texte=(qte-1)*"4;"+"4"
-        req=["UPDATE facturation SET etatProd=? where idProd=?",(texte,idProd)]
+        req=["UPDATE facturation SET etatProd=?,etatMin='4', etatMax='4'where idProd=?",(texte,idProd)]
         ecriture_BDD(req)
     #annule les paiements associés
     req=["UPDATE paiement SET etat=2 where idCd=?",(idCmd,)]
@@ -506,7 +506,6 @@ def actionFromDetails(user):
         cmd=lecture_BDD(req)
         Linfo=[cmd[0]["mail"],cmd[0]["client"],str(cmd[0]["id_commande"]),99]
         Lfiles=request.files.getlist("file")
-        print(Lfiles)
         i=0
         LidFact=[]
         for file in Lfiles:
@@ -1014,7 +1013,6 @@ def validerModif(user):
     checkUser()
     HWouNum=getValeurFormulaire("HWouNum")
     idProd=getValeurFormulaire("idProd")
-    print(idProd)
     if HWouNum=="Num":
         erreurType=getValeurFormulaire("erreurType")
         if erreurType=="code":
@@ -2302,11 +2300,7 @@ def relance():
     idPaiement=id.split('-')[1]
     idRelance=id.split('-')[2]
     montant=id.split('-')[3]
-    print("montant avant")
-    print(montant)
     montant='%.2f'%float(montant)
-    print("montant apres")
-    print(montant)
     type=id.split('-')[4]
     #Annuler les paiements précédents et enlever le lastOne
     req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idCd=? AND type=? AND idPaiement=? ",(idCmd,type,idPaiement)]
@@ -2436,11 +2430,7 @@ def relanceGroupe(user):
             #Récuperer données manquantes
             req=["SELECT montant FROM paiement WHERE idCd=? AND idPaiement=? AND relance=? AND type=?",(idCd,idPaiement,relance,type)]
             montant=lecture_BDD(req)[0]['montant']
-            print("montant avant")
-            print(montant)
             montant='%.2f'%float(montant)
-            print("montant apres")
-            print(montant)
             #Annuler les paiements précédents et enlever le lastOne
             req=["UPDATE paiement SET etat=2,lastOne=0 WHERE idCd=? AND type=? AND idPaiement=? ",(idCd,type,idPaiement)]
             ecriture_BDD(req)
@@ -2873,7 +2863,6 @@ def ajoutCE(user):
 @app.route('/addCE', methods=['GET', 'POST'])
 def addCE():
     checkUser()
-    print("je suis la")
     idCE=getValeurFormulaire("idCE")
     entreprise=getValeurFormulaire("entreprise")
     referente=getValeurFormulaire("referente")
@@ -2892,7 +2881,6 @@ def addCE():
     minterRelFact=0
     minterRel=0
     minterRupt=0
-    print("je suis la 2")
     if mailCl=="true":
         mcl=1
     if mailInterPrep=="true":
