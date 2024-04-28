@@ -116,7 +116,7 @@ def login():
                 "dwDateMin":'-1',
                 "dwDateMax":'-1',
                 "rechercheCE":'-1',
-                "idPC":-1
+                "idPC":'-1'
             }
             session.permanent = True    
             app.permanent_session_lifetime = timedelta(minutes=660)
