@@ -104,11 +104,15 @@ def export_Extractor_Stat():
 def write_log(user,texte):
     now = datetime.now()
     # Formater la date pour l'utiliser comme nom de fichier
-    filename = logFold+now.strftime("%Y-%m")+".txt"
+    filename = logFold+"/"+now.strftime("%Y-%m")+".txt"
+    print(filename)
     # Créer et écrire dans le fichier
     with open(filename, "a") as f:
         log=str(now)+" user : "+user+" "+texte+"\n"
         f.write(log)
+    # log=str(now)+" user : "+user+" "+texte+"\n"
+    # fichier=open(filename,"w")
+    # fichier.write(log)
 
 def hist_paiement(type,idDetailCmd):
     req=["SELECT idUnique,date,heure,montant,etat,lastOne,idPaiement,relance from paiement where idCd=? AND type=? ORDER BY idPaiement DESC, relance DESC",(idDetailCmd,type)]
