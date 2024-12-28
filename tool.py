@@ -474,6 +474,12 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         font-style: italic;
         font-weight:normal;
         }
+    h5 {
+        font-size:10px;
+        color:#FF0000;  
+        font-style: italic;
+        font-weight:normal;
+        }
 
     </style>        
         <body>
@@ -584,17 +590,16 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         <h2> Voici le lien :</h2>
         <a href='"""+lien_sans_apostrophe+"""'>Lien paiement</a>
-        <br>
+        <br><br>
         <h3>Il est possible que votre paiement ne puisse pas aboutir, cela dépend du type de carte que vous utilisez.</h3>
         <h3>Dans ce cas nous vous proposons de régler soit :</h3>
-        <br><h3>- Par virement :</h3>
-        <h3>Code Banque : 11306</h3>
-        <h3>Code Guichet : 00084</h3>
-        <h3>Numéro de compte : 92523692050</h3>
-        <h3>Clé RIB : 37</h3>
-        <h3>IBAN : FR76 1130 6000 8492 5236 9205 037</h3>
-        <h3>Code BIC : AGRIFRPP813</h2>
-        <br><h3>- Par téléphone : 04 90 83 90 41</h3>"""
+        <h3>- Par virement, voici les coordonnées IBAN :</h3>
+        <h3> FR76 1130 6000 8492 5236 9205 037</h3>
+        <h3> SAS PARFUMERIE MIREILLE</h3>
+        <h3> 38 Place de la république</h3>
+        <h3> 84700 Sorgues</h3>
+        <br>
+        <h3>- Par téléphone : 04 90 83 90 41</h3>"""
         # HTML+="""  
         # <br><h2>Vous souhaitez un paiement de votre commande n°"""+n_commande+""" par lien CB:</h2>
         # <h2> Voici le lien :</h2>
@@ -638,14 +643,16 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         <h1>Bonne réception,</h1>
         <br>
         <h1>Votre Equipe CSE Parfums / Parfumerie MPB</h1>
-        <br><br>
-        <h2>Frais de port de 6,99€ pour les commandes inférieures à 59€.</h2>
-        <br><br>
-        <h3>Veuillez noter que ce message vous a été envoyé d'une adresse qui ne peut recevoir d'e-mails. Merci de ne pas y répondre.</h3>
+        <br>
+        <h5>Veuillez noter que ce message vous a été envoyé d'une adresse qui ne peut recevoir d'e-mails. Merci de ne pas y répondre.</h5>
         <body>
     </html>
     """
     # print("htmlOK")
+    #Avant : Frais de port dans "Pour tous les mails"
+    #<br>
+    #     <h2>Frais de port de 6,99€ pour les commandes inférieures à 59€.</h2>
+    #     <br><br>
     return(HTML)
 
 def decompAdresse(adresse):
