@@ -81,10 +81,15 @@
                         name="idCmd" value="{{idCmd}}" onchange="search()"></td>
                 <td class="tdRecherche"><input class="inputSuivi inputNum" type="number" placeholder="N° de CE"
                         name="idCE" value="{{idCE}}" onchange="search()"></td>
-                <td class="tdRecherche"><input class="inputSuivi inputNom" type="text" placeholder="Rechercher par nom"
-                        name="client" value="{{client}}" onchange="search()"></td>
-                <td class="tdRecherche"><input class="inputSuivi thSuiviPetit" type="text" placeholder="Rechercher par adresse mail"
+                <td class="tdRecherche"><input class="inputSuivi thSuiviPetit" type="text" placeholder="Rechercher par nom"
+                        name="client" value="{{client}}" onchange="search()">
+                <input class="inputSuivi thSuiviPetit" type="text" placeholder="Rechercher par adresse mail"
                         name="mail" value="{{mail}}" onchange="search()"></td>
+                <td class="tdRecherche">
+                    <input class="inputSuivi thSuiviPetit" type="text" placeholder="Rechercher par montant"
+                        name="montant" value="{{montant}}" onchange="search()"></td>
+                        
+                        
                 <td class="tdRechercheD">
                     <select class="selectState" name="etat" onchange="search()">
                         {% if etat=="0" %}

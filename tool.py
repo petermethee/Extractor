@@ -13,6 +13,8 @@ from flask import send_file
 #from simplecrypt import encrypt, decrypt
 import datetime
 from constantes import bdd,bddCP,xmlARTICLE,xmlARTMAG,fact, EMAIL_ADDRESS,PASSWORD,Lcode,passkey
+#boucle d'appel attention : fonctions > tool > fonctions
+# from fonctions import write_log
 
 # bdd="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_hist_extraction.db"
 # bddCP="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_code_postal.db"
@@ -160,9 +162,9 @@ def find_id_art_v2(mq,ct,prod,mag,marque,categorie,produit,magasin):
                     print(magasin[a].text)
                     if mag==magasin[a].text:
                         ligne=7+8*a
-                        print("Je suis à la ligne :" +str(ligne))
+                        #print("Je suis à la ligne :" +str(ligne))
                         return a
-    print('je ne suis pas dans le XML')
+    write_log("XX","Je recherche l'article :"+str(mq)+"."+str(ct)+"."+str(prod)+"dans le magasin"+str(mag)+" et je ne suis pas dans le XML")
     return(-1)
 
 def getLcode():
@@ -225,8 +227,8 @@ def getStockSorgues(strCode):
     index=find_id_art(mq,ct,prod,marque_MAG,categorie_MAG,produit_MAG)
     stock[0]=qte[index0].text
     stock[1]=qte[index1].text
-    print("stock 0 est : "+stock[0])
-    print("stock 1 est : "+stock[1])
+    #print("stock 0 est : "+stock[0])
+    #print("stock 1 est : "+stock[1])
     return stock
 
 def getStockAutres(strCode):
@@ -244,10 +246,10 @@ def getStockAutres(strCode):
         stock[1]=qte[index3].text
         stock[2]=qte[index5].text
         stock[3]=qte[index6].text
-        print("stock 2 est : "+stock[0])
-        print("stock 3 est : "+stock[1])
-        print("stock 5 est : "+stock[2])
-        print("stock 6 est : "+stock[3])
+        #print("stock 2 est : "+stock[0])
+        #print("stock 3 est : "+stock[1])
+        #print("stock 5 est : "+stock[2])
+        #print("stock 6 est : "+stock[3])
     return stock
 
 
