@@ -2835,8 +2835,8 @@ def livrer(user):
         if etatCmd==2:
             req=["UPDATE commande set etatCmd=3,deliveredBy=? where id_commande=?",(user,idCmd)]
             ecriture_BDD(req)
-    
-    return visuLivraison(user)
+        write_log(str(session['user']['id']),"/livrer - Livraison du CE n°"+str(idCE)+" sur "+str(len(LidCommande))+" commandes")
+    return choixCELivre(user)
     
 
 @app.route('/histLivraison/<user>',methods=['GET', 'POST'])
