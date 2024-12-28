@@ -2842,7 +2842,7 @@ def livrer(user):
 @app.route('/histLivraison/<user>',methods=['GET', 'POST'])
 def histLivraison(user): 
     checkUser()
-    req=["SELECT * from livraison order by dateLivraison desc LIMIT",()]
+    req=["SELECT * from livraison order by dateLivraison desc LIMIT 30",()]
     listLivraison=lecture_BDD(req)
     write_log(str(session['user']['id']),"/histLivraison - Visualisation de l'histotirque de livraison")
     return render_template('livraison_hist.html',user=user,listLivraison=listLivraison)
