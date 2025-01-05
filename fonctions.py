@@ -57,10 +57,10 @@ def export_CSV2():
             csvfile.write(';'.join(str(r) for r in row) + '\n')
 #TODO
 def export_CSV3():
-    req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0",()]
+    req=["SELECT distinct id_commande,date,commande.idCE,entreprise,client.client,dateLot,utilisateur.prenom from commande join listingCE on listingCE.idCE=commande.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id  JOIN client ON client.idclient=commande.idclientCmd where commande.etatCmd=2 order by date",()]
     Linfo=lecture_BDD(req)
-    with open(exportFold+"/Impayes.csv","w", encoding="utf-8") as csvfile:
-        csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;Referente\n")
+    with open(exportFold+"/Commande_a_livrer.csv","w", encoding="utf-8") as csvfile:
+        csvfile.write("ID Commande;Date commande;ID CE;Nom du CE;Nom du client;Date lot;Referente\n")
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
 #TODO
