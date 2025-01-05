@@ -93,13 +93,13 @@
           Export reliquats actuels
         </button>
         <button class="generateBt" name="action" value="2" onclick="attente();extraction2()">
-          Export Rupture 1 an
+          Export Rupture (1 an)
         </button>
         <button class="generateBt" name="action" value="3" onclick="attente();extraction3()">
           Export Commandes à livrer
         </button>
 		<button class="generateBt" name="action" value="4" onclick="attente();extraction4()">
-          Export CSV4
+          Export Paiements payés (1 an)
         </button>
 		<button class="generateBt" name="action" value="5" onclick="attente();extraction5()">
           Export CSV5
@@ -143,7 +143,7 @@
             alert("L'export se trouvera dans le dossier 'Export' nommé 'Commandes_a_livrer.csv'. Les commandes à livrer seront listées dans ce fichier.")
         }
 		function extraction4(){
-            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_Referente.csv'. La somme des impayés par référente est renseignée dans ce fichier.")
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Paiements_payes_1_an.csv'. La liste des paiements payés depuis 1 an est renseignée dans ce fichier.")
         }
 		function extraction5(){
             alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_Referente.csv'. La somme des impayés par référente est renseignée dans ce fichier.")
