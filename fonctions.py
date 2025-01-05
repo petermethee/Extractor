@@ -2,7 +2,7 @@ import csv
 from flask import request
 from tool import *
 from constantes import *
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 
@@ -39,18 +39,20 @@ def getListeForm(variable):
 
 #TODO
 def export_CSV1():
-    req=["SELECT distinct idReliquat,reliquats.code,ean,libW,prix,reliquats.qte,id_commande,etatProd,reliquats.lot,commande.idCE,entreprise,client.client,dateLot,utilisateur.prenom from reliquats join facturation on reliquats.code=facturation.code join commande on id_commande=facturation.idCmd  join listingCE on listingCE.idCE=commande.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id JOIN client ON client.idclient=commande.idclientCmdwhere commande.lot=reliquats.lot and etatMin<2 and commande.corbeille=0 order by reliquats.code",()]
+    req=["SELECT distinct idReliquat,reliquats.code,ean,libW,prix,reliquats.qte,id_commande,reliquats.lot,commande.idCE,entreprise,client.client,dateLot,utilisateur.prenom from reliquats join facturation on reliquats.code=facturation.code join commande on id_commande=facturation.idCmd  join listingCE on listingCE.idCE=commande.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id JOIN client ON client.idclient=commande.idclientCmd where commande.lot=reliquats.lot and etatMin<2 and commande.corbeille=0 order by reliquats.code",()]
     Linfo=lecture_BDD(req)
     with open(exportFold+"/listing_reliquats.csv","w", encoding="utf-8") as csvfile:
-        csvfile.write("Identifiant Unique reliquat;Code;EAN;Libelle;Prix unitaire;Quantite;ID Commande;Etat produit;N° Lot;CE;Nom du CE;Nom du client;Date lot;Referente\n")
+        csvfile.write("Identifiant Unique reliquat;Code;EAN;Libelle;Prix unitaire;Quantite;ID Commande;Num Lot;CE;Nom du CE;Nom du client;Date lot;Referente\n")
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
 #TODO
 def export_CSV2():
-    req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0",()]
+    dateMin=datetime.today().strftime('%Y-%m-%d')
+    dateMax=(datetime.today()-timedelta(365)).strftime('%Y-%m-%d')
+    req=["SELECT  commande.date,facturation.code,facturation.libW,facturation.ean, facturation.qte, facturation.prix, facturation.idCmd,entreprise,commande.idCE,utilisateur.prenom from facturation JOIN commande ON facturation.idCmd=commande.id_commande join listingCE on listingCE.idCE=commande.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where etatProd like '%3%' AND date >? and date<?",(dateMin,dateMax)]
     Linfo=lecture_BDD(req)
-    with open(exportFold+"/Impayes.csv","w", encoding="utf-8") as csvfile:
-        csvfile.write("Identifiant Unique Paiement;ID Commande;Type de paiement;Date demande paiement;Heure demande paiement;Montant;ID Paiement;Numero relance;Nom du client;Mail client;Tel client;ID CE;Nom du CE;Referente\n")
+    with open(exportFold+"/Ruptures.csv","w", encoding="utf-8") as csvfile:
+        csvfile.write("Date Commande;Code;Libelle;EAN;Quantite;Prix unitaire;ID Commande;Nom du CE;Num CE;Referente\n")
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
 #TODO
