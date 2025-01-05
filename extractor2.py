@@ -786,7 +786,31 @@ def start(user):
         Ldate.append(Lenfant)
     write_log(str(session['user']['id']),"/start - Page initiale pour extraire")
     return render_template('traitementDonnees_synthetiser.html',LidCE=LidCE,user=user,Lpc=Lpc,Ldate=Ldate,encours=encours,idPC=idPC)
-    
+
+@app.route('/extractGeneral',methods=['GET', 'POST'])
+def extractGeneral():
+    try :
+        session['user']
+        user=session['user']
+    except:
+        return(index())
+    action=getValeurFormulaire("action")
+    if action=="1":
+        export_CSV1()
+        write_log(str(session['user']['id']),"/extractGeneral - Exportation du listing CSV 1.csv")
+    elif action=="2":
+        export_CSV2()
+        write_log(str(session['user']['id']),"/extractGeneral - Exportation du listing CSV 2.csv")
+    elif action=="3":
+        export_CSV3()
+        write_log(str(session['user']['id']),"/extractGeneral - Exportation du listing CSV 3.csv")
+    elif action=="4":
+        export_CSV4()
+        write_log(str(session['user']['id']),"/extractGeneral - Exportation du listing CSV 4.csv")
+    elif action=="5":
+        export_CSV5()
+        write_log(str(session['user']['id']),"/extractGeneral - Exportation du listing CSV 5.csv")
+    return start(user) 
 @app.route('/changePC', methods=['GET', 'POST'])
 def changePC():
     checkUser()

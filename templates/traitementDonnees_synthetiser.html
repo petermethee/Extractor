@@ -86,6 +86,29 @@
 				<td class="tdHist">{{date[2]}}</td>
 		{%endfor%}
 	</table>
+	<br><br>
+	 <div class="center">
+        <form action="/extractGeneral" method="POST">
+        <button class="generateBt" name="action" value="1" onclick="attente();extraction1()">
+          Export CSV1
+        </button>
+        <button class="generateBt" name="action" value="2" onclick="attente();extraction2()">
+          Export CSV2
+        </button>
+        <button class="generateBt" name="action" value="3" onclick="attente();extraction3()">
+          Export CSV3
+        </button>
+		<button class="generateBt" name="action" value="4" onclick="attente();extraction4()">
+          Export CSV4
+        </button>
+		<button class="generateBt" name="action" value="5" onclick="attente();extraction5()">
+          Export CSV5
+        </button>
+		<button class="generateBt" name="action" value="6" onclick="attente();extraction5()">
+          Export CSV6
+        </button>
+      </form>
+    </div>
 	<!-- <td><img class="imgPres" src='{{url_for("static",filename="presentation.png")}}'></td> -->
 	<br>
 	<input type="hidden" id="nbError" value="{{nbError}}"></body>
@@ -109,6 +132,24 @@
 		function attente(){
             var element=document.getElementById("html");
             element.className="attente";
+        }
+		function extraction1(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'listing_reliquats.csv'. L'ensemble des reliquats restants sont référencés dans ce fichier.")
+        }
+        function extraction2(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_CE.csv'. La somme des impayés par CE est renseignée dans ce fichier.")
+        } 
+        function extraction3(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_Referente.csv'. La somme des impayés par référente est renseignée dans ce fichier.")
+        }
+		function extraction4(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_Referente.csv'. La somme des impayés par référente est renseignée dans ce fichier.")
+        }
+		function extraction5(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_Referente.csv'. La somme des impayés par référente est renseignée dans ce fichier.")
+        }
+		function extraction6(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_Referente.csv'. La somme des impayés par référente est renseignée dans ce fichier.")
         }
 		
 	</script>
