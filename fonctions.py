@@ -37,7 +37,7 @@ def getListeForm(variable):
     valeur=request.form.getlist(variable)
     return(valeur)
 
-#TODO
+
 def export_CSV1():
     req=["SELECT distinct idReliquat,reliquats.code,ean,libW,prix,reliquats.qte,id_commande,reliquats.lot,commande.idCE,entreprise,client.client,dateLot,utilisateur.prenom from reliquats join facturation on reliquats.code=facturation.code join commande on id_commande=facturation.idCmd  join listingCE on listingCE.idCE=commande.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id JOIN client ON client.idclient=commande.idclientCmd where commande.lot=reliquats.lot and etatMin<2 and commande.corbeille=0 order by reliquats.code",()]
     Linfo=lecture_BDD(req)
@@ -45,7 +45,7 @@ def export_CSV1():
         csvfile.write("Identifiant Unique reliquat;Code;EAN;Libelle;Prix unitaire;Quantite;ID Commande;Num Lot;CE;Nom du CE;Nom du client;Date lot;Referente\n")
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
-#TODO
+
 def export_CSV2():
     dateMin=datetime.today().strftime('%Y-%m-%d')
     dateMax=(datetime.today()-timedelta(365)).strftime('%Y-%m-%d')
@@ -55,7 +55,7 @@ def export_CSV2():
         csvfile.write("Date Commande;Code;Libelle;EAN;Quantite;Prix unitaire;ID Commande;Nom du CE;Num CE;Referente\n")
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
-#TODO
+
 def export_CSV3():
     req=["SELECT distinct id_commande,date,commande.idCE,entreprise,client.client,dateLot,utilisateur.prenom from commande join listingCE on listingCE.idCE=commande.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id  JOIN client ON client.idclient=commande.idclientCmd where commande.etatCmd=2 order by date",()]
     Linfo=lecture_BDD(req)
@@ -63,7 +63,7 @@ def export_CSV3():
         csvfile.write("ID Commande;Date commande;ID CE;Nom du CE;Nom du client;Date lot;Referente\n")
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
-#TODO
+
 def export_CSV4():
     dateMin=datetime.today().strftime('%Y-%m-%d')
     dateMax=(datetime.today()-timedelta(365)).strftime('%Y-%m-%d')
@@ -73,7 +73,7 @@ def export_CSV4():
         csvfile.write("ID Commande;Type de paiement;Date demande paiement;Montant;Date commande;Nom du CE;Nom du client;Date lot;Referente\n")
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
-#TODO
+
 def export_CSV5():
     req=["SELECT id_commande,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from commande JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE etatCmd<2",()]
     Linfo=lecture_BDD(req)
@@ -82,6 +82,17 @@ def export_CSV5():
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
 
+def export_CSV6():
+    dateMin=datetime.today().strftime('%Y-%m-%d')
+    dateMax=(datetime.today()-timedelta(365)).strftime('%Y-%m-%d')
+    req=["SELECT min(lot) from commande WHERE datelot>?",(dateMax)]
+    lot=lecture_BDD(req)[0][0]
+    req=["SELECT idReliquat,dateLot,reliquats.code,libW,ean,mag,reliquats.qte,facturation.prix,reliquats.lot,entreprise from reliquats join commande on reliquats.lot=commande.lot join facturation on id_commande=idCmd join listingCE on listingCE.idCE=commande.idCE WHERE reliquats.lot>?",(lot)]
+    Linfo=lecture_BDD(req)
+    with open(exportFold+"/Reliquats_et_ruptures_1_an.csv","w", encoding="utf-8") as csvfile:
+        csvfile.write("Identifiant Unique reliquat;Date lot;Code;Libelle;EAN;Magasin;Quantite;Prix unitaire;Num Lot;Nom du CE\n")
+        for row in Linfo:
+            csvfile.write(';'.join(str(r) for r in row) + '\n')
 def export_Impayes():
     req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0",()]
     Linfo=lecture_BDD(req)

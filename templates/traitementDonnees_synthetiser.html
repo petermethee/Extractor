@@ -87,7 +87,8 @@
 		{%endfor%}
 	</table>
 	<br><br>
-	 <div class="center">
+	 <table class="center">
+		<th></th><th></th><th></th><th></th><th></th><th></th>
         <form action="/extractGeneral" method="POST">
         <button class="generateBt" name="action" value="1" onclick="attente();extraction1()">
           Export reliquats actuels
@@ -105,7 +106,7 @@
           Export commandes en préparation/facturation
         </button>
 		<button class="generateBt" name="action" value="6" onclick="attente();extraction5()">
-          Export CSV6
+          Export reliquats et ruptures (1 an)
         </button>
       </form>
     </div>
@@ -149,7 +150,7 @@
             alert("L'export se trouvera dans le dossier 'Export' nommé 'Commandes_en_preparation_et_en_facturation.csv'. La liste des commandes en préparation et en facturation est renseignée dans ce fichier.")
         }
 		function extraction6(){
-            alert("L'export se trouvera dans le dossier 'Export' nommé 'Impayés_Synthese_Referente.csv'. La somme des impayés par référente est renseignée dans ce fichier.")
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'Reliquats_et_ruptures_1_an.csv'. Liste les reliquats et ruptures depuis 1 an.")
         }
 		
 	</script>
