@@ -383,53 +383,55 @@ def send_email(clients,facture,rupt):
     # print("etat f° send email")
     # print(etat)
     html=getHTML(etat,prenom,n_cde,rupt,email_clients)
-
-    #Écriture du message
-    if len(etat)==1:
-        subject="CSE Parfums - Suivi de votre commande n°"+n_cde
-    else:
-        subject="CSE Parfums - Paiement de votre commande n°"+n_cde
-    # print("apres if esle")
-    msg=MIMEMultipart()
-    msg['Subject'] = subject
-    msg['To']=email_clients
-    # print("apres message")
-    part=MIMEText(html,"html")
-    # print("apres part")
-    for fact in facture:
-        # print("facture A")
-        pdf = MIMEApplication(open(fact, 'rb').read())
-        # print("facture B")
-        pdf.add_header('Content-Disposition', 'attachment', filename= "Facture.pdf")
-        # print("facture C")
-        msg.attach(pdf)
-        # print("facture D")
-    msg.attach(part) 
-    try:
-        """
-        server = smtplib.SMTP('mail.cseparfums.com',25)
-        """
-        server = smtplib.SMTP('smtp.gmail.com',587)
-        # print("serveur")
-        # server=smtplib.SMTP('SSL0.OVH.NET',587)
-        # server.set_debuglevel(1)
-        server.ehlo()
-        # print("serveur ehlo")
-        server.starttls()
-        # print("serveur strat tls")
-        server.login(EMAIL_ADDRESS,PASSWORD)
-        # print("serveur login")
-        """message = 'Subject: {}\n\n{}'.format(subject, msg)"""
-        # print("EMAIL_ADDRESS")
-        print(EMAIL_ADDRESS)
-        # print("email_clients")
-        print(email_clients)
-        server.sendmail(EMAIL_ADDRESS,email_clients, msg.as_string())
-        # print("serveur send mail")
-        server.quit()
-        # print("serveur quit")
-    except Exception as e:
-        print("Echec : ",e)
+    etat_1=etat[0]
+    #Envoyer un mail que si ce n'est pas expèce / cheque / autres
+    if etat_1=="rib" or etat_1=="lien":
+        #Écriture du message
+        if len(etat)==1:
+            subject="CSE Parfums - Suivi de votre commande n°"+n_cde
+        else:
+            subject="CSE Parfums - Paiement de votre commande n°"+n_cde
+        # print("apres if esle")
+        msg=MIMEMultipart()
+        msg['Subject'] = subject
+        msg['To']=email_clients
+        # print("apres message")
+        part=MIMEText(html,"html")
+        # print("apres part")
+        for fact in facture:
+            # print("facture A")
+            pdf = MIMEApplication(open(fact, 'rb').read())
+            # print("facture B")
+            pdf.add_header('Content-Disposition', 'attachment', filename= "Facture.pdf")
+            # print("facture C")
+            msg.attach(pdf)
+            # print("facture D")
+        msg.attach(part) 
+        try:
+            """
+            server = smtplib.SMTP('mail.cseparfums.com',25)
+            """
+            server = smtplib.SMTP('smtp.gmail.com',587)
+            # print("serveur")
+            # server=smtplib.SMTP('SSL0.OVH.NET',587)
+            # server.set_debuglevel(1)
+            server.ehlo()
+            # print("serveur ehlo")
+            server.starttls()
+            # print("serveur strat tls")
+            server.login(EMAIL_ADDRESS,PASSWORD)
+            # print("serveur login")
+            """message = 'Subject: {}\n\n{}'.format(subject, msg)"""
+            # print("EMAIL_ADDRESS")
+            print(EMAIL_ADDRESS)
+            # print("email_clients")
+            print(email_clients)
+            server.sendmail(EMAIL_ADDRESS,email_clients, msg.as_string())
+            # print("serveur send mail")
+            server.quit()
+            # print("serveur quit")
+        except Exception as e:
+            print("Echec : ",e)
 
 def getHTML(etats,prenom,n_cde,rupt,mail):
     etat=etats[0]

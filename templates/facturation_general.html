@@ -202,14 +202,14 @@
 						onclick="clickPaiement(this)">Lien</button></td>
 				<td><button class="btRIB" id="{{client['id_commande']}}-rib" value="rib-{{client['id_commande']}}" name="action"
 						onclick="clickPaiement(this)">RIB</button></td>
-				<td><button class="btEspece" id="{{client['id_commande']}}-espece" value="espece-{{client['id_commande']}}" name="action"
+				<!-- <td><button class="btEspece" id="{{client['id_commande']}}-espece" value="espece-{{client['id_commande']}}" name="action"
 						onclick="clickPaiement(this)">Espèces</button></td>
 				<td><button class="btChequeR" id="{{client['id_commande']}}-chequeR" value="chequeR-{{client['id_commande']}}" name="action"
 						onclick="clickPaiement(this)">Chq reçu</button></td>
 				<td><button class="btChequeAV" id="{{client['id_commande']}}-chequeAV" value="chequeAV-{{client['id_commande']}}" name="action"
 						onclick="clickPaiement(this)">Chq avant envoi</button></td>
 				<td><button class="btChequeAP" id="{{client['id_commande']}}-chequeAP" value="chequeAP-{{client['id_commande']}}" name="action"
-						onclick="clickPaiement(this)">Chq après réception</button></td>
+						onclick="clickPaiement(this)">Chq après réception</button></td> -->
 				<td><button class="btAutre" id="{{client['id_commande']}}-autre" value="autre-{{client['id_commande']}}" name="action"
 						onclick="clickPaiement(this)">Autre</button></td>
 			</tr>
@@ -222,7 +222,7 @@
 				<td align="center">
 					<div id="{{client['id_commande']}}-ribTexte" style="display: none;">Envoyé</div>
 				</td>
-				<td>
+				<!-- <td>
 					<div id="{{client['id_commande']}}-especeTexte" style="display: none;">Envoyé</div>
 				</td>
 				<td>
@@ -233,9 +233,9 @@
 				</td>
 				<td>
 					<div id="{{client['id_commande']}}-chequeAPTexte" style="display: none;">Envoyé</div>
-				</td>
+				</td> -->
 				<td>
-					<div id="{{client['id_commande']}}-autreTexte" style="display: none;">Envoyé</div>
+					<div id="{{client['id_commande']}}-autreTexte" style="display: none;">OK</div>
 				</td>
 			</tr>	
 		</table>
@@ -298,20 +298,20 @@
 			else if (type == "rib") {
 				alert("RIB envoyé");
 			}
-			else if (type == "espece") {
-				alert("Espèces");
-			}
-			else if (type == "chequeR") {
-				alert("Chèque reçu");
-			}
-			else if (type == "chequeAV") {
-				alert("Chèque avant envoi");
-			}
-			else if (type == "chequeAP") {
-				alert("Chèque après réception");
-			}
+			// else if (type == "espece") {
+			// 	alert("Espèces");
+			// }
+			// else if (type == "chequeR") {
+			// 	alert("Chèque reçu");
+			// }
+			// else if (type == "chequeAV") {
+			// 	alert("Chèque avant envoi");
+			// }
+			// else if (type == "chequeAP") {
+			// 	alert("Chèque après réception");
+			// }
 			else {
-				alert("Autres");
+				alert("C'est noté");
 			}
 			x.style.display = 'block';
 			x.style.color = 'white';
