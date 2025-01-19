@@ -240,3 +240,20 @@ def infos_dans_csv(chemin,nom,idExtraction,user):
         req=["insert into facturation(idCmd,code,ean,lib,libW,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values (?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,strCode,ean,txtlib,libW,prix,strQte,ato,errone,-1,E,E,E)]
         ecriture_BDD(req)
     return(liste,idclient)  
+
+def check_produit(etats):
+    livre=False
+    for etat in etats:
+        if etat>2:
+            livre=True
+    return(livre)
+
+def check_caracteres(texte):
+    #vérifie si les caractères / \ ; sont présents dans le texte
+    car=False
+    car=texte.find('/')
+    if car==False:
+        car=texte.find(';')
+        if car==False:
+            car=texte.find('\\')
+    return(car) 

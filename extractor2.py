@@ -620,7 +620,9 @@ def extractColissimo(user):
     checkUser()
     bouton=getValeurFormulaire("bouton")
     if bouton=="0":
-        Linfo=[getValeurFormulaire("nom"),getValeurFormulaire("prenom"),getValeurFormulaire("fixe"),getValeurFormulaire("mobile"),getValeurFormulaire("mail"),getValeurFormulaire("rue"),getValeurFormulaire("CP"),getValeurFormulaire("ville"),getValeurFormulaire("res"),getValeurFormulaire("couls")]
+        car_interdit=False
+        Lcar=[]
+        Linfo=[getValeurFormulaire("nom"),getValeurFormulaire("prenom"),getValeurFormulaire("fixe"),getValeurFormulaire("mobile"),getValeurFormulaire("mail"),getValeurFormulaire("rue"),getValeurFormulaire("CP"),getValeurFormulaire("ville"),getValeurFormulaire("res"),getValeurFormulaire("couls"),getValeurFormulaire("lieu_dit"),getValeurFormulaire("instructions")]
         nom=Linfo[0]
         prenom=Linfo[1]
         fixe=Linfo[2]
@@ -631,14 +633,23 @@ def extractColissimo(user):
         ville=Linfo[7]
         res=Linfo[8]
         couls=Linfo[9]
-        with open(exportFold+"/"+nom+prenom+"_extractor.csv","w") as csvfile:
-            csvfile.write('Référence;;Raison sociale;Service;Prénom;Nom;Etage couloir escalier;Entrée bâtiment;N° et voie;Lieu dit;Code postal;Commune;Code ISO du pays;Téléphone fixe;Téléphone portable;Email;Code porte1;Code porte2;Interphone;Instructions de livraison;Nom commercial chargeur\n')
-            csvfile.write(';;;;'+prenom+';'+nom+';'+couls+';'+res+';'+rue+';;'+CP+';'+ville+';FR;'+fixe+';'+mobile+';'+mail+';;;;;;')
-    write_log(str(session['user']['id']),"/extractColissimo -Extraction colissimo")
-
-    
-    return detailsCmd(user)
-    
+        lieu_dit=Linfo[10]
+        instructions=Linfo[11]
+        for texte in Linfo:
+            Lcar.append(check_caracteres(texte))
+            print(texte)
+            print(Lcar)
+        if -1 in Lcar:
+            car_interdit=True
+        if car_interdit==False:
+            with open(exportFold+"/"+nom+prenom+"_extractor.csv","w") as csvfile:
+                csvfile.write('Référence;;Raison sociale;Service;Prénom;Nom;Etage couloir escalier;Entrée bâtiment;N° et voie;Lieu dit;Code postal;Commune;Code ISO du pays;Téléphone fixe;Téléphone portable;Email;Code porte1;Code porte2;Interphone;Instructions de livraison;Nom commercial chargeur\n')
+                csvfile.write(';;;;'+prenom+';'+nom+';'+couls+';'+res+';'+rue+';'+lieu_dit+';'+CP+';'+ville+';FR;'+fixe+';'+mobile+';'+mail+';;;;;'+instructions+';')
+            write_log(str(session['user']['id']),"/extractColissimo -Extraction colissimo")
+            return detailsCmd(user)
+        else:
+            return render_template("suivi_details_colissimo.html",user=user,ville=ville,CP=CP,rue=rue,nom=nom,prenom=prenom,mail=mail,fixe=fixe,mobile=mobile,couls=couls,res=res,instructions=instructions,lieu_dit=lieu_dit)
+            
 
 @app.route('/annuler', methods=['GET', 'POST'])
 def annuler():

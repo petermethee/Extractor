@@ -12,58 +12,69 @@
         <p align="center">Vérification des données - Colissimo</p>
     </h1>
     <p class="SousTitreDetails">Informations clients</p>
+    <p>Attention : N'utilisez pas les caractères spéciaux suivants / \ ;</p>
     <table align="center" class="tabinfoClient">
         <form action="/extractColissimo/{{user}}" method="POST">
             <th class="thPetit"></th>
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Nom</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="nom" value="{{nom}}">
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="nom" id="nom" value="{{nom}}">
                 </td>
             </tr>
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Prénom</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="prenom"
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="prenom" id="prenom"
                         value="{{prenom}}"></td>
             </tr>
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Téléphone Fixe</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="fixe"
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="fixe" id="fixe"
                         value="{{fixe}}"></td>
             </tr>
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Téléphone Mobile</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="mobile"
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="mobile" id="mobile"
                         value="{{mobile}}"></td>
             </tr>
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Mail</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="mail"
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="mail" id="mail"
                         value="{{mail}}"></td>
             </tr>
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Adresse</td>
-                <td class="tdinfoClient" colspan="2"><input maxlength="35" type="text" class="inputClient" name="rue"
+                <td class="tdinfoClient" colspan="2"><input maxlength="35" type="text" class="inputClient" name="rue" id="rue"
                         value="{{rue}}"></td>
             </tr>
 
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Résidence</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="res"></td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="res" id="res" value="{{res}}"></td>
             </tr>
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Etage/couloir</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="couls"></td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="couls" id="couls" value="{{couls}}"></td>
             </tr>
 
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Code Postal</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="CP" value="{{CP}}">
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="CP" id="CP" value="{{CP}}">
                 </td>
             </tr>
             <tr class="trinfoClient">
                 <td class="tdinfoClient2">Ville</td>
-                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="ville"
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="ville" id="ville"
                         value="{{ville}}"></td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Lieu dit</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="lieu_dit" id="lieu_dit"
+                        value="{{lieu_dit}}"></td>
+            </tr>
+            <tr class="trinfoClient">
+                <td class="tdinfoClient2">Instructions livraisons</td>
+                <td class="tdinfoClient" colspan="2"><input type="text" class="inputClient" name="instructions" id="instructions"
+                        value="{{instructions}}"></td>
             </tr>
     </table>
     <button name="bouton" value="1" class="BtSuppr" onclick="attente()">Retour</button>
@@ -72,7 +83,31 @@
     </form>
     <script>
         function exportation() {
-            alert("La fiche client a bien été exportée. Vous la trouverez dans le dossier 'EXPORT'.");
+            nom=document.getElementById("nom").value;
+            prenom=document.getElementById("prenom").value;
+            fixe=document.getElementById("fixe").value;
+            mobile=document.getElementById("mobile").value;
+            mail=document.getElementById("mail").value;
+            rue=document.getElementById("rue").value;
+            CP=document.getElementById("CP").value;
+            ville=document.getElementById("ville").value;
+            lieu_dit=document.getElementById("lieu_dit").value;
+            instructions=document.getElementById("instructions").value;
+            res=document.getElementById("res").value;
+            couls=document.getElementById("couls").value;
+            all=nom+prenom+fixe+mobile+mail+rue+CP+ville+lieu_dit+instructions+res+couls;
+            if (all.includes('/')){
+                alert("N'utilisez pas le caractère / dans les champs");
+            }
+            else if (all.includes(";")){
+                alert("N'utilisez pas le caractère ; dans les champs");
+            }
+            else if (all.includes("\\")){
+                alert("N'utilisez pas le caractère \\ dans les champs");
+            }
+            else{
+                alert("La fiche client a bien été exportée. Vous la trouverez dans le dossier 'EXPORT'.");
+            };
         }
         function attente() {
             var element = document.getElementById("html");
