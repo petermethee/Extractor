@@ -270,6 +270,8 @@ def suprCmd():
     idCmd=getValeurFormulaire('idCmd')
     req=["UPDATE commande set corbeille=1,deletedBy=? where id_commande=?",(user,idCmd)]
     ecriture_BDD(req)
+    req=["UPDATE facturation set etatMin=99,etatMax=99 where idCmd=?",(idCmd)]
+    ecriture_BDD(req)
     write_log(str(session['user']['id']),"/suprCmd - Suppression de la commande n°"+str(idCmd))
     return jsonify()
 
@@ -278,6 +280,7 @@ def annuleCmd():
     checkUser()
     user=session['user']['id']
     idCmd=getValeurFormulaire('idCmd')
+    print(idCmd)
     answer=getValeurFormulaire('answer')
     req=["UPDATE commande set justification=?,deletedBy=?,etatCmd=99 where id_commande=?",(answer,user,idCmd)]
     ecriture_BDD(req)
@@ -294,8 +297,10 @@ def annuleCmd():
             texte="4"
         else:
             texte=(qte-1)*"4;"+"4"
-        req=["UPDATE facturation SET etatProd=?,etatMin='4', etatMax='4'where idProd=?",(texte,idProd)]
+        req=["UPDATE facturation SET etatProd=?,etatMin=4, etatMax=4 where idProd=?",(texte,idProd)]
         ecriture_BDD(req)
+    req=["UPDATE facturation set etatMin=4,etatMax=7 where idCmd=?",(idCmd)]
+    ecriture_BDD(req)
     #annule les paiements associés
     req=["UPDATE paiement SET etat=2 where idCd=?",(idCmd,)]
     ecriture_BDD(req)
