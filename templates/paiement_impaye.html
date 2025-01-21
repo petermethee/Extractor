@@ -33,6 +33,9 @@
 
     </div>
     <br>
+    <form action="/detailsCmd/{{user}}" method="POST" id="form">
+			<input type="hidden" value="paiements" onclick="attente()" name="previousPage">
+	</form>
     <div class="center">
         <form action="/extractImpayes" method="POST">
         <button class="generateBt" name="action" value="0" onclick="attente();extraction()">
@@ -128,9 +131,14 @@
                     class="btRelance"
                     id="{{client['idCd']}}-{{client['idPaiement']}}-{{client['relance']}}-{{client['montant']}}-{{client['type']}}">Relancer</button>
             </td>
+            
             <td class="tdSuivi">{{client["date"]}}</td>
             <td class="tdSuivi">{{client["heure"]}}</td>
-            <td class="tdSuivi">{{client["idCd"]}}</td>
+            <!-- <td class="tdSuivi">{{client["idCd"]}}</td> -->
+            <td class="tdSuivi">
+					<button class="linkDetails" type="button" name="idCd" onclick="detailsCmd(this.id)"
+						id="{{client['idCd']}}"><span>{{client["idCd"]}}</span></button>
+				</td>
             <td class="tdSuivi">{{client["idCE"]}}</td>
             <td class="tdSuivi">{{client["lot"]}}</td>
             <td class="tdSuivi">{{client["client"]}}</td>
@@ -232,6 +240,7 @@
             });
         }
 
+        
         function annuler(t) {
             const id = t.id;
             var idTR="TR-"+id;
@@ -259,6 +268,11 @@
         function desactiveBtn(id){
             
         }
+
+        function detailsCmd(t) {
+		$('#form').append(`<input type="hidden" name="idCd" value="${t}">`);
+		$('#form').submit();
+	}
 
     </script>
 </body>
