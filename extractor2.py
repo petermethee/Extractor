@@ -649,7 +649,7 @@ def extractColissimo(user):
             return detailsCmd(user)
         else:
             return render_template("suivi_details_colissimo.html",user=user,ville=ville,CP=CP,rue=rue,nom=nom,prenom=prenom,mail=mail,fixe=fixe,mobile=mobile,couls=couls,res=res,instructions=instructions,lieu_dit=lieu_dit)
-            
+    return detailsCmd(user)      
 
 @app.route('/annuler', methods=['GET', 'POST'])
 def annuler():
