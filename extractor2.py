@@ -783,6 +783,10 @@ def start(user):
     #Commandes à préparer/facturer
     req=["SELECT count(id_commande) FROM commande WHERE etatCmd=1 and corbeille=0",()]
     encours=lecture_BDD(req)[0]["count(id_commande)"]
+    req=["SELECT distinct idReliquat,reliquats.code,reliquats.qte,reliquats.lot,ean,libW,commande.idCE,dateLot,utilisateur.prenom from reliquats join facturation on reliquats.code=facturation.code join commande on id_commande=facturation.idCmd  join listingCE on listingCE.idCE=commande.idCE JOIN utilisateur ON listingCE.referente=utilisateur.id where commande.lot=reliquats.lot and etatMin<2 and commande.corbeille=0 order by reliquats.code",()]
+    reliquats=lecture_BDD(req)[0]["count(id_commande)"]
+    req=["SELECT count(id_commande) FROM commande WHERE etatCmd=2 and corbeille=0",()]
+    livres=lecture_BDD(req)[0]["count(id_commande)"]
     Ldate=[]
     for i in range (0,8,1):
         Lenfant=[]
@@ -796,7 +800,7 @@ def start(user):
         Lenfant.append(lecture_BDD(req)[0]["count(id_commande)"])
         Ldate.append(Lenfant)
     write_log(str(session['user']['id']),"/start - Page initiale pour extraire")
-    return render_template('traitementDonnees_synthetiser.html',LidCE=LidCE,user=user,Lpc=Lpc,Ldate=Ldate,encours=encours,idPC=idPC)
+    return render_template('traitementDonnees_synthetiser.html',LidCE=LidCE,user=user,Lpc=Lpc,Ldate=Ldate,encours=encours,reliquats=reliquats,livres=livres,idPC=idPC)
 
 @app.route('/extractGeneral',methods=['GET', 'POST'])
 def extractGeneral():
