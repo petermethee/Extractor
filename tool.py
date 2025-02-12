@@ -641,6 +641,9 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
 
     #Pour tous les mails
     HTML+="""<br><br>
+        <br>
+        <h2>Frais de port de 6,99€ pour les commandes inférieures à 59€.</h2>
+        <br><br>
         <h1>Merci pour votre confiance,</h1>
         <h1>Bonne réception,</h1>
         <br>
@@ -652,9 +655,7 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
     """
     # print("htmlOK")
     #Avant : Frais de port dans "Pour tous les mails"
-    #<br>
-    #     <h2>Frais de port de 6,99€ pour les commandes inférieures à 59€.</h2>
-    #     <br><br>
+  
     return(HTML)
 
 def decompAdresse(adresse):
