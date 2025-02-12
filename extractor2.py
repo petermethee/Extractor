@@ -572,6 +572,9 @@ def actionFromDetails(user):
         write_log(str(session['user']['id']),"/actionFromDetails - Annulation du paiement "+str(particule)+" de la commande n°"+str(idCmd))
 
         return (detailsCmd(user))
+    elif action=="livrer":
+        livrer_commande(idCmd,user)
+        return (detailsCmd(user))
 
     else:
         montant1=getValeurFormulaire("montant")
@@ -1859,9 +1862,10 @@ def nextStep(user):
                 qteFact+=1
                 req=["UPDATE commande set dateFact=?,facturedBy=? where id_commande=?",(date,user,cmd["id_commande"],)]
                 ecriture_BDD(req)
-            else:
-                b=3
-                req=["UPDATE commande set dateFact=?,facturedBy=? where id_commande=?",(date,user,cmd["id_commande"],)]
+            elif mini>2:
+                #On livre direct la commande
+                b=5
+                req=["UPDATE commande set dateFact=?,facturedBy=?,deliveredBy=? where id_commande=?",(date,user,user,cmd["id_commande"],)]
                 ecriture_BDD(req)
             req=["UPDATE commande set etatCmd=?,facturedBy=? where id_commande=?",(b,user,cmd["id_commande"],)]
             ecriture_BDD(req)
@@ -2857,28 +2861,28 @@ def livrer(user):
         req=["insert into livraison (dateLivraison,idCE,nbCmd) values(?,?,?)",(date,idCE,len(LidCommande))]
         ecriture_BDD(req)
     for idCmd in LidCommande:
-        req=["UPDATE commande set idlivraison=(SELECT max(idlivraison) from livraison),deliveredBy=? where id_commande=?",(user,idCmd)]
-        ecriture_BDD(req)
-        req=["SELECT etatProd,idProd from facturation where idCmd=?",(idCmd,)]
-        ligne=lecture_BDD(req)
-        for l in ligne:
-            etatProd=l['etatProd'].split(";")
+        livrer_commande(idCmd,user)
+        
+        #Ne fonctionne pas totalement
 
-            for i in range(len(etatProd)):
-                if etatProd[i]=="2":
-                    etatProd[i]="5"
+        # req=["UPDATE commande set idlivraison=(SELECT max(idlivraison) from livraison),deliveredBy=? where id_commande=?",(user,idCmd)]
+        # ecriture_BDD(req)
+        # req=["SELECT etatProd,idProd from facturation where idCmd=?",(idCmd,)]
+        # ligne=lecture_BDD(req)
+        # for l in ligne:
+        #     etatProd=l['etatProd'].split(";")
+
+        #     for i in range(len(etatProd)):
+        #         if etatProd[i]=="2":
+        #             etatProd[i]="5"
             
-            etatMin=int(min(etatProd))
-            maxEtat=max(etatProd)
-            stretatProd = ";".join(etatProd) 
-            req=["UPDATE facturation set etatProd=?,etatMin=?,etatMax=? where idProd=?",(stretatProd,etatMin,maxEtat,l["idProd"])]
-            ecriture_BDD(req)
+        #     etatMin=int(min(etatProd))
+        #     maxEtat=max(etatProd)
+        #     stretatProd = ";".join(etatProd) 
+        #     req=["UPDATE facturation set etatProd=?,etatMin=?,etatMax=? where idProd=?",(stretatProd,etatMin,maxEtat,l["idProd"])]
+        #     ecriture_BDD(req)
 
-        req=["SELECT etatCmd from commande where id_commande=?",(idCmd,)]
-        etatCmd=lecture_BDD(req)[0]["etatCmd"]
-        if etatCmd==2:
-            req=["UPDATE commande set etatCmd=3,deliveredBy=? where id_commande=?",(user,idCmd)]
-            ecriture_BDD(req)
+        
         write_log(str(session['user']['id']),"/livrer - Livraison du CE n°"+str(idCE)+" sur "+str(len(LidCommande))+" commandes")
     return choixCELivre(user)
     

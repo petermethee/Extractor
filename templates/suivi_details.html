@@ -507,7 +507,16 @@
         
         
                 {%endif%}
-
+        {%if 0<client[0]['etatCmd']<3 %} 
+            <p class="SousTitreDetails">Livraison de la commande</p>
+            <table align="center">
+                <th><input type="hidden" name="idCommande" value="{{idDetailCmd}}"></th>
+                <th class="thMoy2"></th>
+                <tr >
+				<td class="tdLienBlack"></td>
+				<td><button class="btLien" id="{{idDetailCmd}}-Livrer" value="livrer" name="action"
+						onclick="clickLivrer()">Livrer la commande</button></td>
+        {%endif%}
                 <br>
         </div>
         
@@ -676,7 +685,10 @@
         alert("Facture(s) envoyée(s) !");
         window.location.reload(true);
     }
-
+    function clickLivrer(){
+        alert("Commande livrée");
+        
+    }
     function clickPaiement(t) {
         var type = t.id.split("-")[1];
         var montant = document.getElementById(t.id.split("-")[0] + "-montant").value;

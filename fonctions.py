@@ -161,7 +161,7 @@ def write_log(user,texte):
     now = datetime.now()
     # Formater la date pour l'utiliser comme nom de fichier
     filename = logFold+"/"+now.strftime("%Y-%m")+".txt"
-    print(filename)
+    # print(filename)
     # Créer et écrire dans le fichier
     with open(filename, "a") as f:
         log=str(now)+" user : "+user+" "+texte+"\n"
@@ -257,3 +257,112 @@ def check_caracteres(texte):
         if car==False:
             car=texte.find('\\')
     return(car) 
+
+def livrer_commande(idCmd,user):
+    #Récuperer les différents produits de la commande
+    req=["SELECT idProd FROM facturation WHERE idCmd=?",(idCmd,)]
+    listePdt=lecture_BDD(req)
+    print("listePdt")
+    print(listePdt)
+    en_cours=False
+    for produit in listePdt:
+        print("produit['idProd']")
+        print(produit['idProd'])
+        idProd=produit['idProd']
+        #Changement état des produits livrés
+        en_cours_prod,rupt_prod=change_etat_produit_livraison(idProd,user)
+        print("en_cours_prod")
+        print(en_cours_prod)
+        if en_cours_prod==True:
+            en_cours=True
+    print("en_cours")
+    print(en_cours)
+    if en_cours==True:
+        #Pas de changement d'états de la commande
+        texte="Livraison de la commande n°"+str(idCmd)+" a été partiellement livré par "+str(user)
+    else:
+        #Changement état de la commande
+        req=["UPDATE commande SET etatCmd=3,deliveredBy=? WHERE id_commande=?",(user,idCmd)]
+        ecriture_BDD(req)    
+        #Changement état des paiements
+        req=["UPDATE paiement SET etat=3 WHERE idCd=? and etat=0",(idCmd,)]
+        ecriture_BDD(req)
+        texte="Livraison de la commande n°"+str(idCmd)+" a été livré par "+str(user)
+    req=["SELECT etatCmd from commande where id_commande=?",(idCmd,)]
+    etatCmd=lecture_BDD(req)[0]["etatCmd"]
+    write_log(user,texte)
+    return()
+
+def change_etat_produit_livraison(idProd,user):#TODO
+    etat='5'
+    req=["SELECT qte,etatProd,etatMin,etatMax FROM facturation WHERE idProd=?",(idProd,)]
+    liste=lecture_BDD(req)
+    qte=liste[0]['qte']
+    etatProd=liste[0]['etatProd']
+    en_cours=False
+    rupt=False
+    print("qte")
+    print(qte)
+    print("etatProd")
+    print(etatProd)
+    #Cas qté =1
+    if qte=='1':
+        if etatProd=="1":
+            en_cours=True
+            texte="Le produit n°"+str(idProd)+" est toujours à l'état "+str(1)+" par "+str(user)
+        elif etatProd=="2":
+            req=["UPDATE facturation SET etatProd=?,etatMin=?,etatMax=? WHERE idProd=?",(etat,int(etat),int(etat),idProd)]
+            ecriture_BDD(req)
+            texte="Le produit n°"+str(idProd)+" a été mis à l'état "+str(etat)+" par "+str(user)
+        elif etatProd=="3":
+            rupt=True
+            texte="Le produit n°"+str(idProd)+" est toujours à l'état "+str(3)+" par "+str(user)
+        elif etatProd=="4":
+            texte="Le produit n°"+str(idProd)+" est toujours à l'état "+str(4)+" par "+str(user)
+        elif etatProd=="0":
+            en_cours=True
+            texte="Le produit n°"+str(idProd)+" est toujours à l'état "+str(0)+" par "+str(user)
+        elif etatProd=="5":
+            texte="Le produit n°"+str(idProd)+" est toujours à l'état "+str(5)+" par "+str(user)
+    #Cas qté >1
+    else:
+        L=etatProd.split(";")
+        Lfinale=""
+        mini=5
+        maxi=0
+        for etats in L:
+            #Définition du mini
+            valeur_etats=int(etats)
+            if valeur_etats<mini:
+                mini=valeur_etats
+            #Définition du maxi
+            if valeur_etats>maxi:
+                maxi=valeur_etats
+            #Livraison de la commande
+            if etat=='5':
+                #Produit reliquat
+                if etats=="1":
+                    en_cours=True
+                #Produit facturé
+                if etats=="2":
+                    etats="5"
+                #Produit rupture
+                elif etats=="3":
+                    rupt=True
+                #Produit annulé
+                elif etats=="4": 
+                    pass
+                #en prepartion
+                elif etats=="0":
+                    en_cours=True
+            Lfinale=Lfinale+etats+";"
+        #Suppression du dernier point virgule
+        Lfinale=Lfinale[:-1]
+        req=["UPDATE facturation SET etatProd=?,etatMin=?,etatMax=? WHERE idProd=?",(Lfinale,mini,maxi,idProd)]
+        ecriture_BDD(req)
+        texte="Le produit n°"+str(idProd)+" a été mis à l'état "+str(Lfinale)+" par "+str(user)
+    write_log(user,texte)
+    return(en_cours,rupt)
+    
+    
+    
