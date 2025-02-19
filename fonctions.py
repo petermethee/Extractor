@@ -251,11 +251,11 @@ def check_produit(etats):
 def check_caracteres(texte):
     #vérifie si les caractères / \ ; sont présents dans le texte
     car=False
-    car=texte.find('/')
-    if car==False:
-        car=texte.find(';')
-        if car==False:
-            car=texte.find('\\')
+    value1=texte.find('/')
+    value2=texte.find(';')
+    value3=texte.find('\\')
+    if value1>0 or value2>0 or value3>0:
+        car=True
     return(car) 
 
 def livrer_commande(idCmd,user):
@@ -365,4 +365,79 @@ def change_etat_produit_livraison(idProd,user):#TODO
     return(en_cours,rupt)
     
     
-    
+def extraction_auto():
+    extraction_auto_fold="C:/Users/jeann/Desktop/Parfumerie/CE_V4"
+    inc=0
+    total=0
+    #TODO definir le user auto
+    user=0
+    date=datetime.today().strftime('%Y-%m-%d')
+    Lean,Lcode,Llib,Lprix,Lato,Lqte=[],[],[],[],[],[]
+    pas_error=True
+    with open(extraction_auto_fold+"/commande-900900.csv","r", encoding="utf-8") as csvFile:
+        for lines in csvFile:
+            #Infos titre
+            if inc==0:
+                inc+=1
+            #infos client / produits
+            else:
+                entreprise,idCE,client,mail,tel,adresse,livraison,adresse_livraison,type_paiement,code_pdt,designation,quantite,prix_U,sous_tot=lines.split(",")   
+                #Enlève les caractères " dans les csv
+                entreprise=entreprise.replace('"','')
+                client=client.replace('"','')
+                adresse=adresse.replace('"','')
+                livraison=livraison.replace('"','') 
+                designation=designation.replace('"','')
+                #----------Check des infos
+                #Check CE
+                req=["SELECT entreprise FROM listingCE WHERE idCE=?",(idCE,)]
+                if len(lecture_BDD(req))==0:
+                    pas_error=False
+                #Check client
+                if client=="":
+                    pas_error=False
+                #Check adresse
+                if adresse=="":
+                    pas_error=False
+                #Check livraison
+                if livraison=="":
+                    pas_error=False
+                #Check adresse livraison
+                if adresse_livraison=="":
+                    pas_error=False
+                #Check type paiement
+                if type_paiement=="":  
+                    pas_error=False
+                #Check code produit
+                errone,code,ean,lib=checkCode(code_pdt)
+                prix=0
+                if errone==0:
+                    prix=getPrix(code)
+                total+=float(sous_tot)
+                Llib.append(designation)
+                Lprix.append(prix)
+                Lcode.append(code)
+                Lean.append(ean)
+                Lqte.append(quantite)
+                Lato.append('non')
+        if pas_error:
+            #TODO à relire
+            print("Lcode",Lcode)
+            print("Lean",Lean)
+            commentaire="Extraction automatique"
+            req=["insert into client (idCEclient,societe,client,mail,tel,adresse,commentaire) values(?,?,?,?,?,?,?)",(idCE,entreprise,client,mail,tel,adresse,commentaire)]
+            ecriture_BDD(req)
+            req=["SELECT max(idclient) from client",()]
+            idclient=lecture_BDD(req)[0]["max(idclient)"]
+            req=["insert into commande (idclientCmd,idCE,total,idclientHW,etatCmd,date,corbeille,createdBy) values(?,?,?,?,?,?,0,?)",(idclient,idCE,total,-1,0,date,user)]
+            ecriture_BDD(req)
+            req=["SELECT max(id_commande) from commande",()]
+            idCmd=lecture_BDD(req)[0]['max(id_commande)']
+            for i in range (len(Lcode)-1):
+                print("i:",i)
+                req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,Lcode[i],Lean[i],Llib[i],Llib[i],Lprix[i],Lqte[i],Lato[i],0,-1,0,0,0)]
+                ecriture_BDD(req)
+            req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),idCmd)]
+            ecriture_BDD(req)
+    return()
+

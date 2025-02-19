@@ -2,39 +2,39 @@ from flask import Flask
 
 #----------------Constantes PC Jeanne
 
-# staticDir="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static"
-# app = Flask(__name__,static_folder=staticDir)
-# app.secret_key = "jpcorp"
-# app.config['FACTURE_FOLDER'] = 'C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures'
-# targetFile='C:/Users/jeann/Desktop/Parfumerie/CE_V4/Succes'
-# repertoireImgClient='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_client'
-# repertoireImgCmd='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_cmd'
-# exportFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Export"
-# statFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat"
-# logFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat"
-# bdd="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_hist_extraction.db"
-# bddCP="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_code_postal.db"
-# xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTICLE.xml"
-# xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTMAG.xml"
-# fact="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures"
+staticDir="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static"
+app = Flask(__name__,static_folder=staticDir)
+app.secret_key = "jpcorp"
+app.config['FACTURE_FOLDER'] = 'C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures'
+targetFile='C:/Users/jeann/Desktop/Parfumerie/CE_V4/Succes'
+repertoireImgClient='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_client'
+repertoireImgCmd='C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/static/image_cmd'
+exportFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Export"
+statFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat"
+logFold="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Stat"
+bdd="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_hist_extraction.db"
+bddCP="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_code_postal.db"
+xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTICLE.xml"
+xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTMAG.xml"
+fact="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures"
 
 #------------------Constantes PC JD
 
-staticDir="/home/jamessou/CEPROG/bdd/static"
-app = Flask(__name__,static_folder=staticDir)
-app.secret_key = "jpcorp"
-app.config['FACTURE_FOLDER'] = '/home/jamessou/CE/Factures'
-targetFile='/home/jamessou/CE/Succes'
-repertoireImgClient='/home/jamessou/CEPROG/bdd/static/image_client'
-repertoireImgCmd='/home/jamessou/CEPROG/bdd/static/image_cmd'
-exportFold="/home/jamessou/CE/Export"
-statFold="/home/jamessou/CE/Stat"
-logFold= "/home/jamessou/CE/Stat"
-bdd="/home/jamessou/CEPROG/bdd/bdd_hist_extraction.db"
-bddCP="/home/jamessou/CEPROG/bdd/bdd_code_postal.db"
-xmlARTICLE="/home/jamessou/xmlpm/ARTICLE.xml"
-xmlARTMAG="/home/jamessou/xmlpm/ARTMAG.xml"
-fact="/home/jamessou/CE/Factures"
+# staticDir="/home/jamessou/CEPROG/bdd/static"
+# app = Flask(__name__,static_folder=staticDir)
+# app.secret_key = "jpcorp"
+# app.config['FACTURE_FOLDER'] = '/home/jamessou/CE/Factures'
+# targetFile='/home/jamessou/CE/Succes'
+# repertoireImgClient='/home/jamessou/CEPROG/bdd/static/image_client'
+# repertoireImgCmd='/home/jamessou/CEPROG/bdd/static/image_cmd'
+# exportFold="/home/jamessou/CE/Export"
+# statFold="/home/jamessou/CE/Stat"
+# logFold= "/home/jamessou/CE/Stat"
+# bdd="/home/jamessou/CEPROG/bdd/bdd_hist_extraction.db"
+# bddCP="/home/jamessou/CEPROG/bdd/bdd_code_postal.db"
+# xmlARTICLE="/home/jamessou/xmlpm/ARTICLE.xml"
+# xmlARTMAG="/home/jamessou/xmlpm/ARTMAG.xml"
+# fact="/home/jamessou/CE/Factures"
 
 #-----------------Constantes globales
 

@@ -647,15 +647,16 @@ def extractColissimo(user):
             Lcar.append(check_caracteres(texte))
             print(texte)
             print(Lcar)
-        if -1 in Lcar:
+        if True in Lcar:
             car_interdit=True
         if car_interdit==False:
             with open(exportFold+"/"+nom+prenom+"_extractor.csv","w") as csvfile:
                 csvfile.write('Référence;;Raison sociale;Service;Prénom;Nom;Etage couloir escalier;Entrée bâtiment;N° et voie;Lieu dit;Code postal;Commune;Code ISO du pays;Téléphone fixe;Téléphone portable;Email;Code porte1;Code porte2;Interphone;Instructions de livraison;Nom commercial chargeur\n')
                 csvfile.write(';;;;'+prenom+';'+nom+';'+couls+';'+res+';'+rue+';'+lieu_dit+';'+CP+';'+ville+';FR;'+fixe+';'+mobile+';'+mail+';;;;;'+instructions+';')
-            write_log(str(session['user']['id']),"/extractColissimo -Extraction colissimo")
+            write_log(str(session['user']['id']),"/extractColissimo -Extraction colissimo réussie")
             return detailsCmd(user)
         else:
+            write_log(str(session['user']['id']),"/extractColissimo -Extraction colissimo échouée")
             return render_template("suivi_details_colissimo.html",user=user,ville=ville,CP=CP,rue=rue,nom=nom,prenom=prenom,mail=mail,fixe=fixe,mobile=mobile,couls=couls,res=res,instructions=instructions,lieu_dit=lieu_dit)
     return detailsCmd(user)      
 
@@ -4248,6 +4249,8 @@ def separation_des_pages(repertoire):
 #endregion   
 
 getXML()
+# print("extraction_auto")
+# extraction_auto()
 
 if __name__ == '__main__':
     #webbrowser.open('http://172.20.10.10:5000')
