@@ -3442,9 +3442,9 @@ def action_export_de_donnees():
         if dateMax==None:
             dateMax=str(datetime.today().strptime('%Y-%m-%d'))
         if dateMin==None:  
-            dateMin=str(datetime.date(2021,1,1))
-        maxD=datetime.strptime(dateMax,'%Y-%m-%d')
-        minD=datetime.strptime(dateMin,'%Y-%m-%d')
+            dateMin=str(datetime.date(2021,1,1).strptime('%Y-%m-%d'))
+        maxD=dateMax
+        minD=dateMin
     if action=="0" or action=="99":
         #suppression doublons
         req=["SELECT idclient,mail,client FROM client GROUP BY mail,client HAVING COUNT(*) > 1",()]
@@ -3488,7 +3488,9 @@ def action_export_de_donnees():
         #Export des impayés par référente
         export_Impayes_Synthese_Referente()
         write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des impayés par référente")
-    
+    if action=="8":
+        extraction_auto()
+        write_log(str(session['user']['id']),"/action_export_de_donnees - Exportation des impayés par référente")
     return '',204
 
 
