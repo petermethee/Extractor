@@ -562,6 +562,8 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
         <h2> SAS PARFUMERIE MIREILLE</h2>
         <h2> 38 Place de la république</h2>
         <h2> 84700 Sorgues</h2>
+        <br>
+        <h2>N’oubliez pas de noter votre N° de commande en libellé de votre virement.</h2>
         """
     #Paiement Lien
     elif etat=="lien":
