@@ -283,8 +283,8 @@ def listeA(adr):
 def CodePossible(nombre):
     LcodePossible=[]
     taille=int(len(nombre))
-    print("nombre")
-    print(nombre)
+    # print("nombre")
+    # print(nombre)
     for i in range (taille):
         j=0
         a=str(nombre[i])

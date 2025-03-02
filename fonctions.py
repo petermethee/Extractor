@@ -1,4 +1,6 @@
 import csv
+import os
+import shutil
 from flask import request
 from tool import *
 from constantes import *
@@ -364,80 +366,161 @@ def change_etat_produit_livraison(idProd,user):#TODO
     write_log(user,texte)
     return(en_cours,rupt)
     
-    
+def write_log_auto(user,texte):
+    now = datetime.now()
+    # Formater la date pour l'utiliser comme nom de fichier
+    filename = logFold+"/extraction_auto"+now.strftime("%Y-%m")+".txt"
+    # print(filename)
+    # Créer et écrire dans le fichier
+    with open(filename, "a") as f:
+        log=str(now.strftime("%Y-%m-%d %H:%M:%S"))+" user : "+user+" "+texte+"\n"
+        f.write(log)
+    # log=str(now)+" user : "+user+" "+texte+"\n"
+    # fichier=open(filename,"w")
+    # fichier.write(log)    
 def extraction_auto():
-    extraction_auto_fold="C:/Users/jeann/Desktop/Parfumerie/CE_V4"
+    #TODO mettre CE de tout le monde si vide ou non renseigné
     inc=0
     total=0
     #TODO definir le user auto
     user=0
     date=datetime.today().strftime('%Y-%m-%d')
-    Lean,Lcode,Llib,Lprix,Lato,Lqte=[],[],[],[],[],[]
+    Lean,Lcode,Llib,Lprix,Lato,Lqte,LlibW=[],[],[],[],[],[],[]
     pas_error=True
-    with open(extraction_auto_fold+"/commande-900900.csv","r", encoding="utf-8") as csvFile:
-        for lines in csvFile:
-            #Infos titre
-            if inc==0:
-                inc+=1
-            #infos client / produits
-            else:
-                entreprise,idCE,client,mail,tel,adresse,livraison,adresse_livraison,type_paiement,code_pdt,designation,quantite,prix_U,sous_tot=lines.split(",")   
-                #Enlève les caractères " dans les csv
-                entreprise=entreprise.replace('"','')
-                client=client.replace('"','')
-                adresse=adresse.replace('"','')
-                livraison=livraison.replace('"','') 
-                designation=designation.replace('"','')
-                #----------Check des infos
-                #Check CE
-                req=["SELECT entreprise FROM listingCE WHERE idCE=?",(idCE,)]
-                if len(lecture_BDD(req))==0:
-                    pas_error=False
-                #Check client
-                if client=="":
-                    pas_error=False
-                #Check adresse
-                if adresse=="":
-                    pas_error=False
-                #Check livraison
-                if livraison=="":
-                    pas_error=False
-                #Check adresse livraison
-                if adresse_livraison=="":
-                    pas_error=False
-                #Check type paiement
-                if type_paiement=="":  
-                    pas_error=False
-                #Check code produit
-                errone,code,ean,lib=checkCode(code_pdt)
-                prix=0
-                if errone==0:
-                    prix=getPrix(code)
-                total+=float(sous_tot)
-                Llib.append(designation)
-                Lprix.append(prix)
-                Lcode.append(code)
-                Lean.append(ean)
-                Lqte.append(quantite)
-                Lato.append('non')
-        if pas_error:
-            #TODO à relire
-            print("Lcode",Lcode)
-            print("Lean",Lean)
-            commentaire="Extraction automatique"
-            req=["insert into client (idCEclient,societe,client,mail,tel,adresse,commentaire) values(?,?,?,?,?,?,?)",(idCE,entreprise,client,mail,tel,adresse,commentaire)]
-            ecriture_BDD(req)
-            req=["SELECT max(idclient) from client",()]
-            idclient=lecture_BDD(req)[0]["max(idclient)"]
-            req=["insert into commande (idclientCmd,idCE,total,idclientHW,etatCmd,date,corbeille,createdBy) values(?,?,?,?,?,?,0,?)",(idclient,idCE,total,-1,0,date,user)]
-            ecriture_BDD(req)
-            req=["SELECT max(id_commande) from commande",()]
-            idCmd=lecture_BDD(req)[0]['max(id_commande)']
-            for i in range (len(Lcode)-1):
-                print("i:",i)
-                req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,Lcode[i],Lean[i],Llib[i],Llib[i],Lprix[i],Lqte[i],Lato[i],0,-1,0,0,0)]
+    write_log_auto('automatique','INFO: Début de l extraction automatique')
+    # fichier="commande-900900.csv"
+    if os.listdir(extraction_auto_fold_todo)==[]:
+        write_log_auto('automatique','INFO: Le repertoire est vide')
+    for fichier in os.listdir(extraction_auto_fold_todo) :
+        extension=fichier[-3:]
+        write_log_auto('automatique','INFO: ---------------------------------------------')
+        write_log_auto('automatique','INFO: -------------Debut du fichier '+fichier)
+        write_log_auto('automatique','INFO: ---------------------------------------------')
+        if extension!="csv":
+            write_log_auto('automatique','WARNING: Le fichier '+fichier+' n a pas la bonne extension')
+            write_log_auto('automatique','WARNING: >>>>>>>>>ECHEC de l extraction automatique<<<<<<<<')
+            try:
+                shutil.move(extraction_auto_fold_todo+fichier,extraction_auto_fold_KO+fichier)
+                write_log_auto('automatique','INFO:Deplacement du fichier vers le repertoire Echec')
+            except Exception as e:
+                write_log_auto('automatique',"ERROR:"+str(e))
+                write_log_auto('automatique','ERROR:>>>>>>>>>Echec du deplacement du fichier '+str(idclient)+' vers le repertoire Echec')
+            write_log_auto('automatique','INFO: ---------------------------------------------')
+            write_log_auto('automatique','INFO:-------------Fin du fichier '+fichier)
+            write_log_auto('automatique','INFO: ---------------------------------------------')
+        else:
+            with open(extraction_auto_fold_todo+fichier,"r", encoding="utf-8") as csvFile:        
+                for lines in csvFile:
+                    #Infos titre
+                    if inc==0:
+                        inc+=1
+                        # print("DEBUG: Je saute la première ligne")
+                    #infos client / produits
+                    else:
+                        entreprise,idCE,client,mail,tel,adresse,livraison,adresse_livraison,type_paiement,code_pdt,designation,quantite,prix_U,sous_tot=lines.split(",")   
+                        #Enlève les caractères " dans les csv
+                        entreprise=entreprise.replace('"','')
+                        client=client.replace('"','')
+                        adresse=adresse.replace('"','')
+                        livraison=livraison.replace('"','') 
+                        designation=designation.replace('"','')
+                        sous_tot=sous_tot.replace('\n',str())
+                        sous_tot=sous_tot.replace("'",str())
+                        sous_tot=sous_tot.replace('"',str())
+                        # print("sous_tot")
+                        # print(sous_tot)
+                        #----------Check des infos
+                        #Check CE
+                        req=["SELECT entreprise FROM listingCE WHERE idCE=?",(idCE,)]
+                        lecture_BDD(req)
+                        if len(lecture_BDD(req))==0:
+                            write_log_auto('automatique','WARNING: Le CE n est pas dans la liste des CE Extractor')
+                            idCE=str(999410)
+                            req=["SELECT entreprise FROM listingCE WHERE idCE=?",(idCE,)]
+                            lecture_BDD(req)
+                            if len(lecture_BDD(req))==0:
+                                pas_error=False
+                                write_log_auto('automatique','ERROR: Le CE 999410 n existe pas')
+
+                        #Check client
+                        if client=="":
+                            pas_error=False
+                            write_log_auto('automatique','ERROR: Le nom et prenom du client est vide')
+                        #Check adresse
+                        if adresse=="":
+                            pas_error=False
+                            write_log_auto('automatique','ERROR: L adresse du client est vide')
+                        #Check livraison
+                        if livraison=="":
+                            pas_error=False
+                            write_log_auto('automatique','ERROR:Le choix de livraison du client est vide')
+                        #Check adresse livraison
+                        if adresse_livraison=="":
+                            pas_error=False
+                            write_log_auto('automatique','ERROR: L adresse de livraison du client est vide')
+                        #Check type paiement
+                        if type_paiement=="":  
+                            pas_error=False
+                            write_log_auto('automatique','ERROR: Le type de paiement du client est vide')
+                        #Check code produit
+                        errone,code,ean,libW=checkCode(str(code_pdt))
+                        # print("errone"+str(errone))
+                        # print("code"+str(code))
+                        # print("ean"+str(ean))
+                        # print("libW"+str(libW))
+                        prix=0
+                        if errone==0:
+                            prix=getPrix(code)
+                        try:
+                            total+=float(sous_tot)
+                        except:
+                            pass
+                        Llib.append(designation)
+                        LlibW.append(libW)
+                        Lprix.append(prix)
+                        Lcode.append(code)
+                        Lean.append(ean)
+                        Lqte.append(quantite)
+                        Lato.append('non')
+                # print("paserror"+str(pas_error))
+            if pas_error:
+                #TODO à relire
+                print("Lcode"+str(Lcode))
+                print("Lean"+str(Lean))
+                commentaire="Extraction automatique"
+                req=["insert into client (idCEclient,societe,client,mail,tel,adresse,commentaire) values(?,?,?,?,?,?,?)",(idCE,entreprise,client,mail,tel,adresse,commentaire)]
                 ecriture_BDD(req)
-            req=["INSERT INTO stats  (date,idUser,action,cde,pdt,lot) VALUES (?,?,?,?,?,?)",(date,user,'ajouter',1,len(Lcode),idCmd)]
-            ecriture_BDD(req)
+                req=["SELECT max(idclient) from client",()]
+                idclient=lecture_BDD(req)[0]["max(idclient)"]
+                req=["insert into commande (idclientCmd,idCE,total,idclientHW,etatCmd,date,corbeille,createdBy) values(?,?,?,?,?,?,0,?)",(idclient,idCE,total,-1,0,date,user)]
+                ecriture_BDD(req)
+                req=["SELECT max(id_commande) from commande",()]
+                idCmd=lecture_BDD(req)[0]['max(id_commande)']
+                for i in range (len(Lcode)-1):
+                    print("i:",i)
+                    req=["insert into facturation (idCmd,code,ean,libW,lib,prix,qte,ato,errone,idHW,etatProd,etatMin,etatMax) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",(idCmd,Lcode[i],Lean[i],LlibW[i],Llib[i],Lprix[i],Lqte[i],Lato[i],0,-1,0,0,0)]
+                    write_log_auto('automatique','INFO: Ajout de la ligne '+str(i)+' avec le code '+str(Lcode[i])+' et la quantite '+str(Lqte[i]))
+                    ecriture_BDD(req)
+                try:
+                    new_fichier='commande_'+str(idCmd)+'_OK.csv'
+                    shutil.move(extraction_auto_fold_todo+fichier,extraction_auto_fold_OK+new_fichier)
+                    write_log_auto('automatique','INFO: Deplacement du fichier '+str(idclient)+' vers le repertoire Traites')
+                    write_log_auto('automatique','INFO: -----------Succes de l extraction automatique------------')
+
+                except Exception as e:
+                    write_log_auto('automatique',"ERROR:"+str(e))
+                    write_log_auto('automatique','ERROR: >>>>>>>>>>Echec du deplacement du fichier vers le repertoire Traites')
+                    write_log_auto('automatique','ERROR: -----------Succes de l extraction automatique mais echec du déplacement------------')
+            else:
+                write_log_auto('automatique','ERROR: >>>>>>>>>ECHEC de l extraction automatique<<<<<<<<')
+                try:
+                    shutil.move(extraction_auto_fold_todo+fichier,extraction_auto_fold_KO+fichier)
+                    write_log_auto('automatique','INFO: Deplacement du fichier vers le repertoire Echec')
+                except Exception as e:
+                    write_log_auto('automatique',"ERROR:"+str(e))
+                    write_log_auto('automatique','ERROR: >>>>>>>>>Echec du deplacement du fichier '+str(idclient)+' vers le repertoire Echec')
+            write_log_auto('automatique','INFO:---------------------------------------------')
+            write_log_auto('automatique','INFO:-------------Fin du fichier '+fichier)
+            write_log_auto('automatique','INFO:---------------------------------------------')
     return()
 

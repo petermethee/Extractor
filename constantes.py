@@ -17,6 +17,9 @@ bddCP="C:/Users/jeann/Desktop/Parfumerie/CE_V4/bdd/bdd_code_postal.db"
 xmlARTICLE="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTICLE.xml"
 xmlARTMAG="C:/Users/jeann/Desktop/Parfumerie/CE_V4/xml/ARTMAG.xml"
 fact="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Factures"
+extraction_auto_fold_todo="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Extraction_auto/A_Traiter/"
+extraction_auto_fold_OK="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Extraction_auto/Traites/"
+extraction_auto_fold_KO="C:/Users/jeann/Desktop/Parfumerie/CE_V4/Extraction_auto/Echec/"
 
 #------------------Constantes PC JD
 

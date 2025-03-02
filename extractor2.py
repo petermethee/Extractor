@@ -280,7 +280,7 @@ def annuleCmd():
     checkUser()
     user=session['user']['id']
     idCmd=getValeurFormulaire('idCmd')
-    print(idCmd)
+    # print(idCmd)
     answer=getValeurFormulaire('answer')
     req=["UPDATE commande set justification=?,deletedBy=?,etatCmd=99 where id_commande=?",(answer,user,idCmd)]
     ecriture_BDD(req)
@@ -645,8 +645,8 @@ def extractColissimo(user):
         instructions=Linfo[11]
         for texte in Linfo:
             Lcar.append(check_caracteres(texte))
-            print(texte)
-            print(Lcar)
+            # print(texte)
+            # print(Lcar)
         if True in Lcar:
             car_interdit=True
         if car_interdit==False:
@@ -4249,8 +4249,8 @@ def separation_des_pages(repertoire):
 #endregion   
 
 getXML()
-# print("extraction_auto")
-# extraction_auto()
+print("extraction_auto")
+extraction_auto()
 
 if __name__ == '__main__':
     #webbrowser.open('http://172.20.10.10:5000')
