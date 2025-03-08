@@ -95,6 +95,15 @@ def export_CSV6():
         csvfile.write("Identifiant Unique reliquat;Date lot;Code;Libelle;EAN;Magasin;Quantite;Prix unitaire;Num Lot;Nom du CE\n")
         for row in Linfo:
             csvfile.write(';'.join(str(r) for r in row) + '\n')
+
+def export_CSV7():
+    req=["select commande.id_commande,commande.idCE,date,lot,prenom,client.client,client.mail,client.tel,client.adresse from commande join client on commande.idclientCmd=client.idclient join listingCE on listingCE.idCE=commande.idCE join utilisateur on utilisateur.id=listingCE.referente where commande.etatCmd<3 and (client.client='' or client.mail='' or client.tel='' or client.adresse='') ",()]
+    Linfo=lecture_BDD(req)
+    with open(exportFold+"/listing_clients.csv","w", encoding="utf-8") as csvfile:
+        csvfile.write("ID Commande;ID CE;Date commande;Lot;Referente;Nom du client;Mail;Tel;Adresse\n")
+        for row in Linfo:
+            csvfile.write(';'.join(str(r) for r in row) + '\n')
+
 def export_Impayes():
     req=["SELECT idUnique,idCd,type,paiement.date,heure,montant,idPaiement,relance,client,client.mail,client.tel,listingCE.idCE,entreprise,utilisateur.prenom from paiement JOIN commande ON id_commande=idCd JOIN client ON idclientCmd=idclient join listingCE on commande.idCE=listingCE.idCE join utilisateur ON utilisateur.id=listingCE.referente WHERE lastOne=1 AND paiement.etat=0",()]
     Linfo=lecture_BDD(req)

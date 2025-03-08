@@ -836,6 +836,12 @@ def extractGeneral():
     elif action=="5":
         export_CSV5()
         write_log(str(session['user']['id']),"/extractGeneral - Exportation du listing CSV 5.csv")
+    elif action=="5":
+        export_CSV6()
+        write_log(str(session['user']['id']),"/extractGeneral - Exportation du listing CSV 5.csv")
+    elif action=="7":
+        export_CSV7()
+        write_log(str(session['user']['id']),"/extractGeneral - Exportation du listing CSV 5.csv")
     return start(user) 
 @app.route('/changePC', methods=['GET', 'POST'])
 def changePC():

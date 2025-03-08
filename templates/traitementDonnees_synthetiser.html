@@ -109,8 +109,11 @@
 		<button class="generateBt" name="action" value="5" onclick="attente();extraction5()">
           Export commandes en préparation/facturation
         </button>
-		<button class="generateBt" name="action" value="6" onclick="attente();extraction5()">
+		<button class="generateBt" name="action" value="6" onclick="attente();extraction6()">
           Export reliquats et ruptures (1 an)
+        </button>
+		<button class="generateBt" name="action" value="7" onclick="attente();extraction7()">
+          Export clients à corriger
         </button>
       </form>
     </div>
@@ -155,6 +158,10 @@
         }
 		function extraction6(){
             alert("L'export se trouvera dans le dossier 'Export' nommé 'Reliquats_et_ruptures_1_an.csv'. Liste les reliquats et ruptures depuis 1 an.")
+        }
+
+		function extraction7(){
+            alert("L'export se trouvera dans le dossier 'Export' nommé 'listing_clients'.csv'.")
         }
 		
 	</script>
