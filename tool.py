@@ -655,7 +655,7 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
     #Pour tous les mails
     HTML+="""<br><br>
         <br>
-        <h2>Frais de port pour les commandes inférieures à 75€: 6,99€ livraison en point relais / 7,99€ livraison à domicile.</h2>
+        <h2>Frais de port pour les commandes inférieures à 75€ : 6,99€ livraison en point relais / 7,99€ livraison à domicile.</h2>
         <br><br>
         <h1>Merci pour votre confiance,</h1>
         <h1>Bonne réception,</h1>
