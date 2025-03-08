@@ -4147,22 +4147,33 @@ def initTraitement(nCE,user,repertoire,erreurFile):
     for nom in os.listdir(repertoire) :
         nbFichier+=1
         extension=nom.split('.')[-1]
+        print("extension")
+        print(extension)
         if extension=='csv' or extension=='CSV':
-            try:
-                chemin=repertoire+"/"
-                liste,idclient=infos_dans_csv(chemin,nom,idExtraction,session['user']['id'])
-                os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+".csv")
-            except Exception as e:
-                print(str(e))
-                print("error csv 1 :"+nom)
-                nbError+=1
-                try:
-                    shutil.move(repertoire+"/"+nom,erreurFile)
-                except Exception as e:
-                    print("Already exists")
-                    os.remove(repertoire+"/"+nom)
+            print("je suis dans CSV")
+            print("repertoire")
+            print(repertoire)
+            print("targetFile")
+            print(targetFile)
+            print("erreurFile")
+            print(erreurFile)
+            extraction_auto(repertoire+"/",targetFile+"/",erreurFile+"/",nom)
+            # try:
+            #     chemin=repertoire+"/"
+            #     liste,idclient=infos_dans_csv(chemin,nom,idExtraction,session['user']['id'])
+            #     os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+".csv")
+            # except Exception as e:
+            #     print(str(e))
+            #     print("error csv 1 :"+nom)
+            #     nbError+=1
+            #     try:
+            #         shutil.move(repertoire+"/"+nom,erreurFile)
+            #     except Exception as e:
+            #         print("Already exists")
+            #         os.remove(repertoire+"/"+nom)
         else:
             try :
+                print("je suis dans PDF")
                 pdfobject=open(repertoire+"/"+nom,'rb')
                 pdf=pypdf.PdfFileReader(pdfobject)
                 txt=pdf.getFormTextFields()
@@ -4170,6 +4181,7 @@ def initTraitement(nCE,user,repertoire,erreurFile):
                 pdfobject.close()
                 idclient=extraction(txt,cb,user)
                 os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+".pdf")
+                print("je suis DANS LA FIN PDF")
 
             except Exception as e:
                 print(str(e))
@@ -4251,9 +4263,9 @@ def separation_des_pages(repertoire):
 #endregion   
 
 getXML()
-print("extraction_auto")
-extraction_auto()
+# print("extraction_auto")
+# extraction_auto()
 
 if __name__ == '__main__':
     #webbrowser.open('http://172.20.10.10:5000')
-    app.run(host='0.0.0.0', debug=False)
+    app.run(host='0.0.0.0', debug=True)

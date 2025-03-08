@@ -11,8 +11,8 @@ from email.mime.application import MIMEApplication
 import PyPDF2
 from flask import send_file
 #from simplecrypt import encrypt, decrypt
-import datetime
-from constantes import bdd,bddCP,xmlARTICLE,xmlARTMAG,fact, EMAIL_ADDRESS,PASSWORD,Lcode,passkey
+from datetime import datetime, timedelta
+from constantes import bdd,bddCP,xmlARTICLE,xmlARTMAG,fact, EMAIL_ADDRESS,PASSWORD,Lcode,passkey,logFold
 #boucle d'appel attention : fonctions > tool > fonctions
 # from fonctions import write_log
 
@@ -99,6 +99,19 @@ def getSocietor(txt,liste):
         motmax=liste[idMax]["entreprise"]
         ratiomax=1  
     return motmax,ratiomax
+
+def write_log_tool(user,texte):
+    now = datetime.now()
+    # Formater la date pour l'utiliser comme nom de fichier
+    filename = logFold+"/"+now.strftime("%Y-%m")+".txt"
+    # print(filename)
+    # Créer et écrire dans le fichier
+    with open(filename, "a") as f:
+        log=str(now)+" user : "+user+" "+texte+"\n"
+        f.write(log)
+    # log=str(now)+" user : "+user+" "+texte+"\n"
+    # fichier=open(filename,"w")
+    # fichier.write(log)
 #endregion
 
 ######################fonction XML###########################
@@ -164,7 +177,7 @@ def find_id_art_v2(mq,ct,prod,mag,marque,categorie,produit,magasin):
                         ligne=7+8*a
                         #print("Je suis à la ligne :" +str(ligne))
                         return a
-    write_log("XX","Je recherche l'article :"+str(mq)+"."+str(ct)+"."+str(prod)+"dans le magasin"+str(mag)+" et je ne suis pas dans le XML")
+    write_log_tool("XX","Je recherche l'article :"+str(mq)+"."+str(ct)+"."+str(prod)+"dans le magasin"+str(mag)+" et je ne suis pas dans le XML")
     return(-1)
 
 def getLcode():
@@ -642,7 +655,7 @@ def getHTML(etats,prenom,n_cde,rupt,mail):
     #Pour tous les mails
     HTML+="""<br><br>
         <br>
-        <h2>Frais de port de 6,99€ pour les commandes inférieures à 59€.</h2>
+        <h2>Frais de port pour les commandes inférieures à 75€: 6,99€ livraison en point relais / 7,99€ livraison à domicile.</h2>
         <br><br>
         <h1>Merci pour votre confiance,</h1>
         <h1>Bonne réception,</h1>
