@@ -346,6 +346,8 @@ def detailsCmd(user):
     Lcmd=lecture_BDD(req)
     req=["SELECT * from facturation where idCmd=? and etatProd like '%4%'",(idDetailCmd,)]
     LcmdAnnule=lecture_BDD(req)
+    req=["SELECT prenom from commande join listingCE on listingCE.idCE=commande.idCE join utilisateur ON utilisateur.id=listingCE.referente where id_commande=?",(idDetailCmd,)]
+    ref=lecture_BDD(req)
     if client[0]['idclientHW']==1:
         write_log(str(session['user']['id']),"/detailsCmd - Visualisation HW de la commande n°"+str(idDetailCmd))
         template="suivi_detailsHW.html"
@@ -377,7 +379,7 @@ def detailsCmd(user):
             sec=time[2].split(".")[0]
             nomPDF.append("Facture du "+day+"/"+month+"/"+year+" à "+h+":"+min+":"+sec)
             listePDF.append(app.config['FACTURE_FOLDER']+"/"+facture)
-    return render_template(template,user=user,client=client,Lcmd=Lcmd,previousPage=previousPage,LcmdAnnule=LcmdAnnule,typePaiement=typePaiement,Luser=Luser,Ltitle=Ltitle,idDetailCmd=idDetailCmd,nomPDF=nomPDF,qte=qte)
+    return render_template(template,user=user,client=client,Lcmd=Lcmd,previousPage=previousPage,LcmdAnnule=LcmdAnnule,typePaiement=typePaiement,Luser=Luser,Ltitle=Ltitle,idDetailCmd=idDetailCmd,nomPDF=nomPDF,qte=qte,ref=ref)
 
 
 @app.route('/actionFromDetails/<user>', methods=['GET', 'POST'])

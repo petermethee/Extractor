@@ -53,6 +53,10 @@
                     </td>
                     {%endif%}
                 </tr>
+                <tr class="trRefData">
+                    <td class="tdRefData">Référente</td>
+                    <td class="tdRefData">{{ref[0]['prenom']}}</td>
+                </tr>
                 {%for i in range(Luser|length)%}
                     {%if Luser[i]!='null' %}
                         <tr class="trRefData">
