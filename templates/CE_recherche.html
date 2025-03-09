@@ -70,11 +70,18 @@
                         </tr>
                 </table>
             </th>
+            {%if CE['idCE']!=999410%}
             <tr id="{{CE['id']}}" class="trCE">
                 <td><input id="idCE" class="inputCE thMoy1" type="number" value="{{CE['idCE']}}"
                         style="cursor: pointer;" required></td>
                 <td><input id="entreprise" class="inputCE thGG" type="text" value="{{CE['entreprise']}}"
                         style="cursor: pointer;"></td>
+            {%endif%}
+            {%if CE['idCE']==999410%}
+            <tr id="{{CE['id']}}" class="trCE">
+                <td id="idCE" class="inputCE thMoy1" type="number">{{CE['idCE']}}</td>
+                <td id="entreprise" class="inputCE thGG" type="text">{{CE['entreprise']}}"</td>
+            {%endif%}
                 <td><select id="referente" class="inputCE thMoy2" type="text" value="CE['referente']"
                         style="cursor: pointer;">
                         {% for x in listeRef %}

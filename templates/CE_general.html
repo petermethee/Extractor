@@ -96,6 +96,7 @@
             <th class="thButton"></th>
             {% for CE in LCE %}
             <tr id="{{CE['id']}}" class="trCE">
+                {%if CE['idCE']!=999410%}
                 <td class="tdButton"><button id="{{CE['id']}}" onclick="deleteFun(this)" class="suprCircle">X</button>
                 </td>
                 <td><input id="nouvidCE{{CE['id']}}" class="inputCE thMoy1" type="number" value="{{CE['idCE']}}"
@@ -133,6 +134,44 @@
                         </tr>
                     </table>
                 <td>
+                {%endif%}
+                {%if CE['idCE']==999410%}
+                <td class="tdButton"></td>
+                
+                <td id="nouvidCE{{CE['id']}}" class="inputCE thMoy1" type="number">{{CE['idCE']}}</td>
+                <td id="entreprise{{CE['id']}}" class="inputCE thGG" type="text">{{CE['entreprise']}}</td>
+                <td><select id="ref{{CE['id']}}" class="inputCE thMoy2" type="text" value="CE['referente']"
+                        style="cursor: pointer;">
+                        {% for x in listeRef %}
+                        <option value="{{x['id']}}" {% if CE['prenom']==x['prenom'] %} selected {%endif%}>
+                            {{x['prenom']}}</option>
+                        {% endfor %}
+                        {% for x in listeAll %}
+                        <option value="{{x['id']}}" {% if CE['prenom']==x['prenom'] %} selected {%endif%}>
+                            {{x['prenom']}}</option>
+                        {% endfor %}
+                    </select></td>
+                <td><input id="inter{{CE['id']}}" class="inputCE thGG" type="text" value="{{CE['intermediaire']}}"
+                        style="cursor: pointer;"></td>
+                </td>
+                <td><input id="mail{{CE['id']}}" class="inputCE thGG" type="text" value="{{CE['mail']}}"
+                        style="cursor: pointer;"></td>
+                <td><input id="tel{{CE['id']}}" class="inputCE thMoy2" type="text" value="{{CE['tel']}}"
+                        style="cursor: pointer;"></td>
+                <td>
+                    <table align="center" class="sousTab">
+                        <tr>
+                            <td>{%if CE['mailCl']==1%}
+                                <input id="mailCl{{CE['id']}}" class="inputCE" type="checkbox" style="cursor: pointer;background-color: brown;"
+                                    checked>
+                                {%else%}
+                                <input id="mailCl{{CE['id']}}" class="inputCE" type="checkbox" style="cursor: pointer;">
+                                {%endif%}
+                            </td>
+                        </tr>
+                    </table>
+                <td>
+                {%endif%}
                     <table align="center" class="sousTab">
                         <th></th>
                         <th></th>
