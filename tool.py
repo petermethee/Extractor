@@ -172,7 +172,7 @@ def find_id_art_v2(mq,ct,prod,mag,marque,categorie,produit,magasin):
         if mq==marque[a].text:
             if ct==categorie[a].text:
                 if prod==produit[a].text:
-                    print(magasin[a].text)
+                    # print(magasin[a].text)
                     if mag==magasin[a].text:
                         ligne=7+8*a
                         #print("Je suis à la ligne :" +str(ligne))
@@ -434,15 +434,16 @@ def send_email(clients,facture,rupt):
         # print("serveur login")
         """message = 'Subject: {}\n\n{}'.format(subject, msg)"""
         # print("EMAIL_ADDRESS")
-        print(EMAIL_ADDRESS)
+        # print(EMAIL_ADDRESS)
         # print("email_clients")
-        print(email_clients)
+        # print(email_clients)
         server.sendmail(EMAIL_ADDRESS,email_clients, msg.as_string())
         # print("serveur send mail")
         server.quit()
         # print("serveur quit")
     except Exception as e:
         print("Echec : ",e)
+        write_log_tool("XX","ERROR : "+str(e))
 
 def getHTML(etats,prenom,n_cde,rupt,mail):
     etat=etats[0]
@@ -702,7 +703,8 @@ def crypter(mdp):
     date1=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     heure=date1.split('_')[1]
     # print(heure)
-    cipher = encrypt(passkey, mdp)
+    # cipher = encrypt(passkey, mdp)
+    cipher=""
     date2=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     heure2=date2.split('_')[1]   
     # print(heure2)
@@ -712,7 +714,8 @@ def decrypter(mdpCrypt):
     date1=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     heure=date1.split('_')[1]
     # print(heure)
-    cipher = decrypt(passkey, mdpCrypt)
+    # cipher = decrypt(passkey, mdpCrypt)
+    cipher=""
     date2=datetime.datetime.today().strftime('%d-%m-%Y_%H:%M:%S')
     heure2=date2.split('_')[1]
     # print(heure2)

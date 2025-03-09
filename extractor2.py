@@ -280,7 +280,6 @@ def annuleCmd():
     checkUser()
     user=session['user']['id']
     idCmd=getValeurFormulaire('idCmd')
-    # print(idCmd)
     answer=getValeurFormulaire('answer')
     req=["UPDATE commande set justification=?,deletedBy=?,etatCmd=99 where id_commande=?",(answer,user,idCmd)]
     ecriture_BDD(req)
@@ -647,8 +646,6 @@ def extractColissimo(user):
         instructions=Linfo[11]
         for texte in Linfo:
             Lcar.append(check_caracteres(texte))
-            # print(texte)
-            # print(Lcar)
         if True in Lcar:
             car_interdit=True
         if car_interdit==False:
@@ -4155,16 +4152,7 @@ def initTraitement(nCE,user,repertoire,erreurFile):
     for nom in os.listdir(repertoire) :
         nbFichier+=1
         extension=nom.split('.')[-1]
-        print("extension")
-        print(extension)
         if extension=='csv' or extension=='CSV':
-            print("je suis dans CSV")
-            print("repertoire")
-            print(repertoire)
-            print("targetFile")
-            print(targetFile)
-            print("erreurFile")
-            print(erreurFile)
             extraction_auto(repertoire+"/",targetFile+"/",erreurFile+"/",nom)
             # try:
             #     chemin=repertoire+"/"
@@ -4181,7 +4169,6 @@ def initTraitement(nCE,user,repertoire,erreurFile):
             #         os.remove(repertoire+"/"+nom)
         else:
             try :
-                print("je suis dans PDF")
                 pdfobject=open(repertoire+"/"+nom,'rb')
                 pdf=pypdf.PdfFileReader(pdfobject)
                 txt=pdf.getFormTextFields()
@@ -4189,11 +4176,11 @@ def initTraitement(nCE,user,repertoire,erreurFile):
                 pdfobject.close()
                 idclient=extraction(txt,cb,user)
                 os.rename(repertoire+"/"+nom,targetFile+"/"+str(idclient)+".pdf")
-                print("je suis DANS LA FIN PDF")
 
             except Exception as e:
                 print(str(e))
                 print("error 1 : "+nom)
+                write_log(user,"WARNING: Le fichier "+nom+" a l erreur suivante : "+str(e))
                 try:
                     pdfobject.close()
                     name, file_extension = os.path.splitext(nom)
@@ -4207,6 +4194,8 @@ def initTraitement(nCE,user,repertoire,erreurFile):
                         except Exception as e:
                             print(str(e))
                             print("Erreur PDF en Image extractHW")
+                            write_log(user,"WARNING: Le fichier "+nom+" a l erreur suivante : "+str(e))
+
                             os.remove(repertoire+"/"+name+'.jpg')
                             raise TypeError
                     else:
@@ -4217,11 +4206,14 @@ def initTraitement(nCE,user,repertoire,erreurFile):
                 except Exception as e:
                     print(str(e))
                     print("error 2 : "+nom)
+                    write_log(user,"WARNING: Le fichier "+nom+" a l erreur suivante : "+str(e))
+
                     nbError+=1
                     try:
                         shutil.move(repertoire+"/"+nom,erreurFile)
                     except Exception as e:
                         print("Already exists")
+                        write_log(user,"WARNING: Le fichier "+nom+" a l erreur suivante : "+str(e))
                         os.remove(repertoire+"/"+nom)
     return nbError,nbFichier
 
@@ -4271,9 +4263,7 @@ def separation_des_pages(repertoire):
 #endregion   
 
 getXML()
-# print("extraction_auto")
-# extraction_auto()
 
 if __name__ == '__main__':
     #webbrowser.open('http://172.20.10.10:5000')
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=False)

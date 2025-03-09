@@ -273,21 +273,21 @@ def livrer_commande(idCmd,user):
     #Récuperer les différents produits de la commande
     req=["SELECT idProd FROM facturation WHERE idCmd=?",(idCmd,)]
     listePdt=lecture_BDD(req)
-    print("listePdt")
-    print(listePdt)
+    # print("listePdt")
+    # print(listePdt)
     en_cours=False
     for produit in listePdt:
-        print("produit['idProd']")
-        print(produit['idProd'])
+        # print("produit['idProd']")
+        # print(produit['idProd'])
         idProd=produit['idProd']
         #Changement état des produits livrés
         en_cours_prod,rupt_prod=change_etat_produit_livraison(idProd,user)
-        print("en_cours_prod")
-        print(en_cours_prod)
+        # print("en_cours_prod")
+        # print(en_cours_prod)
         if en_cours_prod==True:
             en_cours=True
-    print("en_cours")
-    print(en_cours)
+    # print("en_cours")
+    # print(en_cours)
     if en_cours==True:
         #Pas de changement d'états de la commande
         texte="Livraison de la commande n°"+str(idCmd)+" a été partiellement livré par "+str(user)
@@ -312,10 +312,10 @@ def change_etat_produit_livraison(idProd,user):#TODO
     etatProd=liste[0]['etatProd']
     en_cours=False
     rupt=False
-    print("qte")
-    print(qte)
-    print("etatProd")
-    print(etatProd)
+    # print("qte")
+    # print(qte)
+    # print("etatProd")
+    # print(etatProd)
     #Cas qté =1
     if qte=='1':
         if etatProd=="1":
