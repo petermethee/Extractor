@@ -233,7 +233,7 @@ def detectTxt(img_rot,idExtraction,nCE):
 
     date=datetime.datetime.today().strftime('%Y-%m-%d')
     #write client infos
-    req=["update client set societe=?,client=?,mail=?,tel=?,adresse=?,idCEclient=? where idclient=?",(Ltext[0],Ltext[1],Ltext[2],Ltext[3],Ltext[4],idCE,idclient)]
+    req=["update client set societe=?,client=?,mail=?,tel=?,adresse=?,idCEclient=? where idclient=?",(Ltext[0],Ltext[1].lower(),Ltext[2],Ltext[3],Ltext[4],idCE,idclient)]
     ecriture_BDD(req)
     req=["update commande set total=?,idCE=?,etatCmd=?,idclientHW=?,date=? where id_commande=?",(Ltext[5],idCE,0,1,date,idCmd)]
     ecriture_BDD(req)

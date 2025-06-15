@@ -427,7 +427,7 @@ def actionFromDetails(user):
         #Enregistrer les modifications
         societe=getValeurFormulaire("societe")
         client=majusca(getValeurFormulaire("client"))
-        mail=getValeurFormulaire("mail")
+        mail=getValeurFormulaire("mail").lower()
         tel=getValeurFormulaire("tel")
         adresse=majusca(getValeurFormulaire("adresse"))
         commentaire=getValeurFormulaire("commentaire")
@@ -939,7 +939,7 @@ def applicModifHW():
     idClient=getValeurFormulaire('idClient')
     societe=getValeurFormulaire('societe')
     client=majusca(getValeurFormulaire('client'))
-    mail=getValeurFormulaire('mail')
+    mail=getValeurFormulaire('mail').lower()
     tel=getValeurFormulaire('tel')
     adresse=majusca(getValeurFormulaire('adresse'))
     total=getValeurFormulaire('total')
@@ -3095,7 +3095,7 @@ def modifCE():
     entreprise=getValeurFormulaire("entreprise")
     ref=getValeurFormulaire("ref")
     inter=getValeurFormulaire("inter")
-    mail=getValeurFormulaire("mail")
+    mail=getValeurFormulaire("mail").lower()
     tel=getValeurFormulaire("tel")
     mailCl=getValeurFormulaire("mailCl")
     mailInterPrep=getValeurFormulaire("mailInterPrep")
@@ -3263,7 +3263,7 @@ def modifUtilisateur():
     id=getValeurFormulaire("id")
     nom=getValeurFormulaire("nom")
     prenom=getValeurFormulaire("prenom")
-    mail=getValeurFormulaire("mail")
+    mail=getValeurFormulaire("mail").lower()
     niveau=getValeurFormulaire("niveau")
     req=["SELECT niveau FROM utilisateur WHERE id=?",(id,)]
     niveauAv=lecture_BDD(req)[0]['niveau']
