@@ -406,7 +406,7 @@ def actionFromDetails(user):
         nom_prenom=majusca(client["client"])
         nom=nom_prenom.split(" ")[0]
         prenom=nom_prenom.replace(nom,"")
-        mail=client["mail"]
+        mail=client["mail"].lower()
         tel=client["tel"]
         adresse=client["adresse"]
         Lnombre,Llettre,_,_=listeA(adresse)
@@ -708,7 +708,7 @@ def valinuler(user):
         idCE=getValeurFormulaire("idCE")
         societe=getValeurFormulaire("societe")
         client=majusca(getValeurFormulaire("client"))
-        mail=getValeurFormulaire("mail")
+        mail=getValeurFormulaire("mail").lower()
         tel=getValeurFormulaire("tel")
         adresse=majusca(getValeurFormulaire("adresse"))
         total=getValeurFormulaire("total")
@@ -2925,7 +2925,7 @@ def addCE():
     entreprise=getValeurFormulaire("entreprise")
     referente=getValeurFormulaire("referente")
     intermediaire=getValeurFormulaire("intermediaire")
-    mail=getValeurFormulaire("mail")
+    mail=getValeurFormulaire("mail").lower()
     tel=getValeurFormulaire("tel")
     mailCl=getValeurFormulaire("mailCl")
     mailInterPrep=getValeurFormulaire("mailInterPrep")
@@ -3221,6 +3221,7 @@ def ajoutUtilisateur():
     nom="Nom - "+str(idUser)
     prenom="Prenom - "+str(idUser)
     mail="prenom"+str(idUser)+"@parfumeriempb.fr"
+    mail=mail.lower()
     mdp=""
     niveau="NORMAL"
     etat='ACTIF'
@@ -4066,7 +4067,7 @@ def extraction(txt,cb,user):
     idCSE=txt['NOM cse']
     societe=txt['zone '+"1"]
     nom=txt['zone '+"2"]
-    mail=txt['zone '+"3"]
+    mail=txt['zone '+"3"].lower()
     tel=txt['zone '+"4"]
     adresse=txt['zone '+"5"]
     total=txt['zone '+"38"]
